@@ -1,0 +1,1 @@
+obj/HAL/HAL_IIC1.o: src/HAL/HAL_IIC1.c

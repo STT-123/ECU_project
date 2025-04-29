@@ -1,0 +1,1 @@
+obj/HAL/HAL_UART1.o: src/HAL/HAL_UART1.c

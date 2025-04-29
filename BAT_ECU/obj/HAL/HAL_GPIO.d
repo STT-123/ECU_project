@@ -1,0 +1,1 @@
+obj/HAL/HAL_GPIO.o: src/HAL/HAL_GPIO.c
