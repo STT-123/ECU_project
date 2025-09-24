@@ -12,8 +12,9 @@
 #include <time.h>
 #include <sys/select.h>
 #include <fcntl.h>
+#include <pthread.h>
 
 
-#include "C_FTPserver_Handle.h"
 
+void FTPServerTaskCreate(void);
 #endif

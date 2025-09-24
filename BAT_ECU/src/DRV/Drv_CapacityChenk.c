@@ -1,6 +1,6 @@
 #include "Drv_CapacityChenk.h"
 
-char *my_strdup(const char *str) {
+char *Drv_my_strdup(const char *str) {
     if (!str) return NULL;
     char *dup = malloc(strlen(str) + 1);
     if (dup) strcpy(dup, str);
@@ -12,7 +12,7 @@ char *my_strdup(const char *str) {
 // }
 
 // 递归删除目录及内容
-int remove_directory(const char *path) {
+int Drv_remove_directory(const char *path) {
     DIR *dir = opendir(path);
     struct dirent *entry;
     char subPath[512];
@@ -28,7 +28,7 @@ int remove_directory(const char *path) {
         struct stat statbuf;
         if (stat(subPath, &statbuf) == 0) {
             if (S_ISDIR(statbuf.st_mode)) {
-                remove_directory(subPath);  // 递归删除
+                Drv_remove_directory(subPath);  // 递归删除
             } else {
                 unlink(subPath);            // 删除文件
             }

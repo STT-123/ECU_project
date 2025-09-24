@@ -29,14 +29,14 @@ typedef struct {
     uint8_t file_interrupt_flag;
 } FTPState;
 
-
+void send_response(int sock, const char *message);
 void handle_user_command(FTPState *state, char *args);
 void handle_pass_command(FTPState *state, char *args);
 void handle_pasv_command(FTPState *state);
 void handle_port_command(FTPState *state, char *args);
 void handle_list_command(FTPState *state, char *args);
 void set_ftp_read_file_flag(bool flag);
-bool get_ftp_read_file_flag();
+bool CP_get_ftp_read_file_flag();
 void handle_retr_command(FTPState *state, char *filename);
 void handle_stor_command(FTPState *state, char *filename);
 void handle_mget_command(FTPState *state, char *args);

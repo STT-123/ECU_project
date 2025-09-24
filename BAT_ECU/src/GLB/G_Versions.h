@@ -7,7 +7,7 @@
 #include <unistd.h>
 #include <string.h>
 
-#define ECU_VERSION  0x202  //  表示v1.01 格式xx。yy xx 高八位yy低八位
+#define ECU_VERSION  0x115  //  表示v1.01 格式xx。yy xx 高八位yy低八位
 
 #define MDBUS_ADDR_PRODUCTION 0x3416    //ems 厂家
 #define MDBUS_ADDR_ECU_VERSION 0x3417    //ems 版本号

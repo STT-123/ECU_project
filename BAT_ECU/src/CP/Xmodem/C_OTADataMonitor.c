@@ -3,9 +3,12 @@
 #include "C_OTAStateMonitor.h"
 #include "./GLB/G_GloabalVariable.h"
 #include "./GLB/G_AddressDefinition.h"
+#include "./DRV/LOG/Drv_ZLog.h"
 #include "./CP/OTA/C_OTAUDSUpdate.h"
 #include "./CP/OTA/C_OTAXCPUpdate.h"
 #include "./CP/OTA/C_OTAOtherUpdate.h"
+#include "C_OTAStateMonitor.h"
+#include "./CP/BMS/C_BMSAnalysis.h"
 #include "C_OTAStateMonitor.h"
 #include "main.h"
 
@@ -77,9 +80,10 @@ void *lwip_data_TASK(void *param)
 	unsigned char curpackno = 0;
 	unsigned int packidoverflownum = 0;
 	char otafilenamestr1[130] = {'\0'};
-	otafilenamestr1[0] = '0';
-	otafilenamestr1[1] = ':';
+	// otafilenamestr1[0] = '0';//替换取消
+	// otafilenamestr1[1] = ':';//替换取消
 	unsigned char otadeviceType;
+	static int filenormalflag =0;
 	int errorCount = 0;
 	while (1)
 	{
@@ -90,7 +94,7 @@ void *lwip_data_TASK(void *param)
 			memset(tcp_server_recvbuf, 0, 2048);
 			int length = read(otasock1, tcp_server_recvbuf, 2048);
 			curmsgtimer = OsIf_GetMilliseconds();
-
+			// printf("length :%d\r\n",length);
 			if(length == 133)
 			{
 				if((tcp_server_recvbuf[0] == SOH)  && (crcGet(tcp_server_recvbuf, 131) == (tcp_server_recvbuf[131] << 8 | tcp_server_recvbuf[132])))
@@ -99,7 +103,6 @@ void *lwip_data_TASK(void *param)
 					errpacknum = 0;
 					tcp_server_Txbuf[0] = ACK;
 					write(otasock1, tcp_server_Txbuf, 1);
-
 					if(tcp_server_recvbuf[1] == 0x00)
 					{
 						printf("Received first pack !\r\n");
@@ -112,7 +115,9 @@ void *lwip_data_TASK(void *param)
 							curpackno = 0;
 							prvpackno = 0;
 							packidoverflownum = 0;  //lx
-							memcpy(&otafilenamestr1[2], otafilenamestr, 128);
+							// memcpy(&otafilenamestr1[2], otafilenamestr, 128);//替换取消
+							snprintf(otafilenamestr1, sizeof(otafilenamestr1), "%s/%s", USB_MOUNT_POINT, otafilenamestr);
+	
 						}
 
 					}
@@ -134,13 +139,12 @@ void *lwip_data_TASK(void *param)
 								readdatanum = 128;
 								if(packno == 1)
 								{
-									if(tcp_server_recvbuf[51]==0x45 && tcp_server_recvbuf[52]==0x43 && tcp_server_recvbuf[53]==0x55 && (strstr(otafilenamestr, "ECU") != NULL))
+									printf("otafilenamestr : %s\r\n",otafilenamestr);
+									if(strstr(otafilenamestr, "ECU") != NULL)									
 									{
+										printf("otafilenamestr : %s\r\n",otafilenamestr);
 										otadeviceType = ECU;
 										otactrl.UpDating = 1;//1130
-										printf("As hexadecimal10: 0x%X\n", tcp_server_recvbuf[51]);
-										printf("As hexadecimal10: 0x%X\n", tcp_server_recvbuf[52]);
-										printf("As hexadecimal10: 0x%X\n", tcp_server_recvbuf[53]);
 									}
 									else if(tcp_server_recvbuf[51]==0x42 && tcp_server_recvbuf[52]==0x43 && tcp_server_recvbuf[53]==0x55 && (strstr(otafilenamestr, "BCU") != NULL))
 									{
@@ -181,24 +185,77 @@ void *lwip_data_TASK(void *param)
 									{
 										otactrl.UpDating = 0;//1130
 										otadeviceType = 0;
-										delete_files_with_prefix("0:", "XC");
+										delete_files_with_prefix("USB_MOUNT_POINT", "XC");
 										printf("Invalid upgrade file\r\n");
+										zlog_info(debug_out,"Invalid upgrade file\r\n");
 										setXmodemServerReceiveFileEnd(1);
 										// XmodemServerReceiveFileEnd = 1;
+										CP_set_modbus_reg_val(OTASTATUSREGADDR, OTAFAILED);
+										// CP_set_charger_cmd(BMS_POWER_DEFAULT);
 
 									}
 								}
 
-								SaveOtaFile(otafilenamestr1, &(tcp_server_recvbuf[3]), xmodempacknum, packno, readdatanum);
+								int err = SaveOtaFile(otafilenamestr1, &(tcp_server_recvbuf[3]), xmodempacknum, packno, readdatanum);
+								if(err != 0)
+								{
+									filenormalflag =1;
+									otactrl.UpDating = 0;//1130
+									otadeviceType = 0;
+									if (fclose(&OTAfil) != 0)
+									{
+										printf("Error file close failed err code!\r\n");
+										zlog_info(debug_out,"Error file close failed err code!\r\n");
+									}
+									else
+									{
+										printf("file closed successfully!\r\n");
+										zlog_info(debug_out,"file closed successfully!\r\n");
+									}
+									delete_files_with_prefix("0:", "XC");
+									printf("Failed to write upgrade file\r\n");
+									zlog_info(debug_out,"Failed to write upgrade file\r\n");
+									// XmodemServerReceiveFileEnd = 1;
+									setXmodemServerReceiveFileEnd(1);
+//									set_emcu_fault(SD_FAULT,SET_ERROR);
+									CP_set_modbus_reg_val(OTASTATUSREGADDR, OTAFAILED);
+									CP_set_TCU_PowerUpCmd(BMS_POWER_DEFAULT);
+								}
 							}
 							else
 							{
 								filesize%128?(readdatanum = filesize%128):(readdatanum = 128);
 								printf("Receive the last pack , need read %d data from xmodem data area!\r\n", readdatanum);
-								SaveOtaFile(otafilenamestr1, &(tcp_server_recvbuf[3]), xmodempacknum, packno, readdatanum);
+								int err = SaveOtaFile(otafilenamestr1, &(tcp_server_recvbuf[3]), xmodempacknum, packno, readdatanum);
+								if(err != 0)
+								{
+									filenormalflag =1;
+									otactrl.UpDating = 0;//1130
+									otadeviceType = 0;
+									if (fclose(&OTAfil) != 0)
+									{
+										printf("Error file close failed err code!\r\n");
+										zlog_info(debug_out,"Error file close failed err code!\r\n");
+									}
+									else
+									{
+										printf("file closed successfully!\r\n");
+										zlog_info(debug_out,"file closed successfully!\r\n");
+									}
+									delete_files_with_prefix("0:", "XC");
+									printf("Failed to write upgrade file\r\n");
+									zlog_info(debug_out,"Failed to write upgrade file\r\n");
+									// XmodemServerReceiveFileEnd = 1;
+									setXmodemServerReceiveFileEnd(1);
+//									set_emcu_fault(SD_FAULT,SET_ERROR);
+									CP_set_modbus_reg_val(OTASTATUSREGADDR, OTAFAILED);
+									CP_set_TCU_PowerUpCmd(BMS_POWER_DEFAULT);
+								}
+
 								// XmodemServerReceiveFileEnd = 1;
-								setXmodemServerReceiveFileEnd(1);
-								if(strstr(otafilenamestr, "bin") != NULL)
+								setXmodemServerReceiveFileEnd(1);//考虑后移动
+								printf("otafilenamestr1111111 : %s\r\n",otafilenamestr1);
+								if((strstr(otafilenamestr, "bin") != NULL) || (strstr(otafilenamestr1, "bz2") != NULL))
 								{
 									CP_set_modbus_reg_val(OTASTATUSREGADDR, FILEDECRYPTIONNORMALTERMINATION);
 									otactrl.OTAFileType = 0;
@@ -206,9 +263,12 @@ void *lwip_data_TASK(void *param)
 									{
 										otactrl.deviceType = otadeviceType;
 										printf("ECU_OTA_otadeviceType: %u\r\n");
+										printf("otafilenamestr: %u\r\n",otafilenamestr);
 										memset(otactrl.OTAFilename ,0 ,sizeof(otactrl.OTAFilename));
 										memcpy(otactrl.OTAFilename, otafilenamestr, strlen(otafilenamestr));
+										// snprintf(otactrl.OTAFilename, sizeof(otactrl.OTAFilename), "%s/%s", USB_MOUNT_POINT, otafilenamestr);
 										// EMS_OTA_SD_ready_func(otactrl.OTAFilename);    //EMS的SD卡OTA升级功能
+										otactrl.OTAStart = 1;
 
 									}
 									else if(strstr(otafilenamestr, "BCU") != NULL)
@@ -217,6 +277,8 @@ void *lwip_data_TASK(void *param)
 										otactrl.deviceID = BCUOTACANID;
 										memset(otactrl.OTAFilename ,0 ,sizeof(otactrl.OTAFilename));
 										memcpy(otactrl.OTAFilename, otafilenamestr, strlen(otafilenamestr));
+
+										otactrl.OTAStart = 1;
 									}
 									else if(strstr(otafilenamestr, "BMU") != NULL)
 									{
@@ -224,7 +286,7 @@ void *lwip_data_TASK(void *param)
 										memset(otactrl.OTAFilename ,0 ,sizeof(otactrl.OTAFilename));
 										memcpy(otactrl.OTAFilename, otafilenamestr, strlen(otafilenamestr));
 										otactrl.deviceID = 0x1821FF10;
-										otactrl.OTAStart = 0;
+										otactrl.OTAStart = 1;
 									}
 									else if(strstr(otafilenamestr, "ACP") != NULL)
 									{
@@ -232,7 +294,7 @@ void *lwip_data_TASK(void *param)
 										memset(otactrl.OTAFilename ,0 ,sizeof(otactrl.OTAFilename));
 										memcpy(otactrl.OTAFilename, otafilenamestr, strlen(otafilenamestr));
 										otactrl.deviceID = ACPOTACANID;
-										otactrl.OTAStart = 0;
+										otactrl.OTAStart = 1;
 
 									}
 									else if(strstr(otafilenamestr, "DCDC") != NULL)
@@ -241,7 +303,7 @@ void *lwip_data_TASK(void *param)
 										memset(otactrl.OTAFilename ,0 ,sizeof(otactrl.OTAFilename));
 										memcpy(otactrl.OTAFilename, otafilenamestr, strlen(otafilenamestr));
 										otactrl.deviceID = DCDCOTACANID;
-										otactrl.OTAStart = 0;
+										otactrl.OTAStart = 1;
 									}
 									//------------------------------OTAACP----------------------------------------//
 									else if(strstr(otafilenamestr, "AC") != NULL)
@@ -256,7 +318,9 @@ void *lwip_data_TASK(void *param)
 											clock_gettime(CLOCK_MONOTONIC, &AC_OTA_lastCheckTick);
 											memset(otactrl.OTAUdsSblFilename[SBl_index],0 ,sizeof(otactrl.OTAUdsSblFilename[SBl_index]));
 											//需要告诉我一共分成多少bin文件，然后达到数量后赋值otactrl.deviceType = ACP;，进入XcpOTATestTask
-											memcpy(otactrl.OTAUdsSblFilename[SBl_index], otafilenamestr, strlen(otafilenamestr));
+											printf("AC_SBL_OTA_FILE_NAME: %s\r\n", otafilenamestr);
+											printf("AC_SBL_OTA_FILE_NAME: %s\r\n", otafilenamestr1);
+											memcpy(otactrl.OTAUdsSblFilename[SBl_index], otafilenamestr1, strlen(otafilenamestr1));
 
 										    token = strtok(otafilenamestr, delimiter); // AC
 										    token = strtok(NULL, delimiter);          // SBL
@@ -279,7 +343,9 @@ void *lwip_data_TASK(void *param)
 										{
 												clock_gettime(CLOCK_MONOTONIC, &AC_OTA_lastCheckTick);
 												memset(otactrl.OTAUdsFilename[APP_index],0 ,sizeof(otactrl.OTAUdsFilename[APP_index]));
-												memcpy(otactrl.OTAUdsFilename[APP_index], otafilenamestr, strlen(otafilenamestr));
+												printf("AC_APP_OTA_FILE_NAME: %s\r\n", otafilenamestr);
+												printf("AC_SBL_OTA_FILE_NAME: %s\r\n", otafilenamestr1);
+												memcpy(otactrl.OTAUdsFilename[APP_index], otafilenamestr1, strlen(otafilenamestr1));
 
 											    token = strtok(otafilenamestr, delimiter); // AC
 											    token = strtok(NULL, delimiter);          // SBL
@@ -299,12 +365,34 @@ void *lwip_data_TASK(void *param)
 										}
 
 									}
+										CP_get_modbus_reg_val(AC_SBL_OTAFILENUMBER, &sblfilenumber);
+										CP_get_modbus_reg_val(AC_APP_OTAFILENUMBER, &appfilenumber);
+										usleep(50*1000);
+										printf("SBl_index ...  %d \r\n",SBl_index);
+										printf("APP_index ...  %d \r\n",APP_index);
+										printf("sblfilenumber...%d\r\n",sblfilenumber);
+										printf("appfilenumber...%d\r\n",appfilenumber);
+
+
+									if((SBl_index != 0) && (SBl_index == sblfilenumber) && (APP_index != 0) && (APP_index == appfilenumber))
+									{
+										printf("SBl_index ...  %d \r\n",SBl_index);
+										printf("APP_index ...  %d \r\n",APP_index);
+										printf("sblfilenumber...%d\r\n",sblfilenumber);
+										printf("appfilenumber...%d\r\n",appfilenumber);
+										otactrl.deviceID = ACOTACANID;
+										otactrl.deviceType = AC;
+										otactrl.OTAStart = 1;
+
+									}
 									//------------------------------OTAACP----------------------------------------//
 
 									else
 									{
 
 									}
+									printf("OTAStart:%d,deviceID:%d,OTAFilename:%s,OTAFileType:%d,deviceType:%d\n", otactrl.OTAStart, otactrl.deviceID, otactrl.OTAFilename, otactrl.OTAFileType, otactrl.deviceType);
+
 								}
 								else if(strstr(otafilenamestr, "srec") != NULL || strstr(otafilenamestr, "s19") != NULL)
 								{
@@ -335,6 +423,7 @@ void *lwip_data_TASK(void *param)
 
 									}
 								}
+	
 
 							}
 							prvpackno = curpackno;
@@ -358,6 +447,23 @@ void *lwip_data_TASK(void *param)
 					errpacknum = 0;
 					tcp_server_Txbuf[0] = ACK;
 					write(otasock1, tcp_server_Txbuf, 1);
+					// if(tcp_server_recvbuf[1] == 0x00)
+					// {
+					// 	printf("Received first pack !\r\n");
+
+					// 	XmodemServerReceiveSOH = 1;
+					// 	if(GetOTAFILEInfo(&(tcp_server_recvbuf[3]),1024,otafilenamestr, &filesize, &xmodempacknum) == 0)
+					// 	{
+					// 		printf("File name %s filesize %d packnum %d\r\n", otafilenamestr, filesize, xmodempacknum);
+					// 		findfirstpack = 1;
+					// 		curpackno = 0;
+					// 		prvpackno = 0;
+					// 		packidoverflownum = 0;  //lx
+					// 		memcpy(&otafilenamestr1[2], otafilenamestr, 128);
+					// 	}
+
+					// }
+
 
 					if(findfirstpack)
 					{
@@ -373,12 +479,10 @@ void *lwip_data_TASK(void *param)
 							readdatanum = 1024;
 							if(packno == 1)
 							{
-								if(tcp_server_recvbuf[51]==0x45 && tcp_server_recvbuf[52]==0x43 && tcp_server_recvbuf[53]==0x55)
+								if(strstr(otafilenamestr, "ECU") != NULL)									
 								{
 									otadeviceType = ECU;
-									printf("As hexadecimal10: 0x%X\n", tcp_server_recvbuf[51]);
-									printf("As hexadecimal10: 0x%X\n", tcp_server_recvbuf[52]);
-									printf("As hexadecimal10: 0x%X\n", tcp_server_recvbuf[53]);
+									otactrl.UpDating = 1;//1130
 								}
 								else if(tcp_server_recvbuf[51]==0x42 && tcp_server_recvbuf[52]==0x43 && tcp_server_recvbuf[53]==0x55)
 								{
@@ -396,21 +500,69 @@ void *lwip_data_TASK(void *param)
 								}
 								else
 								{
-									delete_files_with_prefix("0:", "XC");
+									delete_files_with_prefix(USB_MOUNT_POINT, "XC");
 									otadeviceType = 0;
 									printf("Invalid upgrade file\r\n");
 									setXmodemServerReceiveFileEnd(1);
 									// XmodemServerReceiveFileEnd = 1;
 								}
 							}
-							SaveOtaFile(otafilenamestr, &(tcp_server_recvbuf[3]), xmodempacknum, packno, readdatanum);
+							int err = SaveOtaFile(otafilenamestr, &(tcp_server_recvbuf[3]), xmodempacknum, packno, readdatanum);
+							if(err != 0)
+							{
+								filenormalflag =1;
+								otactrl.UpDating = 0;//1130
+								otadeviceType = 0;
+								if (fclose(&OTAfil) != 0)
+								{
+									printf("Error file close failed err code!\r\n");
+									zlog_info(debug_out,"Error file close failed err code!\r\n");
+								}
+								else
+								{
+									printf("file closed successfully!\r\n");
+									zlog_info(debug_out,"file closed successfully!\r\n");
+								}
+								delete_files_with_prefix("0:", "XC");
+								printf("Failed to write upgrade file\r\n");
+								zlog_info(debug_out,"Failed to write upgrade file\r\n");
+								// XmodemServerReceiveFileEnd = 1;
+								setXmodemServerReceiveFileEnd(1);
+//									set_emcu_fault(SD_FAULT,SET_ERROR);
+								CP_set_modbus_reg_val(OTASTATUSREGADDR, OTAFAILED);
+								CP_set_TCU_PowerUpCmd(BMS_POWER_DEFAULT);
+							}
 						}
 						else
 						{
 
 							filesize%1024?(readdatanum = filesize%1024):(readdatanum = 1024);
 							printf("Receive the last pack , need read %d data from xmodem data area!\r\n", readdatanum);
-							SaveOtaFile(otafilenamestr, &(tcp_server_recvbuf[3]), xmodempacknum, packno, readdatanum);
+							int err = SaveOtaFile(otafilenamestr, &(tcp_server_recvbuf[3]), xmodempacknum, packno, readdatanum);
+							if(err != 0)
+							{
+								filenormalflag =1;
+								otactrl.UpDating = 0;//1130
+								otadeviceType = 0;
+								if (fclose(&OTAfil) != 0)
+								{
+									printf("Error file close failed err code!\r\n");
+									zlog_info(debug_out,"Error file close failed err code!\r\n");
+								}
+								else
+								{
+									printf("file closed successfully!\r\n");
+									zlog_info(debug_out,"file closed successfully!\r\n");
+								}
+								delete_files_with_prefix("0:", "XC");
+								printf("Failed to write upgrade file\r\n");
+								zlog_info(debug_out,"Failed to write upgrade file\r\n");
+								// XmodemServerReceiveFileEnd = 1;
+								setXmodemServerReceiveFileEnd(1);
+//									set_emcu_fault(SD_FAULT,SET_ERROR);
+								CP_set_modbus_reg_val(OTASTATUSREGADDR, OTAFAILED);
+								CP_set_TCU_PowerUpCmd(BMS_POWER_DEFAULT);
+							}
 							setXmodemServerReceiveFileEnd(1);
 							// XmodemServerReceiveFileEnd = 1;
 
@@ -468,6 +620,23 @@ void *lwip_data_TASK(void *param)
 
 									}
 								}
+								else if(strstr(otafilenamestr1, "zip") != NULL)
+								{
+									otactrl.OTAFileType = 0;
+									if(strstr(otafilenamestr1, "ECU") != NULL)
+									{
+										printf("ECU tar.bz2 file\r\n");
+										zlog_info(debug_out,"ECU tar.bz2 file\r\n");
+										otactrl.deviceType = otadeviceType;
+										memset(otactrl.OTAFilename ,0 ,sizeof(otactrl.OTAFilename));
+										memcpy(otactrl.OTAFilename, otafilenamestr, strlen(otafilenamestr));
+
+									}
+									else
+									{
+
+									}
+								}
 
 						}
 
@@ -494,7 +663,7 @@ void *lwip_data_TASK(void *param)
 
 			}
 
-			else if(length == -1)
+			else if(length == -1 || length == 0)
 			{
 			    errorCount++;
 
@@ -515,9 +684,7 @@ void *lwip_data_TASK(void *param)
 
 
 		}
-#if 0
 
-#else
 		if(errpacknum > 5)
 		{
 			printf("error pack over 5!\r\n");
@@ -527,6 +694,7 @@ void *lwip_data_TASK(void *param)
 		}
 		if(getXmodemServerReceiveFileEnd())
 		{
+			printf("receive file end!\r\n");
 			uint32_t starttime = OsIf_GetMilliseconds();
 			while(1)
 			{
@@ -561,8 +729,7 @@ void *lwip_data_TASK(void *param)
 			}
 
 		}
-#endif
-		//时间调度 防止任务卡死
+
 		usleep(100*1000);
 	}
 

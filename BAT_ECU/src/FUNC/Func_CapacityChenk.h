@@ -5,4 +5,10 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#include <pthread.h>
+#include <dirent.h>
+#include <sys/statvfs.h>
+#include <sys/stat.h>
+
+void *Func_CheckSDCardCapacityTask(void *arg);
 #endif

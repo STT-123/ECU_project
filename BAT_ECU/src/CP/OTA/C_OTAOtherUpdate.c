@@ -3,7 +3,7 @@
 #include "../GLB/G_GloabalVariable.h"
 #include "./DRV/Drv_ECUAndBCUCommunication.h"
 #include "./GLB/G_AddressDefinition.h"
-#include "../CP/BMS/bms/bms_cortol.h"
+#include "./DRV/LOG/Drv_ZLog.h"
 #include "./Xmodem/C_OTADataMonitor.h"
 #include "main.h"
 #define ACPDC_BLOCK_SIZE 120
@@ -52,6 +52,7 @@ signed char  AcpDcUpgradesend(const char *filename,FILE *rfile)
     printf("blockCount : %d\r\n", blockCount);
     unsigned int percent_count = blockCount/80;
 	clock_gettime(CLOCK_MONOTONIC, &acpdcdcota_start);
+	queue_clear(&Queue_Can0RevData);
     for (uint16_t count = 0; count < blockCount; count++) {
     	unsigned int sum = 0;
     	uint8_t byte = 1;
@@ -95,11 +96,11 @@ signed char  AcpDcUpgradesend(const char *filename,FILE *rfile)
         CanMes_1.Data[3] = ((seqnum >> 8) & 0xFF);  // 高字节
         memcpy(&CanMes_1.Data[4], fileBuffer, 4);
 
-        TStatus = can1_send(&CanMes_1);
+        TStatus = Drv_can0_send(&CanMes_1);
     	if(TStatus ==0)
     	{
     		//发送成功
-    		printf("First frame data send successfully");
+    		// printf("First frame data send successfully");
     	}
     	else
     	{
@@ -119,7 +120,10 @@ signed char  AcpDcUpgradesend(const char *filename,FILE *rfile)
         	usleep(20*1000);
             memcpy(&CanMes.Data[0], &fileBuffer[4 + i * 8], 8);
             CanMes.ID = 0x03160801 + i;
-            TStatus = can1_send(&CanMes);
+			// printf("CanMes.ID = %x\r\n",CanMes.ID);
+			// printf("CanMes.Data = %x %x %x %x %x %x %x %x\r\n",CanMes.Data[0],CanMes.Data[1],CanMes.Data[2],CanMes.Data[3],CanMes.Data[4],CanMes.Data[5],CanMes.Data[6],CanMes.Data[7]);
+            TStatus = Drv_can0_send(&CanMes);
+			// printf("TStatus = %d\r\n",TStatus);
             if (TStatus != 0) {
             	printf("zhengshu data send failed");
             	independentStatus.ErrorReg = 4;
@@ -138,15 +142,15 @@ signed char  AcpDcUpgradesend(const char *filename,FILE *rfile)
             CanMes.Length = yushu;
             CanMes.ID = 0x03160000 + (yushu << 8) + zhengshu +1;
             memcpy(&CanMes.Data[0], &fileBuffer[4 + zhengshu * 8], (yushu));
-//        	printf(" CanMes.Data[0]:%02x\r\n",CanMes.Data[0]);
-//        	printf(" CanMes.Data[1]:%02x\r\n",CanMes.Data[1]);
-//        	printf(" CanMes.Data[2]:%02x\r\n",CanMes.Data[2]);
-//        	printf(" CanMes.Data[3]:%02x\r\n",CanMes.Data[3]);
-//        	printf(" CanMes.Data[4]:%02x\r\n",CanMes.Data[4]);
-//        	printf(" CanMes.Data[5]:%02x\r\n",CanMes.Data[5]);
-//        	printf(" CanMes.Data[6]:%02x\r\n",CanMes.Data[6]);
-//        	printf(" CanMes.Data[7]:%02x\r\n",CanMes.Data[7]);
-            TStatus = can1_send(&CanMes);
+       	printf(" CanMes.Data[0]:%02x\r\n",CanMes.Data[0]);
+       	printf(" CanMes.Data[1]:%02x\r\n",CanMes.Data[1]);
+       	printf(" CanMes.Data[2]:%02x\r\n",CanMes.Data[2]);
+       	printf(" CanMes.Data[3]:%02x\r\n",CanMes.Data[3]);
+       	printf(" CanMes.Data[4]:%02x\r\n",CanMes.Data[4]);
+       	printf(" CanMes.Data[5]:%02x\r\n",CanMes.Data[5]);
+       	printf(" CanMes.Data[6]:%02x\r\n",CanMes.Data[6]);
+       	printf(" CanMes.Data[7]:%02x\r\n",CanMes.Data[7]);
+            TStatus = Drv_can0_send(&CanMes);
             if (TStatus != 0) {
             	printf("yushu data send failed");
             	independentStatus.ErrorReg = 5;
@@ -161,7 +165,7 @@ signed char  AcpDcUpgradesend(const char *filename,FILE *rfile)
             sum += fileBuffer[j];  // 将每个字节的值累加到 sum
         }
         sum = sum + 0xB0 + bytesRead + 4 + 1 + (seqnum & 0xFF) + ((seqnum >> 8) & 0xFF);
-        printf("sum :%d\r\n",sum);
+        // printf("sum :%d\r\n",sum);
 		//发送校验和
         memset(&CanMes, 0 , sizeof(CAN_MESSAGE));
         CanMes.Extended = 1;
@@ -177,11 +181,12 @@ signed char  AcpDcUpgradesend(const char *filename,FILE *rfile)
 
         CanMes.Data[0] = sum & 0xff;
         printf("CanMes.Data[0]  :%02x\r\n",CanMes.Data[0]);
-        TStatus = can1_send(&CanMes);
+        TStatus = Drv_can0_send(&CanMes);
 		if(TStatus == 0)
 		{
 			//成功
 			memset(&canmsg, 0, sizeof(CAN_MESSAGE));
+			printf("count: %d  \r\n",count);
 			if( (count <20))
 			{
 				independentStatus.XCPCMDOuttimeTime  = 100;
@@ -190,15 +195,15 @@ signed char  AcpDcUpgradesend(const char *filename,FILE *rfile)
 			{
 				independentStatus.XCPCMDOuttimeTime  = 5000;
 			}
-			UStatus = queue_pend(&Queue_Can1RevData, &canmsg,&err);
+			UStatus = queue_pend(&Queue_Can0RevData, &canmsg,&err);
 			if(UStatus == 0)
 			{
-//	        	printf(" canmsg.Data[0]:%02x\r\n",canmsg.Data[0]);
-//	        	printf(" canmsg.Data[1]:%02x\r\n",canmsg.Data[1]);
-//	        	printf(" canmsg.Data[2]:%02x\r\n",canmsg.Data[2]);
-//	        	printf(" canmsg.Data[3]:%02x\r\n",canmsg.Data[3]);
-//	        	printf(" canmsg.Data[4]:%02x\r\n",canmsg.Data[4]);
-//	        	printf(" canmsg.Data[5]:%02x\r\n",canmsg.Data[5]);
+	        	printf(" canmsg.Data[0]:%02x\r\n",canmsg.Data[0]);
+	        	printf(" canmsg.Data[1]:%02x\r\n",canmsg.Data[1]);
+	        	printf(" canmsg.Data[2]:%02x\r\n",canmsg.Data[2]);
+	        	printf(" canmsg.Data[3]:%02x\r\n",canmsg.Data[3]);
+	        	printf(" canmsg.Data[4]:%02x\r\n",canmsg.Data[4]);
+	        	printf(" canmsg.Data[5]:%02x\r\n",canmsg.Data[5]);
 				//成功
 
 				if( (count <20))
@@ -211,7 +216,7 @@ signed char  AcpDcUpgradesend(const char *filename,FILE *rfile)
 					if(canmsg.Data[4] == 0x00)
 					{
 
-						printf("count: %d    The data packet was delivered successfully\r\n",count);
+						// printf("count: %d    The data packet was delivered successfully\r\n",count);
 						//接受成功
 						independentStatus.IndReturnSuccess = true;
 					}
@@ -291,11 +296,16 @@ void CP_ACPDCDC_OTA(OTAObject* pOTA)
 		FILE *rfile =NULL;
 		CP_set_modbus_reg_val(OTASTATUSREGADDR, OTASTARTRUNNING);//0124.升级状态
 		memset(&independentStatus, 0, sizeof(IndependentStatus));
-        rfile = fopen(pOTA->OTAFilename, "rb"); // Open the file for reading in binary mode
+        char otafilenamestr1[OTAFILENAMEMAXLENGTH + 64] = {'\0'};
+		snprintf(otafilenamestr1, sizeof(otafilenamestr1), "%s/%s", USB_MOUNT_POINT, pOTA->OTAFilename);
+		printf("otafilenamestr1 %s\r\n", otafilenamestr1);
+		printf("OTAStart:%d,deviceID:%d,OTAFilename:%s,OTAFileType:%d,deviceType:%d\n", pOTA->OTAStart, pOTA->deviceID, pOTA->OTAFilename, pOTA->OTAFileType, pOTA->deviceType);
+        rfile = fopen(otafilenamestr1, "rb"); // Open the file for reading in binary mode
         if(rfile == NULL)
         {
-            printf("Failed to open file: %s\n", pOTA->OTAFilename);
-            independentStatus.ErrorReg |= 1 << 0;
+			printf("%s open error, error code %d (%s)\n", otafilenamestr1, errno, strerror(errno));
+			zlog_info(debug_out,"%s open error, error code %d %s\r\n",otafilenamestr1, errno, strerror(errno));
+			independentStatus.ErrorReg |= 1 << 0;
             independentStatus.ErrorDeviceID = pOTA->deviceID;
         }
 		CP_set_modbus_reg_val(OTAPPROGRESSREGADDR, 10);//0124,升级进度
@@ -312,25 +322,27 @@ void CP_ACPDCDC_OTA(OTAObject* pOTA)
 				{
 					independentStatus.CANStartOTA = 1;
 
-					char otafilenamestr1[OTAFILENAMEMAXLENGTH + 2] = {'\0'};
-					if(independentStatus.ErrorReg == 0)
-					{
-						otafilenamestr1[0] = '0';
-						otafilenamestr1[1] = ':';
-						memcpy(&otafilenamestr1[2], pOTA->OTAFilename, strlen(pOTA->OTAFilename));
-						printf("otafilenamestr1: %s\r\n", otafilenamestr1);
-						printf("pOTA->OTAFilename: %s\r\n", pOTA->OTAFilename);
+					// char otafilenamestr1[OTAFILENAMEMAXLENGTH + 2] = {'\0'};
+					// if(independentStatus.ErrorReg == 0)
+					// {
+					// 	otafilenamestr1[0] = '0';
+					// 	otafilenamestr1[1] = ':';
+					// 	memcpy(&otafilenamestr1[2], pOTA->OTAFilename, strlen(pOTA->OTAFilename));
+					// 	printf("otafilenamestr1: %s\r\n", otafilenamestr1);
+					// 	printf("pOTA->OTAFilename: %s\r\n", pOTA->OTAFilename);
 
-					}
-					queue_clear(&Queue_Can1RevData);
+					// }
+					printf("otafilenamestr1: %s\r\n", otafilenamestr1);
+					printf("pOTA->OTAFilename: %s\r\n", pOTA->OTAFilename);
+					queue_clear(&Queue_Can0RevData);
 					res = AcpDcUpgradesend(otafilenamestr1,rfile);//首帧和连续帧
 					usleep(5*1000);
 
 					memset(otafilenamestr1, '\0', OTAFILENAMEMAXLENGTH + 2);
-					otafilenamestr1[0] = '0';
-					otafilenamestr1[1] = ':';
+					// otafilenamestr1[0] = '0';
+					// otafilenamestr1[1] = ':';
 					char *str = "w.bin";
-					memcpy(&otafilenamestr1[2], str, strlen(str));
+					// memcpy(&otafilenamestr1[2], str, strlen(str));
 
 					if (res == 0)
 					{
@@ -349,25 +361,25 @@ void CP_ACPDCDC_OTA(OTAObject* pOTA)
 
 					independentStatus.CANStartOTA = 1;
 
-					char otafilenamestr1[OTAFILENAMEMAXLENGTH + 2] = {'\0'};
-					if(independentStatus.ErrorReg == 0)
-					{
-						otafilenamestr1[0] = '0';
-						otafilenamestr1[1] = ':';
-						memcpy(&otafilenamestr1[2], pOTA->OTAFilename, strlen(pOTA->OTAFilename));
-						printf("otafilenamestr1: %s\r\n", otafilenamestr1);
-						printf("pOTA->OTAFilename: %s\r\n", pOTA->OTAFilename);
+					// char otafilenamestr1[OTAFILENAMEMAXLENGTH + 2] = {'\0'};
+					// if(independentStatus.ErrorReg == 0)
+					// {
+					// 	otafilenamestr1[0] = '0';
+					// 	otafilenamestr1[1] = ':';
+					// 	memcpy(&otafilenamestr1[2], pOTA->OTAFilename, strlen(pOTA->OTAFilename));
+					// 	printf("otafilenamestr1: %s\r\n", otafilenamestr1);
+					// 	printf("pOTA->OTAFilename: %s\r\n", pOTA->OTAFilename);
 
-					}
-					queue_clear(&Queue_Can1RevData);
+					// }
+					queue_clear(&Queue_Can0RevData);
 					res = AcpDcUpgradesend(otafilenamestr1,rfile);//首帧和连续帧
 					usleep(5*1000);
 
 					memset(otafilenamestr1, '\0', OTAFILENAMEMAXLENGTH + 2);
-					otafilenamestr1[0] = '0';
-					otafilenamestr1[1] = ':';
+					// otafilenamestr1[0] = '0';
+					// otafilenamestr1[1] = ':';
 					char *str = "w.bin";
-					memcpy(&otafilenamestr1[2], str, strlen(str));
+					// memcpy(&otafilenamestr1[2], str, strlen(str));
 
 					if (res == 0)
 					{
@@ -387,6 +399,7 @@ void CP_ACPDCDC_OTA(OTAObject* pOTA)
 		if(independentStatus.ErrorReg == 0)
 		{
 			printf("can id 0x%x device ota success!\r\n", pOTA->deviceID);
+			zlog_info(debug_out,"can id 0x%x device ota success!\r\n", pOTA->deviceID);
 			independentStatus.DeviceProgramOkFlag = 1;
 			CP_set_modbus_reg_val(OTAPPROGRESSREGADDR, 100);//0124,升级进度
 			CP_set_modbus_reg_val(OTASTATUSREGADDR, OTASUCCESS);
@@ -397,6 +410,7 @@ void CP_ACPDCDC_OTA(OTAObject* pOTA)
 		else
 		{
 			printf("can id 0x%x device ota failed, error register val 0x%x!\r\n", pOTA->deviceID, independentStatus.ErrorReg);
+			zlog_info(debug_out,"can id 0x%x device ota failed, error register val 0x%x!\r\n", pOTA->deviceID, independentStatus.ErrorReg);
 			CP_set_modbus_reg_val(OTASTATUSREGADDR, OTAFAILED);
 
 		}
@@ -420,20 +434,26 @@ void FinishACPOtaAndCleanup(OTAObject* pOTA)
 {
     pOTA->deviceType = 0;             // 停止升级
     pOTA->OTAStart = 0;
-    delete_files_with_prefix("0:", "ACP"); // 删除升级文件
+    delete_files_with_prefix(USB_MOUNT_POINT, "ACP"); // 删除升级文件
+	delete_files_with_prefix(USB_MOUNT_POINT, "md5"); // 删除升级文件
     independentStatus.CANStartOTA = 0;
     otactrl.UpDating = 0;               // 升级结束标志
-    set_charger_cmd(BMS_POWER_DEFAULT); // 恢复默认充电状态
+    // set_charger_cmd(BMS_POWER_DEFAULT); // 恢复默认充电状态
+	CP_set_TCU_PowerUpCmd(BMS_POWER_DEFAULT);
     CP_set_modbus_reg_val(OTASTATUSREGADDR, OTAIDLE); // 设置状态寄存器为 IDLE
+	Drv_BMS_Analysis();//BMS数据解析
 }
 
 void FinishDCDCOtaAndCleanup(OTAObject* pOTA)
 {
     pOTA->deviceType = 0;             // 停止升级
     pOTA->OTAStart = 0;
-    delete_files_with_prefix("0:", "DCDC"); // 删除升级文件
+    delete_files_with_prefix(USB_MOUNT_POINT, "DCDC"); // 删除升级文件
+	delete_files_with_prefix(USB_MOUNT_POINT, "md5"); // 删除升级文件
     independentStatus.CANStartOTA = 0;
     otactrl.UpDating = 0;               // 升级结束标志
-    set_charger_cmd(BMS_POWER_DEFAULT); // 恢复默认充电状态
+    // set_charger_cmd(BMS_POWER_DEFAULT); // 恢复默认充电状态
+	CP_set_TCU_PowerUpCmd(BMS_POWER_DEFAULT);
     CP_set_modbus_reg_val(OTASTATUSREGADDR, OTAIDLE); // 设置状态寄存器为 IDLE
+	Drv_BMS_Analysis();//BMS数据解析
 }

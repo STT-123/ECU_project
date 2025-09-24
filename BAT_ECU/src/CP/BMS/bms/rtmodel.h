@@ -1,11 +1,11 @@
 /*
  * File: rtmodel.h
  *
- * Code generated for Simulink model 'bms'.
+ * Code generated for Simulink model 'CANRcvFcn'.
  *
- * Model version                  : 1.413
- * Simulink Coder version         : 23.2 (R2023b) 01-Aug-2023
- * C/C++ source code generated on : Sat Feb  8 16:39:57 2025
+ * Model version                  : 3.284
+ * Simulink Coder version         : 24.2 (R2024b) 21-Jun-2024
+ * C/C++ source code generated on : Wed Aug 13 13:48:29 2025
  *
  * Target selection: ert.tlc
  * Embedded hardware selection: NXP->Cortex-M4
@@ -13,15 +13,15 @@
  * Validation result: Not run
  */
 
-#ifndef RTW_HEADER_rtmodel_h_
-#define RTW_HEADER_rtmodel_h_
-#include "bms.h"
+#ifndef rtmodel_h_
+#define rtmodel_h_
+#include "CANRcvFcn.h"
 
 /* Macros generated for backwards compatibility  */
 #ifndef rtmGetStopRequested
 #define rtmGetStopRequested(rtm)       ((void*) 0)
 #endif
-#endif                                 /* RTW_HEADER_rtmodel_h_ */
+#endif                                 /* rtmodel_h_ */
 
 /*
  * File trailer for generated code.

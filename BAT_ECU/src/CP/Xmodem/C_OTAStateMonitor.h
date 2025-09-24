@@ -13,6 +13,16 @@ extern int otasock1;
 
 
 
+// extern unsigned char clientConnected;
+// extern unsigned char XmodemSendCFlag;
+// extern unsigned char XmodemServerReceiveSOH;
+// extern unsigned char XmodemServerReceiveEOT;
+// extern unsigned char XmodemServerReceiveFileEnd;
+// extern unsigned char XmodemServerEnd;
+
+
+
+
 extern unsigned short sblfilenumber ;
 extern unsigned short appfilenumber ;
 
@@ -22,6 +32,7 @@ extern int APP_index;
 extern struct timespec AC_OTA_lastCheckTick;
 
 extern pthread_mutex_t task_mutex ;
+extern pthread_t* pLwIPTCPDataTaskHandle;
 
 extern FILE *OTAfil;
 unsigned int OsIf_GetMilliseconds(void) ;

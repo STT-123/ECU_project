@@ -7,7 +7,7 @@
 #include <unistd.h>
 #include <string.h>
 
-void SerialLedTask_func(void* arg);
+
 void SerialLedTaskCreate(void);
 
 #endif

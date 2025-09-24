@@ -25,5 +25,10 @@
 #define AC_SBL_OTAFILENUMBER 					0x4013
 #define AC_APP_OTAFILENUMBER 					0x4014
 
+#define MDBUS_ADDR_DC_VOL  0x3460		//直流电压
+#define MDBUS_ADDR_DC_CUR  0x3462		//直流电流
+#define MDBUS_ADDR_DC_POW  0x3464		//直流功率
+#define MDBUS_ADDR_P_ENERGY  0x3466		//正向能量
+#define MDBUS_ADDR_N_ENERGY  0x3468		//负向能量
 
 #endif

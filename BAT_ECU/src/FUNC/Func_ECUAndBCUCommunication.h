@@ -24,8 +24,8 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <sys/uio.h>
-extern sem_t send_sem; //信号量
 
-void *thread_can1_dealwith(void *arg);
-void *thread_can1_send(void *arg);
+
+void *Func_thread_can0_dealwith(void *arg);
+// void *Func_thread_can1_send(void *arg);
 #endif

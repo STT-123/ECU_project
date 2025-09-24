@@ -1,15 +1,15 @@
 #include "C_OTAListenMonitor.h"
 #include "C_OTAStateMonitor.h"
 #include "C_OTADataMonitor.h"
-
-pthread_t lwipDataTaskThread;
+#include "./DRV/LOG/Drv_ZLog.h"
+// pthread_t lwipDataTaskThread;
 // pthread_mutex_t task_mutex = PTHREAD_MUTEX_INITIALIZER;
-pthread_t* pLwIPTCPDataTaskHandle_c = &lwipDataTaskThread;
+// pthread_t* pLwIPTCPDataTaskHandle_c = &lwipDataTaskThread;
 
 
 void* Lwip_Listen_TASK(void* param)
 {
-    printf("Lwip_Listen_TASK\n");
+    printf("Lwip_Listen_TASK\r\n");
 
     struct sockaddr_in address, remote;
     socklen_t size;
@@ -50,16 +50,17 @@ void* Lwip_Listen_TASK(void* param)
             setClientConnected(1);
             // clientConnected = 1;
             printf("otasock1 = %d\n", otasock1);
-            printf("Client connected: %s:%d\n",
-                         inet_ntoa(remote.sin_addr), ntohs(remote.sin_port));
+            printf("Client connected: %s:%d\n",inet_ntoa(remote.sin_addr), ntohs(remote.sin_port));
 
-            if (pLwIPTCPDataTaskHandle_c == NULL || *pLwIPTCPDataTaskHandle_c == 0)
+            if (*pLwIPTCPDataTaskHandle == NULL)
             {
                 pthread_mutex_lock(&task_mutex); // 临界区保护
-                if (pthread_create(&lwipDataTaskThread, NULL, lwip_data_TASK, NULL) == 0) {
+                if (pthread_create(pLwIPTCPDataTaskHandle, NULL, lwip_data_TASK, NULL) == 0) {
                     printf("create lwip_data_TASK success\n");
+                    zlog_info(debug_out,"create lwip_data_TASK success\n");
                 } else {
                     printf("create lwip_data_TASK failed\n");
+                    zlog_info(debug_out,"create lwip_data_TASK failed\n");
                 }
                 pthread_mutex_unlock(&task_mutex);
             }

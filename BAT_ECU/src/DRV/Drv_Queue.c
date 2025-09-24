@@ -1,6 +1,7 @@
 #include "Drv_Queue.h"
 #include <pthread.h>
 #include <semaphore.h>
+#include "main.h"
 #include "./FUNC/Func_ECUAndBCUCommunication.h"
 /*
  * 函数名称：queue_destroy
@@ -11,6 +12,7 @@
 void queue_init(queue_pst pQueue)
 {
 	pthread_mutex_init(&pQueue->mutex_lock, NULL);
+	pthread_cond_init(&pQueue->cond_not_empty, NULL);
 	pQueue->Count = 0;
 	pQueue->pHeader = 0;
 }
@@ -75,6 +77,8 @@ int queue_post(queue_pst pQueue,unsigned char* pBuffer,int Length)
 	if(pQueue->Count >= QUEUE_DEEPTH)
 	{
 		ret = -1;
+		// printf("queue is full\n");
+ 
 	}
 	else
 	{
@@ -86,6 +90,7 @@ int queue_post(queue_pst pQueue,unsigned char* pBuffer,int Length)
 		memcpy(pQueue->Data[IndexAt].Buffer,pBuffer,pQueue->Data[IndexAt].Length);
 		pQueue->Count++ ;
 		ret = 0;
+		pthread_cond_signal(&pQueue->cond_not_empty);
 	}
 	pthread_mutex_unlock(&pQueue->mutex_lock);
 	return ret ;
@@ -98,31 +103,61 @@ int queue_post(queue_pst pQueue,unsigned char* pBuffer,int Length)
  *                     pBuffer：缓冲区
  *                     Length：长度
  * 输出参数：0成功获取，其他失败
- */
-int queue_pend(queue_pst pQueue,unsigned char* pBuffer,int *Length)
+//  */
+// int queue_pend(queue_pst pQueue,unsigned char* pBuffer,int *Length)
+// {
+// 	int ret = 0;
+// 	*Length = 0;
+// 	pthread_mutex_lock(&pQueue->mutex_lock);
+// 	if(pQueue->Count <= 0)
+// 	{
+// 		pthread_cond_wait(&pQueue->cond_not_empty, &pQueue->mutex_lock);
+// 		ret = -1;
+// 		// printf("queue is empty\n");
+// 	}
+// 	else
+// 	{
+// 		memcpy(pBuffer,pQueue->Data[pQueue->pHeader].Buffer,pQueue->Data[pQueue->pHeader].Length);
+// 		 *Length = pQueue->Data[pQueue->pHeader].Length;
+// 		if(++pQueue->pHeader>=QUEUE_DEEPTH)
+// 			pQueue->pHeader = 0;
+// 		pQueue->Count-- ;
+// 		ret = 0;
+// 	}
+// 	pthread_mutex_unlock(&pQueue->mutex_lock);
+// 	// printf("queue_pend pQueue->Count: %d\n",pQueue->Count);
+// 	return ret ;
+// }
+
+
+#include "errno.h"
+int queue_pend(queue_pst pQueue, unsigned char* pBuffer, int *Length)
 {
-	int ret = 0;
-	*Length = 0;
-	pthread_mutex_lock(&pQueue->mutex_lock);
-	if(pQueue->Count <= 0)
-	{
-		ret = -1;
-	}
-	else
-	{
-		memcpy(pBuffer,pQueue->Data[pQueue->pHeader].Buffer,pQueue->Data[pQueue->pHeader].Length);
-		 *Length = pQueue->Data[pQueue->pHeader].Length;
-		if(++pQueue->pHeader>=QUEUE_DEEPTH)
-			pQueue->pHeader = 0;
-		pQueue->Count-- ;
-		ret = 0;
-	}
-	pthread_mutex_unlock(&pQueue->mutex_lock);
-	if((sem_post(&send_sem) !=0))
-	{
-		printf("sem_post error");
-	}
-	return ret ;
+    int ret = 0;
+    *Length = 0;
+
+    pthread_mutex_lock(&pQueue->mutex_lock);
+	// printf("[queue_pend] 当前Count = %d\n", pQueue->Count);
+    while (pQueue->Count <= 0)
+    {
+        struct timespec ts;
+        clock_gettime(CLOCK_REALTIME, &ts);
+        ts.tv_sec += 0.0015;  // 最多等待 1 秒钟
+
+        int wait_ret = pthread_cond_timedwait(&pQueue->cond_not_empty, &pQueue->mutex_lock, &ts);
+        if (wait_ret == ETIMEDOUT) {
+            pthread_mutex_unlock(&pQueue->mutex_lock);
+            return -2;  // 超时返回
+        }
+    }
+
+    memcpy(pBuffer, pQueue->Data[pQueue->pHeader].Buffer, pQueue->Data[pQueue->pHeader].Length);
+    *Length = pQueue->Data[pQueue->pHeader].Length;
+
+    if (++pQueue->pHeader >= QUEUE_DEEPTH)
+        pQueue->pHeader = 0;
+    pQueue->Count--;
+
+    pthread_mutex_unlock(&pQueue->mutex_lock);
+    return ret;
 }
-
-

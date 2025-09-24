@@ -22,6 +22,14 @@
 #define CAN 0x18
 #define CTRLZ 0xFF
 
+// #define SOH     0x01    //128字节数据包帧头
+// #define STX     0x02    //1024字节数据包帧头
+// #define EOT     0x04    //结束传输
+// #define ACK     0x06    //应答回应
+// #define NAK     0x15    //错误应该，重传数据
+// #define CAN     0x18    //取消传输
+// #define CTRLZ   0x1A    //数据填充
+// #define HSC     0x43    //握手
 
 
 // #define ACOTACANID				0x61A

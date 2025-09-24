@@ -1,10 +1,11 @@
 #include "Can_MessageSend_Task.h"
 #include "./FUNC/Func_ECUAndBCUCommunication.h"
+#include "./FUNC/Func_ECUAndBMUCommunication.h"
 #include "zlog.h"
 #include"Drv_ZLog.h"
-pthread_t CAN0Send_TASKHandle;
-pthread_t CAN1Send_TASKHandle;
-pthread_t CAN2Send_TASKHandle;
+// pthread_t CAN0Send_TASKHandle;
+// pthread_t CAN1Send_TASKHandle;
+// pthread_t CAN2Send_TASKHandle;
 
 // void CAN0SendTaskCreate(void)
 // {
@@ -22,11 +23,11 @@ pthread_t CAN2Send_TASKHandle;
 //     } while (ret != 0);
 // }
 
-void CAN1SendTaskCreate(void)
+/*void CAN1SendTaskCreate(void)
 {
     int ret;
     do {
-        ret = pthread_create(&CAN0Send_TASKHandle, NULL,thread_can1_send , NULL);
+        ret = pthread_create(&CAN0Send_TASKHandle, NULL,Func_thread_can1_send , NULL);
         if (ret != 0) {
             zlog_info(debug_out,"Failed to create SerialLedTask thread : %s",strerror(ret));
             sleep(1); 
@@ -37,12 +38,12 @@ void CAN1SendTaskCreate(void)
         }
     } while (ret != 0);
 }
-
+*/
 // void CAN2SendTaskCreate(void)
 // {
 //     int ret;
 //     do {
-//         ret = pthread_create(&CAN2Send_TASKHandle, NULL,thread_can2_send , NULL);
+//         ret = pthread_create(&CAN2Send_TASKHandle, NULL,Func_thread_can2_send , NULL);
 //         if (ret != 0) {
 //             zlog_info(debug_out,"Failed to create SerialLedTask thread : %s",strerror(ret));
 //             sleep(1); 

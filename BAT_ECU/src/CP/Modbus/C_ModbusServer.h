@@ -12,8 +12,12 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <sys/select.h>
+#include <sys/ioctl.h>
+#include <net/if.h>
+#include <net/if.h>
 
-extern uint16_t *modbusBuff_C;
+
+extern uint16_t *modbusBuff;
 
 
 

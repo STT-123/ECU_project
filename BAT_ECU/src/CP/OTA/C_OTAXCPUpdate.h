@@ -16,6 +16,12 @@
 #include <sys/stat.h>
 #include <sys/time.h>
 #include "./GLB/G_GloabalVariable.h"
+#include <linux/types.h>
+#include <linux/can.h>
+#include <linux/can/raw.h>
+#include <linux/netlink.h>
+#include <linux/rtnetlink.h>
+#include <linux/fs.h>
 #define XCPCANID			0
 #define BMUXCPCANID			2
 #define BCUXCPCANID			1
@@ -47,5 +53,5 @@ typedef struct
 
 extern XCPStatus xcpstatus;
 void CP_XCP_OTA(OTAObject* pOTA);
-// void FinshhBCUBMUOtaAndCleanup(OTAObject* pOTA);
+void FinshhBCUBMUOtaAndCleanup(OTAObject* pOTA);
 #endif

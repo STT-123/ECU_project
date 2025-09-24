@@ -83,6 +83,6 @@ typedef struct
 
 
 extern UDSStatus udsstatus;
-void CP_AC_OTA(OTAObject* pOTA);
+void CP_UDS_OTA(OTAObject* pOTA);
 void FinishACOtaAndCleanup(OTAObject* pOTA);
 #endif

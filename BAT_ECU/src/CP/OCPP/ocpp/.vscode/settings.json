@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "message_queue.h": "c",
+        "ocpp_messages.h": "c"
+    }
+}

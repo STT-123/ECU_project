@@ -64,14 +64,14 @@ void my_epoll_dealwith(void)
                     event =*(struct Myeventdata*)events[i].data.ptr;
                     event.fun_handle(events[i].data.ptr);
                     lseek(event.fd,0,SEEK_SET);           //清中断，epoll采用默认LT模式，如果不管会一直触发。
-                    // gpio_read_epoll(myep_tast.task[j].gpiopin,events[i].data.fd,&test_val);
+                    // HAL_GPIO_read_epoll(myep_tast.task[j].gpiopin,events[i].data.fd,&test_val);
                 //  lseek(events[i].data.fd,0,SEEK_SET);
                 //     for( j = 0; j < myep_tast.task_num; j++)         //修改为利用epoll的void * ptr 传入自定义结构体。定义出是gpio事件还是can事件，还是485事件，
                 //     {
                 //         if(events[i].data.fd == myep_tast.task[j].fd)
                 //         {
                 //             myep_tast.task[j].func_handle(&myep_tast.task[j].gpiopin);
-                //             gpio_read_epoll(myep_tast.task[j].gpiopin,events[i].data.fd,&test_val);
+                //             HAL_GPIO_read_epoll(myep_tast.task[j].gpiopin,events[i].data.fd,&test_val);
                 //             break;
                 //         }
                 //     }

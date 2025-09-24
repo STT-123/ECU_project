@@ -7,6 +7,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <stdio.h>
+char *Drv_my_strdup(const char *str);
+int Drv_remove_directory(const char *path);
 
-int remove_directory(const char *path);
 #endif

@@ -2,9 +2,11 @@
 #include "../GLB/G_GloabalVariable.h"
 #include "./DRV/Drv_ECUAndBCUCommunication.h"
 #include "./GLB/G_AddressDefinition.h"
-#include "../CP/BMS/bms/bms_cortol.h"
+// #include "../CP/BMS/bms/bms_cortol.h"
 #include "./Xmodem/C_OTADataMonitor.h"
 #include "./Xmodem/C_OTAStateMonitor.h"
+#include "./CP/BMS/C_BMSAnalysis.h"
+#include "./DRV/LOG/Drv_ZLog.h"
 #include "main.h"
 flashDataType flashData;
 appDataType appData[SUP_MAX_BLOCK + 1];
@@ -52,7 +54,7 @@ signed char udsServer3E(unsigned int id)
 	CanMes.Data[1] = 0x3e;
 	CanMes.Data[2] = 0x80;
 
-	TStatus = can1_send(&CanMes);
+	TStatus = Drv_can0_send(&CanMes);
 	 usleep(100*1000);
 	 usleep(100*1000);
 	if(TStatus ==0)
@@ -85,12 +87,12 @@ signed char udsServer10(unsigned int id, uint8_t session)
     udsstatus.udsServerID = 0x10;
     udsstatus.udsSession = session;
 
-	TStatus = can1_send(&CanMes);	
+	TStatus = Drv_can0_send(&CanMes);	
 	if(TStatus ==0)
 	{	//接收CAN消息，秘钥，是否超时或者否定回复
 		memset(&canmsg, 0, sizeof(CAN_MESSAGE));
-//		usleep(5);
-		UStatus = queue_pend(&Queue_Can1RevData, &canmsg,&err);
+		usleep(80*1000);
+		UStatus = queue_pend(&Queue_Can0RevData, &canmsg,&err);
 		if(UStatus ==0)
 		{
 			printf("canmsg.Data[0] :%02x\r\n", canmsg.Data[0] );
@@ -165,12 +167,12 @@ signed char udsServer27(unsigned int id, uint8_t session)
 //		printf(" CanMes.Data[6]: 0x%08X\n",  CanMes.Data[6]);
 //		printf(" CanMes.Data[7]: 0x%08X\n",  CanMes.Data[7]);
 
-	    TStatus = can1_send(&CanMes);
+	    TStatus = Drv_can0_send(&CanMes);
 		if(TStatus ==0)
 		{	//接收CAN消息，秘钥，是否超时或者否定回复
 			memset(&canmsg, 0, sizeof(CAN_MESSAGE));
-			usleep(2*1000);
-			UStatus = queue_pend(&Queue_Can1RevData, &canmsg,&err);
+			usleep(80*1000);
+			UStatus = queue_pend(&Queue_Can0RevData, &canmsg,&err);
 			if(UStatus ==0)
 			{
 				printf("canmsg.Data[1] :%02x\r\n", canmsg.Data[0] );
@@ -264,12 +266,12 @@ signed char udsServer27(unsigned int id, uint8_t session)
 //		printf(" CanMes_1.Data[6]: 0x%08X\n",  CanMes_1.Data[6]);
 //		printf(" CanMes_1.Data[7]: 0x%08X\n",  CanMes_1.Data[7]);
 
-		TStatus = can1_send(&CanMes_1);
+		TStatus = Drv_can0_send(&CanMes_1);
 		if(TStatus ==0)
 		{	//接收CAN消息，秘钥，是否超时或者否定回复
 			memset(&canmsg, 0, sizeof(CAN_MESSAGE));
-//			usleep(5);
-			UStatus = queue_pend(&Queue_Can1RevData, &canmsg,&err);
+			usleep(80*1000);
+			UStatus = queue_pend(&Queue_Can0RevData, &canmsg,&err);
 			if(UStatus ==0)
 			{
 				printf("canmsg.Data[1] :%d\r\n", canmsg.Data[1] );
@@ -354,17 +356,19 @@ signed char udsServer31(unsigned int id, uint32_t addr, uint32_t len)
 
 	CanMes.Data[7] = addr>>24;
 
+	printf("send can0 CanMes:%x %x %x %x %x %x %x %x %x\n",CanMes.ID,CanMes.Data[0],CanMes.Data[1],CanMes.Data[2],CanMes.Data[3],CanMes.Data[4],CanMes.Data[5],CanMes.Data[6],CanMes.Data[7]);
 
     udsstatus.udsServerID = 0x31;
     udsstatus.udsSession = 0x00;
-    while((queue_pend(&Queue_Can1RevData, &canmsg,&err)));//过滤到其他消息
-    TStatus = can1_send(&CanMes);
+    // while((queue_pend(&Queue_Can0RevData, &canmsg,&err)));//过滤到其他消息
+	queue_clear(&Queue_Can0RevData);
+    TStatus = Drv_can0_send(&CanMes);
     if(TStatus ==0)
     {
 
 		memset(&canmsg, 0, sizeof(CAN_MESSAGE));
-//		usleep(5);
-		UStatus = queue_pend(&Queue_Can1RevData, &canmsg,&err);
+		usleep(300*1000);
+		UStatus = queue_pend(&Queue_Can0RevData, &canmsg,&err);
 		if(UStatus ==0)
 		{
 			printf("canmsg.Data[0] :%d\r\n", canmsg.Data[0] );
@@ -409,56 +413,113 @@ signed char udsServer31(unsigned int id, uint32_t addr, uint32_t len)
 	CanMes_1.Data[5] = len>>16;
 	CanMes_1.Data[6] = len>>8;
 	CanMes_1.Data[7] = len>>0;
+	printf("send can0 CanMes_1: %x %x %x %x %x %x %x %x\n",CanMes_1.ID,CanMes_1.Data[0],CanMes_1.Data[1],CanMes_1.Data[2],CanMes_1.Data[3],CanMes_1.Data[4],CanMes_1.Data[5],CanMes_1.Data[6]);
 
 
-    TStatus = can1_send(&CanMes_1);
-    if(TStatus ==0)
-    {
-    	//接收CAN消息，秘钥，是否超时或者否定回复
+//     TStatus = Drv_can0_send(&CanMes_1);
+//     if(TStatus ==0)
+//     {
+//     	//接收CAN消息，秘钥，是否超时或者否定回复
+// 		memset(&canmsg, 0, sizeof(CAN_MESSAGE));
+// 		usleep(500*1000);
+// 		UStatus = queue_pend(&Queue_Can0RevData, &canmsg,&err);
+// 		if(UStatus == 0)
+// 		{
+// //			usleep(100);
+// 			printf("canmsg.Data[1] :%d\r\n", canmsg.Data[1] );
+// 			if (canmsg.Data[1] == 0x71) {
+
+// 				udsstatus.udsReturnSuccess = true;
+// 				return 0;
+// 			}
+// 			else
+// 			{
+// 				printf("udsServer31 Return_2 false\r\n");
+// 				udsstatus.udsReturnSuccess = false;
+// 				udsstatus.ErrorReg = 12;
+// 				return 1;
+// 			}
+
+
+// 		}
+// 		else
+// 		{
+// 			printf("udsstatus.ErrorReg = 13\r\n");
+// 			udsstatus.ErrorReg = 13;
+// 			printf("canrevmsg0.Data[0] :%d\r\n", canmsg.Data[0] );
+// 			printf("canrevmsg1.Data[0] :%d\r\n", canmsg.Data[1] );
+// 			printf("canrevmsg2.Data[0] :%d\r\n", canmsg.Data[2] );
+// 			printf("canrevmsg3.Data[0] :%d\r\n", canmsg.Data[3] );
+// 			printf("canrevmsg4.Data[0] :%d\r\n", canmsg.Data[4] );
+// 			printf("canrevmsg5.Data[0] :%d\r\n", canmsg.Data[5] );
+// 			printf("canrevmsg6.Data[0] :%d\r\n", canmsg.Data[6] );
+// 			printf("canrevmsg7.Data[0] :%d\r\n", canmsg.Data[7] );
+// 			return 1;
+// 		}
+
+
+//     }
+// 	else
+// 	{
+// 		printf("udsstatus.ErrorReg = 14\r\n");
+// 		udsstatus.ErrorReg = 14;
+// 		return 1;
+// 	}
+
+
+	TStatus = Drv_can0_send(&CanMes_1);
+	if (TStatus == 0)
+	{
+		// 接收CAN消息，秘钥，是否超时或者否定回复
 		memset(&canmsg, 0, sizeof(CAN_MESSAGE));
-		UStatus = queue_pend(&Queue_Can1RevData, &canmsg,&err);
-		if(UStatus == 0)
-		{
-//			usleep(100);
-			printf("canmsg.Data[1] :%d\r\n", canmsg.Data[1] );
-			if (canmsg.Data[1] == 0x71) {
+		usleep(50 * 1000);
 
-				udsstatus.udsReturnSuccess = true;
-				return 0;
+		int retry_count = 0;
+		do {
+			UStatus = queue_pend(&Queue_Can0RevData, &canmsg, &err);
+			if (UStatus == 0)
+			{
+				printf("canmsg.Data[1] :%d\r\n", canmsg.Data[1]);
+				if (canmsg.Data[1] == 0x71)
+				{
+					udsstatus.udsReturnSuccess = true;
+					return 0;
+				}
+				else
+				{
+					printf("udsServer31 Return_2 false\r\n");
+					udsstatus.udsReturnSuccess = false;
+					udsstatus.ErrorReg = 12;
+					return 1;
+				}
 			}
 			else
 			{
-				printf("udsServer31 Return_2 false\r\n");
-				udsstatus.udsReturnSuccess = false;
-				udsstatus.ErrorReg = 12;
-				return 1;
+				retry_count++;
+				usleep(50 * 1000);  // 等待100ms
 			}
+		} while (UStatus != 0 && retry_count < 10);
 
-
-		}
-		else
-		{
-			printf("udsstatus.ErrorReg = 13\r\n");
-			udsstatus.ErrorReg = 13;
-			printf("canrevmsg0.Data[0] :%d\r\n", canmsg.Data[0] );
-			printf("canrevmsg1.Data[0] :%d\r\n", canmsg.Data[1] );
-			printf("canrevmsg2.Data[0] :%d\r\n", canmsg.Data[2] );
-			printf("canrevmsg3.Data[0] :%d\r\n", canmsg.Data[3] );
-			printf("canrevmsg4.Data[0] :%d\r\n", canmsg.Data[4] );
-			printf("canrevmsg5.Data[0] :%d\r\n", canmsg.Data[5] );
-			printf("canrevmsg6.Data[0] :%d\r\n", canmsg.Data[6] );
-			printf("canrevmsg7.Data[0] :%d\r\n", canmsg.Data[7] );
-			return 1;
-		}
-
-
-    }
+		// 超过重试次数仍失败
+		printf("udsstatus.ErrorReg = 13\r\n");
+		udsstatus.ErrorReg = 13;
+		printf("canrevmsg0.Data[0] :%d\r\n", canmsg.Data[0]);
+		printf("canrevmsg1.Data[0] :%d\r\n", canmsg.Data[1]);
+		printf("canrevmsg2.Data[0] :%d\r\n", canmsg.Data[2]);
+		printf("canrevmsg3.Data[0] :%d\r\n", canmsg.Data[3]);
+		printf("canrevmsg4.Data[0] :%d\r\n", canmsg.Data[4]);
+		printf("canrevmsg5.Data[0] :%d\r\n", canmsg.Data[5]);
+		printf("canrevmsg6.Data[0] :%d\r\n", canmsg.Data[6]);
+		printf("canrevmsg7.Data[0] :%d\r\n", canmsg.Data[7]);
+		return 1;
+	}
 	else
 	{
 		printf("udsstatus.ErrorReg = 14\r\n");
 		udsstatus.ErrorReg = 14;
 		return 1;
 	}
+
 
 }
 
@@ -488,20 +549,20 @@ signed char udsServer31_2(unsigned int id, uint32_t addr)
 	CanMes.Data[4] = 0xff;
 	CanMes.Data[5] = 0x02;
 	CanMes.Data[6] = 0x44;
-
 	CanMes.Data[7] = addr>>24;
+
 
 
     udsstatus.udsServerID = 0x31;
     udsstatus.udsSession = 0x00;
 
-   TStatus = can1_send(&CanMes);
+   TStatus = Drv_can0_send(&CanMes);
     if(TStatus ==0)
     {
 
 		memset(&canmsg, 0, sizeof(CAN_MESSAGE));
-//		usleep(5);
-		UStatus = queue_pend(&Queue_Can1RevData, &canmsg,&err);
+		usleep(300*1000);
+		UStatus = queue_pend(&Queue_Can0RevData, &canmsg,&err);
 		if(UStatus ==0)
 		{
 			printf("canmsg.Data[0] :%d\r\n", canmsg.Data[0] );
@@ -540,64 +601,112 @@ signed char udsServer31_2(unsigned int id, uint32_t addr)
 	CanMes_1.Data[1] = addr>>16;
 	CanMes_1.Data[2] = addr>>8;
 	CanMes_1.Data[3] = addr>>0;
-	printf("CanMes_1.Data[0]: 0x%08X\n", CanMes_1.Data[0]);
-	printf("CanMes_1.Data[1]: 0x%08X\n", CanMes_1.Data[1]);
-	printf("CanMes_1.Data[2]: 0x%08X\n", CanMes_1.Data[2]);
-	printf("CanMes_1.Data[3]: 0x%08X\n", CanMes_1.Data[3]);
-	printf(" CanMes_1.Data[4]: 0x%08X\n",  CanMes_1.Data[4]);
-	printf(" CanMes_1.Data[5]: 0x%08X\n",  CanMes_1.Data[5]);
-	printf(" CanMes_1.Data[6]: 0x%08X\n",  CanMes_1.Data[6]);
-	printf(" CanMes_1.Data[7]: 0x%08X\n",  CanMes_1.Data[7]);
-	TStatus = can1_send(&CanMes_1);
-	if(TStatus ==0)
-	{
-   	//接收CAN消息，秘钥，是否超时或者否定回复
-		memset(&canmsg, 0, sizeof(CAN_MESSAGE));
-//		usleep(5);
-		UStatus = queue_pend(&Queue_Can1RevData, &canmsg,&err);
-		if(UStatus == 0)
-		{
-			printf("canmsg.Data[1] :%d\r\n", canmsg.Data[1] );
-			if (canmsg.Data[1] == 0x71) {
+	printf("CanMes_1.Data[0]: %x\n", CanMes_1.Data[0]);
+	printf("CanMes_1.Data[1]: %x\n", CanMes_1.Data[1]);
+	printf("CanMes_1.Data[2]: %x\n", CanMes_1.Data[2]);
+	printf("CanMes_1.Data[3]: %x\n", CanMes_1.Data[3]);
+	printf(" CanMes_1.Data[4]: %x\n",  CanMes_1.Data[4]);
+	printf(" CanMes_1.Data[5]: %x\n",  CanMes_1.Data[5]);
+	printf(" CanMes_1.Data[6]: %x\n",  CanMes_1.Data[6]);
+	printf(" CanMes_1.Data[7]: %x\n",  CanMes_1.Data[7]);
+// 	TStatus = Drv_can0_send(&CanMes_1);
+// 	if(TStatus ==0)
+// 	{
+//    	//接收CAN消息，秘钥，是否超时或者否定回复
+// 		memset(&canmsg, 0, sizeof(CAN_MESSAGE));
+// 		usleep(300*1000);
+// 		UStatus = queue_pend(&Queue_Can0RevData, &canmsg,&err);
+// 		if(UStatus == 0)
+// 		{
+// 			printf("canmsg.Data[1] :%d\r\n", canmsg.Data[1] );
+// 			if (canmsg.Data[1] == 0x71) {
 
-				udsstatus.udsReturnSuccess = true;
-				return 0;
+// 				udsstatus.udsReturnSuccess = true;
+// 				return 0;
+// 			}
+// 			else
+// 			{
+// 				printf("udsServer31_2 Return_2 false\r\n");
+// 				udsstatus.udsReturnSuccess = false;
+// 				udsstatus.ErrorReg = 18;
+// 				return 1;
+// 			}
+
+
+// 		}
+
+// 		else
+// 		{
+// 			printf("udsstatus.ErrorReg = 19\r\n");
+// //			udsstatus.ErrorReg = 19;
+// //			printf("canrevmsg0.Data[0] :%d\r\n", canmsg.Data[0] );
+// //			printf("canrevmsg1.Data[0] :%d\r\n", canmsg.Data[1] );
+// //			printf("canrevmsg2.Data[0] :%d\r\n", canmsg.Data[2] );
+// //			printf("canrevmsg3.Data[0] :%d\r\n", canmsg.Data[3] );
+// //			printf("canrevmsg4.Data[0] :%d\r\n", canmsg.Data[4] );
+// //			printf("canrevmsg5.Data[0] :%d\r\n", canmsg.Data[5] );
+// //			printf("canrevmsg6.Data[0] :%d\r\n", canmsg.Data[6] );
+// //			printf("canrevmsg7.Data[0] :%d\r\n", canmsg.Data[7] );
+// //			return 1;
+// 		}
+
+
+
+//    }
+// 	else
+// 	{
+// 		printf("udsstatus.ErrorReg = 20\r\n");
+// 		udsstatus.ErrorReg = 20;
+// 		return 1;
+// 	}
+
+	TStatus = Drv_can0_send(&CanMes_1);
+	if (TStatus == 0)
+	{
+		// 接收CAN消息，秘钥，是否超时或者否定回复
+		memset(&canmsg, 0, sizeof(CAN_MESSAGE));
+		usleep(300 * 1000);  // 初始等待 300ms
+
+		int retry_count = 0;
+		while (retry_count < 10)
+		{
+			UStatus = queue_pend(&Queue_Can0RevData, &canmsg, &err);
+			if (UStatus == 0)
+			{
+				printf("canmsg.Data[1] :%d\r\n", canmsg.Data[1]);
+				if (canmsg.Data[1] == 0x71)
+				{
+					udsstatus.udsReturnSuccess = true;
+					return 0;
+				}
+				else
+				{
+					printf("udsServer31_2 Return_2 false\r\n");
+					udsstatus.udsReturnSuccess = false;
+					udsstatus.ErrorReg = 18;
+					return 1;
+				}
 			}
 			else
 			{
-				printf("udsServer31_2 Return_2 false\r\n");
-				udsstatus.udsReturnSuccess = false;
-				udsstatus.ErrorReg = 18;
-				return 1;
+				retry_count++;
+				usleep(50 * 1000);  // 重试前等待100ms
 			}
-
-
 		}
 
-		else
-		{
-			printf("udsstatus.ErrorReg = 19\r\n");
-//			udsstatus.ErrorReg = 19;
-//			printf("canrevmsg0.Data[0] :%d\r\n", canmsg.Data[0] );
-//			printf("canrevmsg1.Data[0] :%d\r\n", canmsg.Data[1] );
-//			printf("canrevmsg2.Data[0] :%d\r\n", canmsg.Data[2] );
-//			printf("canrevmsg3.Data[0] :%d\r\n", canmsg.Data[3] );
-//			printf("canrevmsg4.Data[0] :%d\r\n", canmsg.Data[4] );
-//			printf("canrevmsg5.Data[0] :%d\r\n", canmsg.Data[5] );
-//			printf("canrevmsg6.Data[0] :%d\r\n", canmsg.Data[6] );
-//			printf("canrevmsg7.Data[0] :%d\r\n", canmsg.Data[7] );
-//			return 1;
-		}
-
-
-
-   }
+		// 超过三次仍然接收失败
+		// printf("queue_pend 失败超过3次，退出，udsstatus.ErrorReg = 19\r\n");
+		udsstatus.udsReturnSuccess = false;
+		// udsstatus.ErrorReg = 19;
+		return 1;
+	}
 	else
 	{
-		printf("udsstatus.ErrorReg = 20\r\n");
+		printf("Drv_can0_send 发送失败，udsstatus.ErrorReg = 20\r\n");
 		udsstatus.ErrorReg = 20;
 		return 1;
 	}
+
 
 }
 
@@ -640,13 +749,13 @@ signed char udsServer34(unsigned int id, uint32_t addr,uint32_t len)
     udsstatus.udsServerID = 0x34;
     udsstatus.udsSession = 0x00;
 
-   TStatus = can1_send(&CanMes);
+   TStatus = Drv_can0_send(&CanMes);
 	if(TStatus ==0)
 	{
 		//接收CAN消息，秘钥，是否超时或者否定回复
 		memset(&canmsg, 0, sizeof(CAN_MESSAGE));
-//		usleep(5);
-		UStatus = queue_pend(&Queue_Can1RevData, &canmsg,&err);
+		usleep(80*1000);
+		UStatus = queue_pend(&Queue_Can0RevData, &canmsg,&err);
 		if(UStatus ==0)
 		{
 			printf("canmsg.Data[0] :%d\r\n", canmsg.Data[0] );
@@ -698,13 +807,13 @@ signed char udsServer34(unsigned int id, uint32_t addr,uint32_t len)
 	printf(" 1111CanMes.Data[5]:%02x\r\n",CanMes_1.Data[5]);
 	printf(" 1111CanMes.Data[6]:%02x\r\n",CanMes_1.Data[6]);
 	printf(" 1111CanMes.Data[7]:%02x\r\n",CanMes_1.Data[7]);
-    TStatus = can1_send(&CanMes_1);
+    TStatus = Drv_can0_send(&CanMes_1);
 	if(TStatus ==0)
 	{
 		//接收CAN消息，秘钥，是否超时或者否定回复
 		memset(&canmsg, 0, sizeof(CAN_MESSAGE));
-//		usleep(5);
-		UStatus = queue_pend(&Queue_Can1RevData, &canmsg,&err);
+		usleep(80*1000);
+		UStatus = queue_pend(&Queue_Can0RevData, &canmsg,&err);
 		if(UStatus == 0)
 		{
 			printf("canmsg.Data[1] :%d\r\n", canmsg.Data[1] );
@@ -765,6 +874,7 @@ signed char  udsServer36(uint32_t id, const char *filename,FILE *rfile) {
     // 打开文件
     rfile = fopen(filename, "rb");
     if (rfile == NULL) {
+		printf("open file error\r\n");
         udsstatus.ErrorReg = 1;
         return 1;
     }
@@ -834,15 +944,15 @@ signed char  udsServer36(uint32_t id, const char *filename,FILE *rfile) {
 		printf(" CanMes.Data[7]:%02x\r\n",CanMes.Data[7]);
 
 //        TStatus = xQueueSend(xQueue_forward_can_out2in,&CanMes,1000/portTICK_PERIOD_MS);
-		int reva = can1_send(&CanMes);
+		int reva = Drv_can0_send(&CanMes);
 		if(reva == 0)
 		{
 			//发送成功
 
 			//接收CAN消息，秘钥，是否超时或者否定回复
 			memset(&canmsg, 0, sizeof(CAN_MESSAGE));
-//    		usleep(5);
-			UStatus = queue_pend(&Queue_Can1RevData, &canmsg,&err);
+			usleep(80*1000);
+			UStatus = queue_pend(&Queue_Can0RevData, &canmsg,&err);
 			if(UStatus == 0)
 			{
 				//usleep(50);
@@ -884,20 +994,20 @@ signed char  udsServer36(uint32_t id, const char *filename,FILE *rfile) {
 		}
 		else
 		{
-			usleep(2*1000);
+			usleep(10*1000);
 			//发送失败
 			printf("send failed, reva: %d\r\n",reva);
 			for (int i = 0; i < 3; i++) {
-				reva = can1_send(&CanMes);
-				usleep(2*1000);
+				reva = Drv_can0_send(&CanMes);
+				usleep(10*1000);
 				if (reva == 0) {
 					// 发送成功
 
 
 					//接收CAN消息，秘钥，是否超时或者否定回复
 					memset(&canmsg, 0, sizeof(CAN_MESSAGE));
-		//    		usleep(5);
-					UStatus = queue_pend(&Queue_Can1RevData, &canmsg,&err);
+					usleep(80*1000);
+					UStatus = queue_pend(&Queue_Can0RevData, &canmsg,&err);
 					if(UStatus == 0)
 					{
 						//usleep(50);
@@ -952,24 +1062,24 @@ signed char  udsServer36(uint32_t id, const char *filename,FILE *rfile) {
         // 循环发送每7字节的数据帧
 //        uint8_t frameBuf[FRAME_SIZE];
         for (uint16_t i = 0; i < zhengshu; i++) {
-        	usleep(2*1000);
+        	usleep(10*1000);
 
         	CanMes.Data[0] = (0x20 | (byte & 0x0F));
             memcpy(&CanMes.Data[1], &fileBuffer[4 + i * 7], 7);
 //            memcpy(CanMes.Data, frameBuf, 8);
-			int reva = can1_send(&CanMes);
+			int reva = Drv_can0_send(&CanMes);
 			if(reva == 0)
 			{
 				//发送成功
 			}
 			else
 			{
-				usleep(2*1000);
+				usleep(10*1000);
 				//发送失败
 				printf("send failed, reva: %d\r\n",reva);
 				for (int i = 0; i < 3; i++) {
-					reva = can1_send(&CanMes);
-					usleep(2*1000);
+					reva = Drv_can0_send(&CanMes);
+					usleep(10*1000);
 					if (reva == 0) {
 						// 发送成功
 						break;
@@ -1011,7 +1121,7 @@ signed char  udsServer36(uint32_t id, const char *filename,FILE *rfile) {
     		printf(" CanMes_1.Data[5]:%02x\r\n",CanMes_1.Data[5]);
     		printf(" CanMes_1.Data[6]:%02x\r\n",CanMes_1.Data[6]);
     		printf(" CanMes_1.Data[7]:%02x\r\n",CanMes_1.Data[7]);
-			int reva = can1_send(&CanMes_1);
+			int reva = Drv_can0_send(&CanMes_1);
 			if(reva == 0)
 			{
 				//发送成功
@@ -1022,8 +1132,8 @@ signed char  udsServer36(uint32_t id, const char *filename,FILE *rfile) {
 				//发送失败
 				printf("send failed, reva: %d\r\n",reva);
 				for (int i = 0; i < 3; i++) {
-					reva = can1_send(&CanMes_1);
-					usleep(2*1000);
+					reva = Drv_can0_send(&CanMes_1);
+					usleep(10*1000);
 					if (reva == 0) {
 						// 发送成功
 						break;
@@ -1035,17 +1145,12 @@ signed char  udsServer36(uint32_t id, const char *filename,FILE *rfile) {
 					}
 				}
 			}
-//            TStatus = xQueueSend(xQueue_forward_can_out2in,&CanMes_1,1000/portTICK_PERIOD_MS);
-//            if (TStatus != pdPASS) {
-//                f_close(rfile);
-//                return 1;
-//            }
             udsstatus.sendCount += yushu+1;
         }
 
         // 等待响应
-        //usleep(300);
-        UStatus = queue_pend(&Queue_Can1RevData, &canmsg,&err);
+		usleep(150*1000);
+        UStatus = queue_pend(&Queue_Can0RevData, &canmsg,&err);
 		if(UStatus == 0)
 		{
 			printf("canrev0.Data[0] :%x\r\n", canmsg.Data[0] );
@@ -1077,6 +1182,50 @@ signed char  udsServer36(uint32_t id, const char *filename,FILE *rfile) {
 			fclose(rfile);
 			return 1;
 		}
+
+
+
+		// int retry_count = 0;
+		// while (retry_count < 10)
+		// {
+		// 	UStatus = queue_pend(&Queue_Can0RevData, &canmsg, &err);
+		// 	if (UStatus == 0)
+		// 	{
+		// 		// 打印接收到的CAN数据
+		// 		printf("canrev0.Data[0] :%x\r\n", canmsg.Data[0]);
+		// 		printf("canrev1.Data[0] :%x\r\n", canmsg.Data[1]);
+		// 		printf("canrev2.Data[0] :%x\r\n", canmsg.Data[2]);
+		// 		printf("canrev3.Data[0] :%x\r\n", canmsg.Data[3]);
+		// 		printf("canrev4.Data[0] :%x\r\n", canmsg.Data[4]);
+		// 		printf("canrev5.Data[0] :%x\r\n", canmsg.Data[5]);
+		// 		printf("canrev6.Data[0] :%x\r\n", canmsg.Data[6]);
+		// 		printf("canrev7.Data[0] :%x\r\n", canmsg.Data[7]);
+
+		// 		if (canmsg.Data[1] == 0x76)
+		// 		{
+		// 			udsstatus.udsReturnSuccess = true;
+		// 			return 0;
+		// 		}
+		// 		else
+		// 		{
+		// 			printf("udsServer36 Return false ErrorReg = 30\r\n");
+		// 			udsstatus.udsReturnSuccess = false;
+		// 			udsstatus.ErrorReg = 30;
+		// 			fclose(rfile);
+		// 			return 1;
+		// 		}
+		// 	}
+
+		// 	retry_count++;
+		// 	usleep(50 * 1000);  // 每次失败后延时100ms
+		// }
+
+		// // 超过三次重试仍失败
+		// printf("udsstatus.ErrorReg = 31\r\n");
+		// udsstatus.ErrorReg = 31;
+		// fclose(rfile);
+		// return 1;
+
 
     }
 
@@ -1120,63 +1269,135 @@ signed char udsServer37(unsigned int id, uint16_t crc_value)
 	printf(" 1111CanMes.Data[6]:%02x\r\n",CanMes.Data[6]);
 	printf(" 1111CanMes.Data[7]:%02x\r\n",CanMes.Data[7]);
 
-    TStatus = can1_send(&CanMes);
-    if(TStatus == 0)
-    {
-    	//接收CAN消息，秘钥，是否超时或者否定回复
-		memset(&canmsg, 0, sizeof(CAN_MESSAGE));
-		UStatus = queue_pend(&Queue_Can1RevData, &canmsg,&err);
-		printf("canmsg.Data[0]:%02x\r\n",canmsg.Data[0]);
-		printf(" canmsg.Data[1]:%02x\r\n",canmsg.Data[1]);
-		printf(" canmsg.Data[2]:%02x\r\n",canmsg.Data[2]);
-		printf(" canmsg.Data[3]:%02x\r\n",canmsg.Data[3]);
-		printf(" canmsg.Data[4]:%02x\r\n",canmsg.Data[4]);
-		printf(" canmsg.Data[5]:%02x\r\n",canmsg.Data[5]);
-		printf(" canmsg.Data[6]:%02x\r\n",canmsg.Data[6]);
-		printf(" canmsg.Data[7]:%02x\r\n",canmsg.Data[7]);
-		if(UStatus == 0)
-		{
+    // TStatus = Drv_can0_send(&CanMes);
+    // if(TStatus == 0)
+    // {
+    // 	//接收CAN消息，秘钥，是否超时或者否定回复
+	// 	memset(&canmsg, 0, sizeof(CAN_MESSAGE));
+	// 	UStatus = queue_pend(&Queue_Can0RevData, &canmsg,&err);
+	// 	printf("canmsg.Data[0]:%02x\r\n",canmsg.Data[0]);
+	// 	printf(" canmsg.Data[1]:%02x\r\n",canmsg.Data[1]);
+	// 	printf(" canmsg.Data[2]:%02x\r\n",canmsg.Data[2]);
+	// 	printf(" canmsg.Data[3]:%02x\r\n",canmsg.Data[3]);
+	// 	printf(" canmsg.Data[4]:%02x\r\n",canmsg.Data[4]);
+	// 	printf(" canmsg.Data[5]:%02x\r\n",canmsg.Data[5]);
+	// 	printf(" canmsg.Data[6]:%02x\r\n",canmsg.Data[6]);
+	// 	printf(" canmsg.Data[7]:%02x\r\n",canmsg.Data[7]);
+	// 	if(UStatus == 0)
+	// 	{
 
-			printf("canmsg.Data[1] :%d\r\n", canmsg.Data[1] );
-			if (canmsg.Data[1] == 0x77) {
-				 uint16_t received_crc = (canmsg.Data[4] << 8) | canmsg.Data[5];
-				 printf(" received_crc:%02x\r\n",received_crc);
-				    if (received_crc == crc_value) {
-				        udsstatus.udsReturnSuccess = true;
-				        return 0;
-				    }
-				    else
-				    {
-						printf("udsServer37 Return false\r\n");
+	// 		printf("canmsg.Data[1] :%d\r\n", canmsg.Data[1] );
+	// 		if (canmsg.Data[1] == 0x77) {
+	// 			 uint16_t received_crc = (canmsg.Data[4] << 8) | canmsg.Data[5];
+	// 			 printf(" received_crc:%02x\r\n",received_crc);
+	// 			    if (received_crc == crc_value) {
+	// 			        udsstatus.udsReturnSuccess = true;
+	// 			        return 0;
+	// 			    }
+	// 			    else
+	// 			    {
+	// 					printf("udsServer37 Return false\r\n");
+	// 					udsstatus.udsReturnSuccess = false;
+	// 			    	udsstatus.ErrorReg = 32;
+	// 			    	return 1;
+	// 			    }
+	// 		}
+	// 		else
+	// 		{
+	// 			printf("udsServer37 Return false\r\n");
+	// 			udsstatus.udsReturnSuccess = false;
+	// 			udsstatus.ErrorReg = 32;
+	// 			return 1;
+	// 		}
+
+
+	// 	}
+	// 	else
+	// 	{
+	// 		printf("udsstatus.ErrorReg = 32\r\n");
+	// 		udsstatus.ErrorReg = 33;
+	// 		return 1;
+	// 	}
+    // }
+
+	// else
+	// {
+	// 	printf("udsstatus.ErrorReg = 33\r\n");
+	// 	udsstatus.ErrorReg = 34;
+	// 	return 1;
+	// }
+	TStatus = Drv_can0_send(&CanMes);
+	if (TStatus == 0)
+	{
+		// 接收CAN消息，验证秘钥，判断是否超时或否定回复
+		memset(&canmsg, 0, sizeof(CAN_MESSAGE));
+
+		int retry_count = 0;
+		while (retry_count < 20)
+		{
+			UStatus = queue_pend(&Queue_Can0RevData, &canmsg, &err);
+
+			// 打印接收数据内容
+			printf("canmsg.Data[0]:%02x\r\n", canmsg.Data[0]);
+			printf(" canmsg.Data[1]:%02x\r\n", canmsg.Data[1]);
+			printf(" canmsg.Data[2]:%02x\r\n", canmsg.Data[2]);
+			printf(" canmsg.Data[3]:%02x\r\n", canmsg.Data[3]);
+			printf(" canmsg.Data[4]:%02x\r\n", canmsg.Data[4]);
+			printf(" canmsg.Data[5]:%02x\r\n", canmsg.Data[5]);
+			printf(" canmsg.Data[6]:%02x\r\n", canmsg.Data[6]);
+			printf(" canmsg.Data[7]:%02x\r\n", canmsg.Data[7]);
+
+			if (UStatus == 0)
+			{
+				printf("canmsg.Data[1] :%x\r\n", canmsg.Data[1]);
+				if (canmsg.Data[1] == 0x77)
+				{
+					uint16_t received_crc = (canmsg.Data[4] << 8) | canmsg.Data[5];
+					printf(" received_crc:%02x\r\n", received_crc);
+					if (received_crc == crc_value)
+					{
+						udsstatus.udsReturnSuccess = true;
+						return 0;
+					}
+					else
+					{
+						printf("udsServer37 CRC校验失败\r\n");
 						udsstatus.udsReturnSuccess = false;
-				    	udsstatus.ErrorReg = 32;
-				    	return 1;
-				    }
+						udsstatus.ErrorReg = 32;
+						printf("ErrorReg = %d\r\n", udsstatus.ErrorReg);
+						return 1;
+					}
+				}
+				else
+				{
+					printf("udsServer37 Data[1] != 0x77\r\n");
+					udsstatus.udsReturnSuccess = false;
+					udsstatus.ErrorReg = 32;
+					printf("ErrorReg = %d\r\n", udsstatus.ErrorReg);
+					return 1;
+				}
 			}
 			else
 			{
-				printf("udsServer37 Return false\r\n");
-				udsstatus.udsReturnSuccess = false;
-				udsstatus.ErrorReg = 32;
-				return 1;
+				retry_count++;
+				usleep(50 * 1000); // 100ms 延时
 			}
-
-
 		}
-		else
-		{
-			printf("udsstatus.ErrorReg = 32\r\n");
-			udsstatus.ErrorReg = 33;
-			return 1;
-		}
-    }
 
-	else
-	{
-		printf("udsstatus.ErrorReg = 33\r\n");
-		udsstatus.ErrorReg = 34;
+		// 如果超过3次仍然失败
+		printf("queue_pend 失败超过3次，退出\r\n");
+		udsstatus.ErrorReg = 33;
+		printf("ErrorReg = %d\r\n", udsstatus.ErrorReg);
 		return 1;
 	}
+	else
+	{
+		printf("Drv_can0_send 发送失败\r\n");
+		udsstatus.ErrorReg = 34;
+		printf("ErrorReg = %d\r\n", udsstatus.ErrorReg);
+		return 1;
+	}
+
 }
 
 
@@ -1185,22 +1406,26 @@ signed char udsServer37(unsigned int id, uint16_t crc_value)
 
 void CP_UDS_OTA(OTAObject* pOTA)
 {
+	printf("pOTA->OTAStart %d \r\n",pOTA->OTAStart);
     if (!pOTA->OTAStart) return;
-
-    if(pOTA->deviceID != 0 && pOTA->OTAUdsFilename[0] != 0 && pOTA->OTAFileType != ECU && pOTA->deviceType == AC && pOTA->OTAStart ==1 && (SBl_index != 0) && (SBl_index == sblfilenumber) && (APP_index != 0) && (APP_index == appfilenumber))
+	printf(" pOTA->OTAUdsFilename[0] :%s \r\n", pOTA->OTAUdsFilename[0]);
+	printf(" pOTA->deviceID :%d\r\n", pOTA->deviceID);
+	printf(" pOTA->OTAFileType :%d \r\n", pOTA->OTAFileType);
+    if(pOTA->deviceID != 0 && pOTA->OTAUdsFilename[0] != 0 && pOTA->deviceType == AC && pOTA->OTAStart ==1 && (SBl_index != 0) && (SBl_index == sblfilenumber) && (APP_index != 0) && (APP_index == appfilenumber))
     {
 		int count = 0;
 		FILE *rfile =NULL;
         CP_set_modbus_reg_val(OTASTATUSREGADDR, OTASTARTRUNNING);//0124.升级状态
         memset(&udsstatus, 0, sizeof(UDSStatus));
-		rfile = fopen(pOTA->OTAFilename, "rb"); // Open the file for reading in binary mode
-        if(rfile == NULL)
-        {
-            printf("pvPortMalloc rfile space error\r\n");
+		printf("pOTA->OTAFilename : %s\r\n",pOTA->OTAFilename);
+		// rfile = fopen(pOTA->OTAFilename, "rb"); // Open the file for reading in binary mode
+        // if(rfile == NULL)
+        // {
+        //     printf("pvPortMalloc rfile space error\r\n");
 
-            udsstatus.ErrorReg |= 1 << 0;
-            udsstatus.ErrorDeviceID = pOTA->deviceID;
-        }
+        //     udsstatus.ErrorReg |= 1 << 0;
+        //     udsstatus.ErrorDeviceID = pOTA->deviceID;
+        // }
         if(udsstatus.ErrorReg == 0)
         {
             udsstatus.XCPCMDOuttimeTimes = 5000;
@@ -1216,7 +1441,7 @@ void CP_UDS_OTA(OTAObject* pOTA)
                     udsstatus.CANStartOTA = 1;
                     usleep(3000*1000);
                     printf("XCPOTAtask start_____\r\n");
-                    queue_clear(&Queue_Can1RevData);
+                    queue_clear(&Queue_Can0RevData);
                     res = udsServer3E(0x600);//保持链接0x3E//0x600//0x1801E410
                     if(res == 0)
                     {
@@ -1227,7 +1452,7 @@ void CP_UDS_OTA(OTAObject* pOTA)
                     {
                         //失败
                          printf("udsServer3E failed\r\n");
-//								 break;
+					//								 break;
                     }
                     //延时
                  	usleep(100*1000);
@@ -1256,7 +1481,7 @@ void CP_UDS_OTA(OTAObject* pOTA)
                     {
                         //失败
                          printf("udsServer3E failed\r\n");
-//								 break;
+						//								 break;
                     }
                     //延时
 					usleep(100*1000);
@@ -1329,7 +1554,7 @@ void CP_UDS_OTA(OTAObject* pOTA)
                     {
                         //失败
                          printf("udsServer3E failed\r\n");
-//								 break;
+					//								 break;
                     }
                     //延时
                     usleep(100*1000);
@@ -1344,10 +1569,10 @@ void CP_UDS_OTA(OTAObject* pOTA)
                     {
                         //失败
                          printf("udsServer3E failed\r\n");
-//								 break;
+					//								 break;
                     }
                     //延时
-//开始FLASH数据发送
+					//开始FLASH数据发送
                     usleep(100*1000);
                     res = udsServer34(ACOTACANID,flashData.writeAddr,flashData.writeLen);//请求下载0x34
                     if(res == 0)
@@ -1371,23 +1596,35 @@ void CP_UDS_OTA(OTAObject* pOTA)
                         char otafilenamestr1[OTAFILENAMEMAXLENGTH + 2] = {'\0'};
                         if(udsstatus.ErrorReg == 0)
                         {
-                            otafilenamestr1[0] = '0';
-                            otafilenamestr1[1] = ':';
-                            memcpy(&otafilenamestr1[2], pOTA->OTAUdsSblFilename[i], strlen(pOTA->OTAUdsSblFilename[i]));
+                            // otafilenamestr1[0] = '0';
+                            // otafilenamestr1[1] = ':';
+                            memcpy(&otafilenamestr1, pOTA->OTAUdsSblFilename[i], strlen(pOTA->OTAUdsSblFilename[i]));
                             printf("otafilenamestr1: %s\r\n", otafilenamestr1);
                             printf("pOTA->OTAUdsSblFilename[i]: %s\r\n", pOTA->OTAUdsSblFilename[i]);
 
                         }
+						// rfile = fopen(otafilenamestr1, "rb"); // Open the file for reading in binary mode
+						// if(rfile == NULL)
+						// {
+						//     printf("pvPortMalloc rfile space error\r\n");
 
+						//     udsstatus.ErrorReg |= 1 << 0;
+						//     udsstatus.ErrorDeviceID = pOTA->deviceID;
+						// }
                         int transferRes = udsServer36(ACOTACANID,otafilenamestr1,rfile);//首帧和连续帧
                         usleep(5*1000);
 
                         memset(otafilenamestr1, '\0', OTAFILENAMEMAXLENGTH + 2);
-                        otafilenamestr1[0] = '0';
-                        otafilenamestr1[1] = ':';
+                        // otafilenamestr1[0] = '0';
+                        // otafilenamestr1[1] = ':';
                         char *str = "w.bin";
-                        memcpy(&otafilenamestr1[2], str, strlen(str));
+                        memcpy(&otafilenamestr1, str, strlen(str));
                         //printf("otafilenamestr1 %s\r\n", otafilenamestr1);
+						// if(rfile != NULL)
+						// {
+						// 	fclose(rfile);
+						// 	rfile = NULL;
+						// }
 
                         if (transferRes == 0)
                         {
@@ -1401,7 +1638,7 @@ void CP_UDS_OTA(OTAObject* pOTA)
                         }
 
                     }
-                    usleep(500*10000);
+                    usleep(500*1000);
                     res = udsServer37(ACOTACANID ,flashData.CRC);//请求退出0x37
                     if(res == 0)
                     {
@@ -1427,11 +1664,11 @@ void CP_UDS_OTA(OTAObject* pOTA)
                     {
                         //失败
                          printf("FLASH_udsServer3E failed\r\n");
-//								 break;
+					//								 break;
                     }
                     //延时
                     usleep(100*1000);
-//跳转到RAM程序进行运行
+					//跳转到RAM程序进行运行
                     res = udsServer31_2(ACOTACANID,0X2108);//例行程序控制0x31,跳转至RAM程序
                     if(res == 0)
                     {
@@ -1442,7 +1679,7 @@ void CP_UDS_OTA(OTAObject* pOTA)
                     {
                         //失败
                          printf("APP_udsServer31_2 failed\r\n");
-//								 break;
+					//								 break;
                     }
                     //延时
                     usleep(100*1000);
@@ -1475,7 +1712,7 @@ void CP_UDS_OTA(OTAObject* pOTA)
                     //延时
                     usleep(500*1000);
 
-//开始app数据发送
+					//开始app数据发送
 
                     char ee00Flag = 0;
                     char ee00Number = 0;
@@ -1495,13 +1732,14 @@ void CP_UDS_OTA(OTAObject* pOTA)
                         char otafilenamestr1[OTAFILENAMEMAXLENGTH + 2] = {'\0'};
                         if(udsstatus.ErrorReg == 0)
                         {
-                            otafilenamestr1[0] = '0';
-                            otafilenamestr1[1] = ':';
-                            memcpy(&otafilenamestr1[2], pOTA->OTAUdsFilename[i], strlen(pOTA->OTAUdsFilename[i]));
+                            // otafilenamestr1[0] = '0';
+                            // otafilenamestr1[1] = ':';
+                            memcpy(&otafilenamestr1, pOTA->OTAUdsFilename[i], strlen(pOTA->OTAUdsFilename[i]));
                             printf("otafilenamestr1 %s\r\n", otafilenamestr1);
 
                         }
 
+	
                         usleep(100*1000);
                         res = udsServer3E(0x600);//保持链接0x3E
                         if(res == 0)
@@ -1513,7 +1751,6 @@ void CP_UDS_OTA(OTAObject* pOTA)
                         {
                             //失败
                              printf("APP_udsServer3E failed\r\n");
-//									 break;
                         }
                         //延时
                         usleep(150*1000);
@@ -1556,19 +1793,17 @@ void CP_UDS_OTA(OTAObject* pOTA)
                         {
                             //失败
                              printf("APP_udsServer3E failed\r\n");
-//									 break;
                         }
                         //延时
                         usleep(150*1000);
                         int transferRes = udsServer36(ACOTACANID,otafilenamestr1,rfile);//首帧和连续帧
                         usleep(100*1000);
                         memset(otafilenamestr1, '\0', OTAFILENAMEMAXLENGTH + 2);
-                        otafilenamestr1[0] = '0';
-                        otafilenamestr1[1] = ':';
+                        // otafilenamestr1[0] = '0';
+                        // otafilenamestr1[1] = ':';
                         char *str = "w.bin";
-                        memcpy(&otafilenamestr1[2], str, strlen(str));
+                        memcpy(&otafilenamestr1, str, strlen(str));
                         //printf("otafilenamestr1 %s\r\n", otafilenamestr1);
-
                         if (transferRes == 0)
                         {
                             printf("Block %d transferred successfully.\r\n", count + 1);
@@ -1604,9 +1839,9 @@ void CP_UDS_OTA(OTAObject* pOTA)
                         char otafilenamestr1[OTAFILENAMEMAXLENGTH + 2] = {'\0'};
                         if(udsstatus.ErrorReg == 0)
                             {
-                                otafilenamestr1[0] = '0';
-                                otafilenamestr1[1] = ':';
-                                memcpy(&otafilenamestr1[2], pOTA->OTAUdsFilename[ee00Number], strlen(pOTA->OTAUdsFilename[ee00Number]));
+                                // otafilenamestr1[0] = '0';
+                                // otafilenamestr1[1] = ':';
+                                memcpy(&otafilenamestr1, pOTA->OTAUdsFilename[ee00Number], strlen(pOTA->OTAUdsFilename[ee00Number]));
                                 printf("otafilenamestr1 %s\r\n", otafilenamestr1);
                             }
                         usleep(100*1000);
@@ -1642,10 +1877,10 @@ void CP_UDS_OTA(OTAObject* pOTA)
                         usleep(100*1000);
 
                         memset(otafilenamestr1, '\0', OTAFILENAMEMAXLENGTH + 2);
-                        otafilenamestr1[0] = '0';
-                        otafilenamestr1[1] = ':';
+                        // otafilenamestr1[0] = '0';
+                        // otafilenamestr1[1] = ':';
                         char *str = "w.bin";
-                        memcpy(&otafilenamestr1[2], str, strlen(str));
+                        memcpy(&otafilenamestr1, str, strlen(str));
                         //printf("otafilenamestr1 %s\r\n", otafilenamestr1);
                         if (transferRes == 0)
                         {
@@ -1715,6 +1950,7 @@ void CP_UDS_OTA(OTAObject* pOTA)
         if(udsstatus.ErrorReg == 0)
         {
             printf("can id 0x%x device ota success!\r\n", pOTA->deviceID);
+			zlog_info(debug_out,"can id 0x%x device ota success!\r\n", pOTA->deviceID);
             udsstatus.DeviceProgramOkFlag = 1;
             CP_set_modbus_reg_val(OTAPPROGRESSREGADDR, 100);//0124,升级进度
             CP_set_modbus_reg_val(OTASTATUSREGADDR, OTASUCCESS);
@@ -1725,7 +1961,8 @@ void CP_UDS_OTA(OTAObject* pOTA)
         else
         {
             printf("can id 0x%x device ota failed, error register val 0x%x!\r\n", pOTA->deviceID, udsstatus.ErrorReg);
-            CP_set_modbus_reg_val(OTASTATUSREGADDR, OTAFAILED);
+			zlog_info(debug_out,"can id 0x%x device ota failed, error register val 0x%x!\r\n", pOTA->deviceID, udsstatus.ErrorReg);
+            // CP_set_modbus_reg_val(OTASTATUSREGADDR, OTAFAILED);
         }
 
         pOTA->OTAStart =0;
@@ -1735,14 +1972,19 @@ void CP_UDS_OTA(OTAObject* pOTA)
 
 void FinishACOtaAndCleanup(OTAObject* pOTA)
 {
+	CP_set_modbus_reg_val(AC_SBL_OTAFILENUMBER, 0);
+	CP_set_modbus_reg_val(AC_APP_OTAFILENUMBER, 0);
 	pOTA->deviceType = 0;//停止升级
 	pOTA->OTAStart = 0;
-	delete_files_with_prefix("0:", "AC");//  这个要删除升级文件，判断xcpstatus状态，成功或者失败删除
+	delete_files_with_prefix(USB_MOUNT_POINT, "AC");//  这个要删除升级文件，判断xcpstatus状态，成功或者失败删除
+	delete_files_with_prefix(USB_MOUNT_POINT, "XC");//  这个要删除升级文件，判断xcpstatus状态，成功或者失败删除
+	delete_files_with_prefix(USB_MOUNT_POINT, "md5"); // 删除升级文件
 	otactrl.UpDating = 0;//1130(升级结束)
 	udsstatus.CANStartOTA = 0;
 	SBl_index = 0;
 	APP_index = 0;
-	set_charger_cmd(BMS_POWER_DEFAULT);
+	CP_set_TCU_PowerUpCmd(BMS_POWER_DEFAULT);
 	CP_set_modbus_reg_val(OTASTATUSREGADDR, OTAIDLE);
+	Drv_BMS_Analysis();//BMS数据解析
 }
 

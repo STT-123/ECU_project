@@ -15,6 +15,7 @@
 typedef struct __QUEUE_ST
 {
 	pthread_mutex_t mutex_lock;
+	pthread_cond_t  cond_not_empty;
 	struct
 	{
 		unsigned char Buffer[CAN_THREAD_BUFFER_MAX];// __attribute__((aligned(8)));//每条消息内容的缓冲区大小

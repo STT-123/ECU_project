@@ -1,15 +1,19 @@
+#define _GNU_SOURCE
 #include "C_ModbusServer.h"
 #include "../GLB/G_GloabalVariable.h"
+#include "./GLB/G_SystemConf.h"
 #include "C_BMSAnalysis.h"
 #include "C_ModbusServer_Handle.h"
 #include "./GLB/G_Versions.h"
-#include "./BMS/bms/bms_cortol.h"
+
 #include "main.h"
 const uint16_t REGISTERS_START_ADDRESS = 0x3000; // 寄存器起始地址
 modbus_t *ctx = NULL;
 modbus_mapping_t *mb_mapping;
+// #define MODBUS_TCP_PORT 502
+// #define MAX_CLIENTS FD_SETSIZE
 
-uint16_t *modbusBuff_C = NULL;
+uint16_t *modbusBuff = NULL;
 struct timeval timeout;
 int timeout_flag = 0;  
 unsigned char modbus_ip[16]="192.168.1.110";
@@ -17,17 +21,26 @@ static void CP_modbus_write_reg_deal(modbus_t *ctx, const uint8_t *query, int re
 int get_timeout_flag() {
     return timeout_flag;
 }
+
 void *CP_ModbusTCPServer(void *arg)
 {
 
-  int i;
-  int rc;
-  fd_set refset;
-  fd_set rdset;
-  int fdmax;
-  int server_socket;
-  int master_socket;
-
+    int i;
+    int rc;
+    fd_set refset;
+    fd_set rdset;
+    int fdmax;
+    int server_socket;
+    int master_socket;
+    if (setting.flag == 1 && setting.ip != 0)
+    {
+        sprintf(modbus_ip, "%d.%d.%d.%d",
+            (setting.ip >> 24) & 0xFF,
+            (setting.ip >> 16) & 0xFF,
+            (setting.ip >> 8)  & 0xFF,
+            setting.ip & 0xFF);
+    }
+  set_ip_address("eth1", modbus_ip);
   ctx = modbus_new_tcp(modbus_ip, 502);
   printf("ctx =%d ,modbus ip =%s \r\n",ctx,modbus_ip);
         mb_mapping = modbus_mapping_new_start_address(
@@ -41,7 +54,7 @@ void *CP_ModbusTCPServer(void *arg)
             usleep(5000);
         }
       }
-      modbusBuff_C = mb_mapping->tab_registers;
+      modbusBuff = mb_mapping->tab_registers;
       for (i = 0; i < 2; i++)
       {
           mb_mapping->tab_registers[i] = 10;
@@ -100,22 +113,23 @@ void *CP_ModbusTCPServer(void *arg)
                       newfd = accept(server_socket, (struct sockaddr *)&clientaddr, &addrlen);
                       if (newfd == -1)
                       {
-                    	  printf("Server accept() error");
-                          for (master_socket = 0; master_socket <= fdmax; master_socket++)
-                          {
-                        	  if (FD_ISSET(master_socket, &refset) && master_socket != server_socket)
-                              {
-                                  printf("Closing connection on socket %d\n", master_socket);
-                                  close(master_socket);  // 关闭服务器套接字
-                                  FD_CLR(master_socket, &refset);
-                                  if (master_socket == fdmax)
-                                  {
-                                      fdmax--;
-                                  }
-                              }
-                          }
-                          usleep(1000);
-}
+                            //   printf("Server accept() error");
+                            printf("Server accept() error: %s\n", strerror(errno));
+                            for (master_socket = 0; master_socket <= fdmax; master_socket++)
+                            {
+                                if (FD_ISSET(master_socket, &refset) && master_socket != server_socket)
+                                {
+                                    printf("Closing connection on socket %d\n", master_socket);
+                                    close(master_socket);  // 关闭服务器套接字
+                                    FD_CLR(master_socket, &refset);
+                                    if (master_socket == fdmax)
+                                    {
+                                        fdmax--;
+                                    }
+                                }
+                            }
+                            usleep(1000);
+                        }
                       else
                       {
                           FD_SET(newfd, &refset);
@@ -134,23 +148,46 @@ void *CP_ModbusTCPServer(void *arg)
 
                       modbus_set_socket(ctx, master_socket);
 
-                      rc = modbus_receive(ctx, query);
-                      if (rc != -1)
-                      {
+                    //   rc = modbus_receive(ctx, query);
+                    //   if (rc != -1)
+                    //   {
 
-                    	  CP_modbus_write_reg_deal(ctx, query, rc);    // 写寄存器处理
-                          modbus_reply(ctx, query, rc, mb_mapping); // 更新寄存器操作在这里
-                      }
-                      else
-                      {
-                          close(master_socket);
-                          FD_CLR(master_socket, &refset);
+                    // 	  CP_modbus_write_reg_deal(ctx, query, rc);    // 写寄存器处理
+                    //       modbus_reply(ctx, query, rc, mb_mapping); // 更新寄存器操作在这里
+                    //   }
+                    //   else
+                    //   {
+                    //       close(master_socket);
+                    //       FD_CLR(master_socket, &refset);
 
-                          if (master_socket == fdmax)
-                          {
-                              fdmax--;
-                          }
-                      }
+                    //       if (master_socket == fdmax)
+                    //       {
+                    //           fdmax--;
+                    //       }
+                    //   }
+                    rc = modbus_receive(ctx, query);
+                    if (rc != -1)
+                    {
+                        CP_modbus_write_reg_deal(ctx, query, rc);    // 写寄存器处理
+                        modbus_reply(ctx, query, rc, mb_mapping);    // 回复寄存器
+                    }
+                    else
+                    {
+                        printf("Connection closed or error on socket %d: %s\n", master_socket, modbus_strerror(errno));
+                        
+                        // 关闭连接
+                        close(master_socket);
+                        FD_CLR(master_socket, &refset);
+
+                        // 若该 socket 是当前最大值，更新 fdmax
+                        if (master_socket == fdmax)
+                        {
+                            while (fdmax > 0 && !FD_ISSET(fdmax, &refset)) {
+                                fdmax--;
+                            }
+                        }
+                    }
+
                   }
               }
           }
@@ -192,18 +229,25 @@ static void CP_modbus_write_reg_deal(modbus_t *ctx, const uint8_t *query, int re
                 {
                     // set_bms_ctrl(BMS_POWER_ON);
                 	//判断没有错误故障下高压
+                    // int res = CP_get_emcu_fault(ALL_FAULT);
+                    // printf("res=%d\r\n",res);
                 	if((CP_get_emcu_fault(ALL_FAULT)==0))//1130(增加升级不能开机命令)
                 	{
-                		CP_set_charger_cmd(BMS_POWER_ON);
+                		// CP_set_charger_cmd(BMS_POWER_ON);
+
+                        CP_set_TCU_PowerUpCmd(BMS_POWER_ON);
+                        // printf("TCU_PowerUpCmd :%d\r\n",TCU_PowerUpCmd);
                 	}
                 	else
                 	{
-                		printf("ecu fault,can't power on or otaing \r\n");
+                		// printf("ecu fault,can't power on or otaing \r\n");
+
                 	}
                 }
                 else if (data == 1)
                 {
-                    CP_set_charger_cmd(BMS_POWER_OFF);
+                    // CP_set_charger_cmd(BMS_POWER_OFF);
+                    CP_set_TCU_PowerUpCmd(BMS_POWER_OFF);
                     // set_bms_ctrl(BMS_POWER_OFF);
                 }
             }
@@ -213,7 +257,7 @@ static void CP_modbus_write_reg_deal(modbus_t *ctx, const uint8_t *query, int re
 			}
             else if(address==0x6711||address==0x6712)
             {
-            	// ip_set_deal(address,data);
+            	G_ip_set_deal(address,data);
             }
             else if((address==0x6720)&&(data ==1))
             {
@@ -224,10 +268,12 @@ static void CP_modbus_write_reg_deal(modbus_t *ctx, const uint8_t *query, int re
                 if (data == 0)
                 {
                 	CP_set_modbus_reg_val(0x3418,0);
+                    CP_set_TCU_ECOMode(0);
                 }
                 else if(data == 1)
                 {
                 	CP_set_modbus_reg_val(0x3418,1);
+                    CP_set_TCU_ECOMode(1);
                 }
 
             }
@@ -242,8 +288,58 @@ static void CP_modbus_write_reg_deal(modbus_t *ctx, const uint8_t *query, int re
             else if(address == 0x6719)
             {
             	CP_set_modbus_reg_val(address,data);
+                CP_set_TCU_FcnStopSet(data);
+            }
+            else if(address == 0x6721)
+            {
+            	CP_set_modbus_reg_val(address,data);
             }
 
         }
     }
+}
+
+
+int set_ip_address(const char *if_name, const char *ip_addr) {
+    int fd;
+    struct ifreq ifr;
+    struct sockaddr_in sin;
+
+    fd = socket(AF_INET, SOCK_DGRAM, 0);
+    if (fd < 0) {
+        perror("socket");
+        return -1;
+    }
+
+    memset(&ifr, 0, sizeof(ifr));
+    strncpy(ifr.ifr_name, if_name, IFNAMSIZ - 1);
+
+    memset(&sin, 0, sizeof(struct sockaddr));
+    sin.sin_family = AF_INET;
+    inet_pton(AF_INET, ip_addr, &sin.sin_addr);
+    memcpy(&ifr.ifr_addr, &sin, sizeof(struct sockaddr));
+
+    if (ioctl(fd, SIOCSIFADDR, &ifr) < 0) {
+        perror("SIOCSIFADDR");
+        close(fd);
+        return -1;
+    }
+
+    // 设置网口状态为 up
+    if (ioctl(fd, SIOCGIFFLAGS, &ifr) < 0) {
+        perror("SIOCGIFFLAGS");
+        close(fd);
+        return -1;
+    }
+
+    ifr.ifr_flags |= IFF_UP | IFF_RUNNING;
+
+    if (ioctl(fd, SIOCSIFFLAGS, &ifr) < 0) {
+        perror("SIOCSIFFLAGS");
+        close(fd);
+        return -1;
+    }
+
+    close(fd);
+    return 0;
 }

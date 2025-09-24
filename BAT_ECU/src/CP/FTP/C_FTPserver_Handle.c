@@ -23,6 +23,7 @@ void check_timeouts(FTPState *state) {
         state->control_sock = -1;
         state->data_sock = -1;
         printf("Connection timed out.\n");
+        
     }
 }
 
@@ -33,9 +34,24 @@ void handle_user_command(FTPState *state, char *args) {
 }
 
 // 处理 PASS 命令
+// void handle_pass_command(FTPState *state, char *args) {
+//     update_last_activity(state);
+//     state->logged_in = 1;
+//     send_response(state->control_sock, "230 Login successful.\r\n");
+// }
+// 处理 PASS 命令
 void handle_pass_command(FTPState *state, char *args) {
     update_last_activity(state);
     state->logged_in = 1;
+
+    // 切换到 U 盘挂载目录
+    // if (chdir("/media/usb0") != 0) {
+    if (chdir("/mnt/sda") != 0) {
+        printf("Failed to change to USB directory: %s\n", strerror(errno));
+        send_response(state->control_sock, "550 Failed to access USB directory.\r\n");
+        return;
+    }
+
     send_response(state->control_sock, "230 Login successful.\r\n");
 }
 
@@ -275,7 +291,7 @@ void set_ftp_read_file_flag(bool flag)
 
 }
 
-bool get_ftp_read_file_flag()
+bool CP_get_ftp_read_file_flag()
 {
 
 	return ftp_read_flag;
@@ -325,7 +341,7 @@ void handle_retr_command(FTPState *state, char *filename) {
             break;
         }
 
-        usleep(1000); // 代替 vTaskDelay(1)，防止CPU占用过高
+        usleep(1000);
     }
 
     fclose(state->file);
@@ -484,6 +500,11 @@ void handle_cwd_command(FTPState *state, const char *args) {
     if (args == NULL) {
         send_response(state->control_sock, "501 Syntax error in parameters or arguments.\r\n");
         return;
+    }
+        // 拦截 CWD / 并重定向到 /media/usb0
+    if (strcmp(args, "/") == 0) {
+        // args = "/media/usb0";
+        args = "/mnt/sda";
     }
 
     if (chdir(args) == 0) {
