@@ -54,7 +54,7 @@ bool Drv_can1_init(void)
  * 输入参数：
  * 			struct    Myeventdata  *
  * 输出参数：无
- * lx
+ * ZHX ！！！
  ********************************************************************************/
 static void Drv_can1_epoll_msg_transmit (void * arg)
 {
@@ -100,7 +100,7 @@ void Drv_can1_closeEx(int *fd)
  * 输入参数：
  * 			struct    Myeventdata  *
  * 输出参数： 0 表示复位成功，1表示复位失败。
- * lx
+ * ZHX ！！！
  ********************************************************************************/
 int  Drv_reset_can1_device(const char *can_name)
 {
@@ -139,7 +139,7 @@ int  Drv_reset_can1_device(const char *can_name)
  * 输入参数：
  * 			sstruct canfd_frame *cansend_data
  * 输出参数： 0 表示发送成功，非0表示发送失败。
- * lx
+ * ZHX ！！！
  ********************************************************************************/
 int Drv_can1_send( CAN_MESSAGE *pFrame)
 {

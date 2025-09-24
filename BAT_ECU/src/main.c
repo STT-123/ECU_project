@@ -60,7 +60,7 @@ static void lws_log_cb(int level, const char *line) ;
 struct tm utc_timeinfo;
 
 int main(int argc, char **argv)
-{1
+{
 	int counter = 60;
     sqlite3 *db;
     init_db(&db);

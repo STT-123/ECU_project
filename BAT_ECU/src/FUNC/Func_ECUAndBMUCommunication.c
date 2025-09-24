@@ -27,7 +27,7 @@ void Func_print_can1fd_frame(const struct canfd_frame *frame)
  * 输入参数：
  * 			struct    Myeventdata  *
  * 输出参数：无
- * lx
+ * ZHX ！！！
  ********************************************************************************/
 #include "./FUNC/Func_SDCard.h"
 void *Func_thread_can1_dealwith(void *arg)

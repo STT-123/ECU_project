@@ -30,7 +30,7 @@ void Func_print_canfd_frame(const struct canfd_frame *frame)
  * 输入参数：
  * 			struct    Myeventdata  *
  * 输出参数：无
- * lx
+ * ZHX ！！！
  ********************************************************************************/
 void *Func_thread_can0_dealwith(void *arg)
 {
