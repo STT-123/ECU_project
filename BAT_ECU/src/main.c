@@ -33,7 +33,7 @@ void all_Func_init(void);
 void all_thread_init(void);
 int main(int argc, char **argv)
 {
-	/*硬件接口初始化部分*/
+	/*1硬件接口初始化部分*/
 	all_init();
 
 	/* 功能初始化部分 */
