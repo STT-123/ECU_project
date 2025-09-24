@@ -41,7 +41,7 @@ void CP_get_BCU_FaultInfoLv3H(uint32_T faultValue)
     if( faultValue & (1UL << 23))
     {
         CP_set_emcu_fault(DOOR_OPEN,SET_ERROR);//设置故障
-         //printf("BCU_FaultInfoLv3H: %x\n", faultValue);
+         printf("BCU_FaultInfoLv3H: %x\n", faultValue);
     }
     else
     {

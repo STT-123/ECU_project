@@ -8,7 +8,7 @@
 #include <stdbool.h>
 
 #define SERIAL_ADDR 0x00	//设备地址
-#define UART_SERIAL_LED_NUM      0x0d
+#define UART_SERIAL_LED_NUM      0x04
 typedef enum
 {
 	soc_flashing_mode = 1,      //空闲状态蓝色常亮

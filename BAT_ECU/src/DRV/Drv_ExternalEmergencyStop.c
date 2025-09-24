@@ -262,7 +262,7 @@ void PHYlinktate()
         {
             if (GetTimeDifference_ms(lastCheckTick) >= FAULT_REPORT_TIME)
             {
-               // CP_set_emcu_fault(PHY_LINK_FAULT, SET_ERROR);
+                CP_set_emcu_fault(PHY_LINK_FAULT, SET_ERROR);
                 PHY_RECOVER_FLAG = 0;
             }
         }

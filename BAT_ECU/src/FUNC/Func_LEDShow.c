@@ -38,11 +38,10 @@ void *Func_SerialLed(void* arg)
 		}
 		Func_update_led_mode(&LED_Mode_t);
 		Func_led_working_mode_select(100,LED_Mode_t,buff);
-		// do{
-		// 	cnt++;
+		do{
+			cnt++;
 			state = Drv_SerialASyncSend(uart_fd, buff, len);
-			//printf("*********************8\n");
-		//}while ((state == false) && (cnt < 3));
+		}while ((state == false) && (cnt < 3));
 
 	   log_eror_csv();
 	   elog_flush();      // 强制把缓存写入 ecu.csv 文件

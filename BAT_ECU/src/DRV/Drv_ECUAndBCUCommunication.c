@@ -57,14 +57,6 @@ bool Drv_can0_init(void)
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-/********************************************************************************
- * 函数名称：static can0_msg_dealwith
- * 功能描述：来自分机can的消息接收，注意不可阻塞epoll处理中
- * 输入参数：
- * 			struct    Myeventdata  *
- * 输出参数：无
- * ZHX  不是我写的
- ********************************************************************************/
 #define CAN_ID_STD_61B      0x61B
 #define CAN_ID_EXT_1CB010E4 0x1CB010E4
 #define CAN_ID_EXT_030C1600 0x030C1600
@@ -191,7 +183,7 @@ void Drv_can0_closeEx(int *fd)
  * 输入参数：
  * 			struct    Myeventdata  *
  * 输出参数： 0 表示复位成功，1表示复位失败。
- * ZHX  不是我写的
+ * ZHX !!!
  ********************************************************************************/
 int  Drv_reset_can0_device(const char *can_name)
 {
@@ -230,7 +222,7 @@ int  Drv_reset_can0_device(const char *can_name)
  * 输入参数：
  * 			sstruct canfd_frame *cansend_data
  * 输出参数： 0 表示发送成功，非0表示发送失败。
- * ZHX
+ * ZHX !!!
  ********************************************************************************/
 // int Drv_can0_send(struct canfd_frame *cansend_data)
 // {
@@ -283,10 +275,6 @@ int Drv_can0fd_send( CAN_FD_MESSAGE_BUS *pFrame)
 
         retryCount++;
         // usleep(100);  
-    }
-    if(retryCount == 3)
-    {
-        Drv_reset_can0_device(PORT_CAN0_DEVICE_NAME);
     }
 
     return -1;  
