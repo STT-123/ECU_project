@@ -3,12 +3,12 @@
  *
  * Code generated for Simulink model 'CANRcvFcn'.
  *
- * Model version                  : 3.284
- * Simulink Coder version         : 24.2 (R2024b) 21-Jun-2024
- * C/C++ source code generated on : Wed Aug 13 13:48:29 2025
+ * Model version                  : 5.4
+ * Simulink Coder version         : 25.2 (R2025b) 28-Jul-2025
+ * C/C++ source code generated on : Fri Sep 26 17:36:05 2025
  *
  * Target selection: ert.tlc
- * Embedded hardware selection: NXP->Cortex-M4
+ * Embedded hardware selection: ARM Compatible->ARM Cortex-A (64-bit)
  * Code generation objectives: Unspecified
  * Validation result: Not run
  */
@@ -86,8 +86,8 @@ typedef struct {
   real32_T CANFDUnpack3_o5;            /* '<S1>/CAN FD Unpack3' */
   real32_T CANFDUnpack3_o6;            /* '<S1>/CAN FD Unpack3' */
   real32_T CANFDUnpack3_o7;            /* '<S1>/CAN FD Unpack3' */
-  real32_T CANFDUnpack3_o22;           /* '<S1>/CAN FD Unpack3' */
-  real32_T CANFDUnpack3_o25;           /* '<S1>/CAN FD Unpack3' */
+  real32_T CANFDUnpack3_o23;           /* '<S1>/CAN FD Unpack3' */
+  real32_T CANFDUnpack3_o26;           /* '<S1>/CAN FD Unpack3' */
   int32_T CANFDUnpack3_o15;            /* '<S1>/CAN FD Unpack3' */
   uint16_T CANFDUnpack1_o17;           /* '<S1>/CAN FD Unpack1' */
   uint16_T CANFDUnpack1_o18;           /* '<S1>/CAN FD Unpack1' */
@@ -101,17 +101,17 @@ typedef struct {
   uint16_T CANFDUnpack3_o12;           /* '<S1>/CAN FD Unpack3' */
   uint16_T CANFDUnpack3_o13;           /* '<S1>/CAN FD Unpack3' */
   uint16_T CANFDUnpack3_o14;           /* '<S1>/CAN FD Unpack3' */
-  uint16_T CANFDUnpack3_o20;           /* '<S1>/CAN FD Unpack3' */
-  uint16_T CANFDUnpack3_o23;           /* '<S1>/CAN FD Unpack3' */
-  uint16_T CANFDUnpack3_o26;           /* '<S1>/CAN FD Unpack3' */
+  uint16_T CANFDUnpack3_o21;           /* '<S1>/CAN FD Unpack3' */
+  uint16_T CANFDUnpack3_o24;           /* '<S1>/CAN FD Unpack3' */
   uint16_T CANFDUnpack3_o27;           /* '<S1>/CAN FD Unpack3' */
-  uint16_T CANFDUnpack3_o29;           /* '<S1>/CAN FD Unpack3' */
+  uint16_T CANFDUnpack3_o28;           /* '<S1>/CAN FD Unpack3' */
   uint16_T CANFDUnpack3_o30;           /* '<S1>/CAN FD Unpack3' */
-  uint16_T CANFDUnpack3_o33;           /* '<S1>/CAN FD Unpack3' */
+  uint16_T CANFDUnpack3_o31;           /* '<S1>/CAN FD Unpack3' */
   uint16_T CANFDUnpack3_o34;           /* '<S1>/CAN FD Unpack3' */
   uint16_T CANFDUnpack3_o35;           /* '<S1>/CAN FD Unpack3' */
   uint16_T CANFDUnpack3_o36;           /* '<S1>/CAN FD Unpack3' */
   uint16_T CANFDUnpack3_o37;           /* '<S1>/CAN FD Unpack3' */
+  uint16_T CANFDUnpack3_o38;           /* '<S1>/CAN FD Unpack3' */
   uint16_T CANFDUnpack_o16;            /* '<S1>/CAN FD Unpack' */
   uint16_T CANFDUnpack_o17;            /* '<S1>/CAN FD Unpack' */
   uint16_T CANFDUnpack_o18;            /* '<S1>/CAN FD Unpack' */
@@ -191,14 +191,14 @@ typedef struct {
   uint16_T BCU_V4_H;                   /* '<S1>/U32_to_F32' */
   uint16_T BCU_Curr2_L;                /* '<S1>/U32_to_F1' */
   uint16_T BCU_Curr2_H;                /* '<S1>/U32_to_F1' */
-  int16_T CANFDUnpack3_o19;            /* '<S1>/CAN FD Unpack3' */
-  int16_T CANFDUnpack3_o21;            /* '<S1>/CAN FD Unpack3' */
-  int16_T CANFDUnpack3_o24;            /* '<S1>/CAN FD Unpack3' */
-  int16_T CANFDUnpack3_o28;            /* '<S1>/CAN FD Unpack3' */
-  int16_T CANFDUnpack3_o31;            /* '<S1>/CAN FD Unpack3' */
-  int16_T CANFDUnpack3_o38;            /* '<S1>/CAN FD Unpack3' */
+  int16_T CANFDUnpack3_o20;            /* '<S1>/CAN FD Unpack3' */
+  int16_T CANFDUnpack3_o22;            /* '<S1>/CAN FD Unpack3' */
+  int16_T CANFDUnpack3_o25;            /* '<S1>/CAN FD Unpack3' */
+  int16_T CANFDUnpack3_o29;            /* '<S1>/CAN FD Unpack3' */
+  int16_T CANFDUnpack3_o32;            /* '<S1>/CAN FD Unpack3' */
   int16_T CANFDUnpack3_o39;            /* '<S1>/CAN FD Unpack3' */
   int16_T CANFDUnpack3_o40;            /* '<S1>/CAN FD Unpack3' */
+  int16_T CANFDUnpack3_o41;            /* '<S1>/CAN FD Unpack3' */
   int16_T CANFDUnpack_o1;              /* '<S1>/CAN FD Unpack' */
   int16_T CANFDUnpack_o2;              /* '<S1>/CAN FD Unpack' */
   int16_T CANFDUnpack_o3;              /* '<S1>/CAN FD Unpack' */
@@ -292,7 +292,8 @@ typedef struct {
   uint8_T CANFDUnpack3_o16;            /* '<S1>/CAN FD Unpack3' */
   uint8_T CANFDUnpack3_o17;            /* '<S1>/CAN FD Unpack3' */
   uint8_T CANFDUnpack3_o18;            /* '<S1>/CAN FD Unpack3' */
-  uint8_T CANFDUnpack3_o32;            /* '<S1>/CAN FD Unpack3' */
+  uint8_T CANFDUnpack3_o19;            /* '<S1>/CAN FD Unpack3' */
+  uint8_T CANFDUnpack3_o33;            /* '<S1>/CAN FD Unpack3' */
   uint8_T CANFDUnpack2_o1;             /* '<S1>/CAN FD Unpack2' */
   uint8_T CANFDUnpack2_o2;             /* '<S1>/CAN FD Unpack2' */
   uint8_T CANFDUnpack2_o14;            /* '<S1>/CAN FD Unpack2' */
@@ -418,7 +419,7 @@ typedef struct {
   int_T ux180110E30_ModeSignalID;      /* '<S3>/0x180110E30' */
   int_T ux180110E30_StatusPortID;      /* '<S3>/0x180110E30' */
   uint16_T tmp[240];                   /* '<S5>/MATLAB Function2' */
-  uint16_T tmp_h[120];                 /* '<S4>/MATLAB Function' */
+  uint16_T tmp_a[120];                 /* '<S4>/MATLAB Function' */
   uint8_T U32_to_F32_byteA;            /* '<S1>/U32_to_F32' */
   uint8_T U32_to_F32_byteB;            /* '<S1>/U32_to_F32' */
   uint8_T U32_to_F32_byteC;            /* '<S1>/U32_to_F32' */
@@ -489,7 +490,7 @@ extern const ConstP_CANRcvFcn_T CANRcvFcn_ConstP;
  *
  */
 extern CAN_FD_MESSAGE_BUS CANFDRcvMsg; /* '<Root>/CANFDRcvMsg' */
-extern CAN_MESSAGE_BUS CANMsg;         /* '<Root>/CANMsg' */
+extern CAN_MESSAGE_BUS CANRcvMsg;      /* '<Root>/CANRcvMsg' */
 
 /* Model entry point functions */
 extern void CANRcvFcn_initialize(void);

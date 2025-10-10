@@ -622,7 +622,7 @@ void Drv_write_buffer_to_file(DoubleRingBuffer *drb) {
                 time_t now = time(NULL);
                 struct tm *tm_info = localtime(&now);
                 timeinfo = *tm_info;
-                printf("timeinfo:%d-%d-%d %d:%d:%d\r\n",timeinfo.tm_year,timeinfo.tm_mon,timeinfo.tm_mday,timeinfo.tm_hour,timeinfo.tm_min,timeinfo.tm_sec);
+                //printf("timeinfo:%d-%d-%d %d:%d:%d\r\n",timeinfo.tm_year,timeinfo.tm_mon,timeinfo.tm_mday,timeinfo.tm_hour,timeinfo.tm_min,timeinfo.tm_sec);
             }
 
 

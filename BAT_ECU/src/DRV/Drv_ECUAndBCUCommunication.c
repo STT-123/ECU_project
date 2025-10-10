@@ -195,20 +195,20 @@ int  Drv_reset_can0_device(const char *can_name)
         zlog_info(debug_out,"%s status is %02X\r\n",can_name, canState);
         Drv_can0_closeEx(&CAN0_FD);
 
-        zlog_info(debug_out, "开始初始化 CAN0_FD...\n");
+        //zlog_info(debug_out, "开始初始化 CAN0_FD...\n");
         if (HAL_can_ifconfig_init(PORT_CAN0_DEVICE_NAME,PORT_CAN0_CAN_BITRATE) == false)
         {
             zlog_error(debug_out, "HAL_can_ifconfig_init 失败\n");
             return false;
         }
-        zlog_info(debug_out, "CAN0_FD 网络配置成功\n");
+        //zlog_info(debug_out, "CAN0_FD 网络配置成功\n");
     
         while (HAL_can_band_init(PORT_CAN0_DEVICE_NAME,&CAN0_FD) == false)
         {
-            zlog_error(debug_out, "HAL_can_band_init 失败\n");
+          //  zlog_error(debug_out, "HAL_can_band_init 失败\n");
             sleep(1);
         }
-        zlog_info(debug_out, "CAN0_FD 绑定成功，fd = %d\n", CAN0_FD);
+        //zlog_info(debug_out, "CAN0_FD 绑定成功，fd = %d\n", CAN0_FD);
     }
     return 0;
 }
@@ -254,6 +254,10 @@ int Drv_can0_send( CAN_MESSAGE *pFrame)
 
         retryCount++;
         // printf("Retrying CAN0 send... (Attempt %d)\n", retryCount); 
+    }
+    if(retryCount ==3)
+    {
+        Drv_reset_can0_device(PORT_CAN0_DEVICE_NAME);
     }
 
     return -1;  

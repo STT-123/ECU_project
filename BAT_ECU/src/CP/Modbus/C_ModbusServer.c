@@ -68,6 +68,7 @@ void *CP_ModbusTCPServer(void *arg)
       FD_SET(server_socket, &refset);
       fdmax = server_socket;
 
+
       for (;;)
       {
 
@@ -75,7 +76,7 @@ void *CP_ModbusTCPServer(void *arg)
     	  timeout.tv_usec = 0;
     	  rdset = refset;
     	  if (select(fdmax + 1, &rdset, NULL, NULL, &timeout) == 0) {
-    	      printf("Timeout occurred, checking active connections\r\n");
+    	      //printf("Timeout occurred, checking active connections\r\n");
     	      timeout_flag  =1;
 			 for (master_socket = 0; master_socket <= fdmax; master_socket++)
               {
@@ -276,6 +277,10 @@ static void CP_modbus_write_reg_deal(modbus_t *ctx, const uint8_t *query, int re
                     CP_set_TCU_ECOMode(1);
                 }
 
+            }
+            else if((address ==0x6719)||(address ==0x6734)||(address ==0x6735))
+            {
+                VoltageCalibration_ModBus_Deal(address,data);
             }
             else if(address == 0x6714)
             {

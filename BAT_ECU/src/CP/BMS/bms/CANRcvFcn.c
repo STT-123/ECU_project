@@ -3,12 +3,12 @@
  *
  * Code generated for Simulink model 'CANRcvFcn'.
  *
- * Model version                  : 3.284
- * Simulink Coder version         : 24.2 (R2024b) 21-Jun-2024
- * C/C++ source code generated on : Wed Aug 13 13:48:29 2025
+ * Model version                  : 5.4
+ * Simulink Coder version         : 25.2 (R2025b) 28-Jul-2025
+ * C/C++ source code generated on : Fri Sep 26 17:36:05 2025
  *
  * Target selection: ert.tlc
- * Embedded hardware selection: NXP->Cortex-M4
+ * Embedded hardware selection: ARM Compatible->ARM Cortex-A (64-bit)
  * Code generation objectives: Unspecified
  * Validation result: Not run
  */
@@ -22,7 +22,7 @@
 
 /* Exported block signals */
 CAN_FD_MESSAGE_BUS CANFDRcvMsg;        /* '<Root>/CANFDRcvMsg' */
-CAN_MESSAGE_BUS CANMsg;                /* '<Root>/CANMsg' */
+CAN_MESSAGE_BUS CANRcvMsg;             /* '<Root>/CANRcvMsg' */
 
 /* Block signals (default storage) */
 B_CANRcvFcn_T CANRcvFcn_B;
@@ -60,7 +60,6 @@ uint8_T BCU_TimeYear;                  /* '<S1>/CAN FD Unpack' */
 void bms_CANRcvFcn(void)
 {
   int32_T tmp;
-  int32_T y;
   real32_T u;
   real32_T v;
   uint32_T data_index;
@@ -1657,6 +1656,39 @@ void bms_CANRcvFcn(void)
           }
 
           /* --------------- START Unpacking signal 18 ------------------
+           *  startBit                = 440
+           *  length                  = 8
+           *  desiredSignalByteLayout = BIGENDIAN
+           *  dataType                = UNSIGNED
+           *  factor                  = 1.0
+           *  offset                  = 0.0
+           * -----------------------------------------------------------------------*/
+          {
+            uint8_T outValue = 0;
+
+            {
+              uint8_T unpackedValue = 0;
+
+              {
+                uint8_T tempValue = (uint8_T) (0);
+
+                {
+                  tempValue = tempValue | (uint8_T)(CANFDRcvMsg.Data[55]);
+                }
+
+                unpackedValue = tempValue;
+              }
+
+              outValue = (uint8_T) (unpackedValue);
+            }
+
+            {
+              uint8_T result = (uint8_T) outValue;
+              CANRcvFcn_B.CANFDUnpack3_o19 = result;
+            }
+          }
+
+          /* --------------- START Unpacking signal 19 ------------------
            *  startBit                = 32
            *  length                  = 8
            *  desiredSignalByteLayout = BIGENDIAN
@@ -1686,11 +1718,11 @@ void bms_CANRcvFcn(void)
             {
               int16_T result = (int16_T) outValue;
               result = result + -40;
-              CANRcvFcn_B.CANFDUnpack3_o19 = result;
+              CANRcvFcn_B.CANFDUnpack3_o20 = result;
             }
           }
 
-          /* --------------- START Unpacking signal 19 ------------------
+          /* --------------- START Unpacking signal 20 ------------------
            *  startBit                = 56
            *  length                  = 8
            *  desiredSignalByteLayout = BIGENDIAN
@@ -1719,11 +1751,11 @@ void bms_CANRcvFcn(void)
 
             {
               uint16_T result = (uint16_T) outValue;
-              CANRcvFcn_B.CANFDUnpack3_o20 = result;
+              CANRcvFcn_B.CANFDUnpack3_o21 = result;
             }
           }
 
-          /* --------------- START Unpacking signal 20 ------------------
+          /* --------------- START Unpacking signal 21 ------------------
            *  startBit                = 110
            *  length                  = 1
            *  desiredSignalByteLayout = BIGENDIAN
@@ -1753,11 +1785,11 @@ void bms_CANRcvFcn(void)
 
             {
               int16_T result = (int16_T) outValue;
-              CANRcvFcn_B.CANFDUnpack3_o21 = result;
+              CANRcvFcn_B.CANFDUnpack3_o22 = result;
             }
           }
 
-          /* --------------- START Unpacking signal 21 ------------------
+          /* --------------- START Unpacking signal 22 ------------------
            *  startBit                = 88
            *  length                  = 8
            *  desiredSignalByteLayout = BIGENDIAN
@@ -1787,11 +1819,11 @@ void bms_CANRcvFcn(void)
             {
               real32_T result = (real32_T) outValue;
               result = result * 0.1F;
-              CANRcvFcn_B.CANFDUnpack3_o22 = result;
+              CANRcvFcn_B.CANFDUnpack3_o23 = result;
             }
           }
 
-          /* --------------- START Unpacking signal 22 ------------------
+          /* --------------- START Unpacking signal 23 ------------------
            *  startBit                = 72
            *  length                  = 16
            *  desiredSignalByteLayout = BIGENDIAN
@@ -1822,11 +1854,11 @@ void bms_CANRcvFcn(void)
 
             {
               uint16_T result = (uint16_T) outValue;
-              CANRcvFcn_B.CANFDUnpack3_o23 = result;
+              CANRcvFcn_B.CANFDUnpack3_o24 = result;
             }
           }
 
-          /* --------------- START Unpacking signal 23 ------------------
+          /* --------------- START Unpacking signal 24 ------------------
            *  startBit                = 48
            *  length                  = 8
            *  desiredSignalByteLayout = BIGENDIAN
@@ -1855,11 +1887,11 @@ void bms_CANRcvFcn(void)
 
             {
               int16_T result = (int16_T) outValue;
-              CANRcvFcn_B.CANFDUnpack3_o24 = result;
+              CANRcvFcn_B.CANFDUnpack3_o25 = result;
             }
           }
 
-          /* --------------- START Unpacking signal 24 ------------------
+          /* --------------- START Unpacking signal 25 ------------------
            *  startBit                = 96
            *  length                  = 8
            *  desiredSignalByteLayout = BIGENDIAN
@@ -1889,11 +1921,11 @@ void bms_CANRcvFcn(void)
             {
               real32_T result = (real32_T) outValue;
               result = result * 0.1F;
-              CANRcvFcn_B.CANFDUnpack3_o25 = result;
+              CANRcvFcn_B.CANFDUnpack3_o26 = result;
             }
           }
 
-          /* --------------- START Unpacking signal 25 ------------------
+          /* --------------- START Unpacking signal 26 ------------------
            *  startBit                = 120
            *  length                  = 8
            *  desiredSignalByteLayout = BIGENDIAN
@@ -1922,11 +1954,11 @@ void bms_CANRcvFcn(void)
 
             {
               uint16_T result = (uint16_T) outValue;
-              CANRcvFcn_B.CANFDUnpack3_o26 = result;
+              CANRcvFcn_B.CANFDUnpack3_o27 = result;
             }
           }
 
-          /* --------------- START Unpacking signal 26 ------------------
+          /* --------------- START Unpacking signal 27 ------------------
            *  startBit                = 128
            *  length                  = 8
            *  desiredSignalByteLayout = BIGENDIAN
@@ -1955,11 +1987,11 @@ void bms_CANRcvFcn(void)
 
             {
               uint16_T result = (uint16_T) outValue;
-              CANRcvFcn_B.CANFDUnpack3_o27 = result;
+              CANRcvFcn_B.CANFDUnpack3_o28 = result;
             }
           }
 
-          /* --------------- START Unpacking signal 27 ------------------
+          /* --------------- START Unpacking signal 28 ------------------
            *  startBit                = 109
            *  length                  = 1
            *  desiredSignalByteLayout = BIGENDIAN
@@ -1989,11 +2021,11 @@ void bms_CANRcvFcn(void)
 
             {
               int16_T result = (int16_T) outValue;
-              CANRcvFcn_B.CANFDUnpack3_o28 = result;
+              CANRcvFcn_B.CANFDUnpack3_o29 = result;
             }
           }
 
-          /* --------------- START Unpacking signal 28 ------------------
+          /* --------------- START Unpacking signal 29 ------------------
            *  startBit                = 111
            *  length                  = 1
            *  desiredSignalByteLayout = BIGENDIAN
@@ -2023,11 +2055,11 @@ void bms_CANRcvFcn(void)
 
             {
               uint16_T result = (uint16_T) outValue;
-              CANRcvFcn_B.CANFDUnpack3_o29 = result;
+              CANRcvFcn_B.CANFDUnpack3_o30 = result;
             }
           }
 
-          /* --------------- START Unpacking signal 29 ------------------
+          /* --------------- START Unpacking signal 30 ------------------
            *  startBit                = 108
            *  length                  = 1
            *  desiredSignalByteLayout = BIGENDIAN
@@ -2057,11 +2089,11 @@ void bms_CANRcvFcn(void)
 
             {
               uint16_T result = (uint16_T) outValue;
-              CANRcvFcn_B.CANFDUnpack3_o30 = result;
+              CANRcvFcn_B.CANFDUnpack3_o31 = result;
             }
           }
 
-          /* --------------- START Unpacking signal 30 ------------------
+          /* --------------- START Unpacking signal 31 ------------------
            *  startBit                = 40
            *  length                  = 8
            *  desiredSignalByteLayout = BIGENDIAN
@@ -2091,11 +2123,11 @@ void bms_CANRcvFcn(void)
             {
               int16_T result = (int16_T) outValue;
               result = result + -40;
-              CANRcvFcn_B.CANFDUnpack3_o31 = result;
+              CANRcvFcn_B.CANFDUnpack3_o32 = result;
             }
           }
 
-          /* --------------- START Unpacking signal 31 ------------------
+          /* --------------- START Unpacking signal 32 ------------------
            *  startBit                = 112
            *  length                  = 8
            *  desiredSignalByteLayout = BIGENDIAN
@@ -2124,11 +2156,11 @@ void bms_CANRcvFcn(void)
 
             {
               uint8_T result = (uint8_T) outValue;
-              CANRcvFcn_B.CANFDUnpack3_o32 = result;
+              CANRcvFcn_B.CANFDUnpack3_o33 = result;
             }
           }
 
-          /* --------------- START Unpacking signal 32 ------------------
+          /* --------------- START Unpacking signal 33 ------------------
            *  startBit                = 136
            *  length                  = 8
            *  desiredSignalByteLayout = BIGENDIAN
@@ -2157,11 +2189,11 @@ void bms_CANRcvFcn(void)
 
             {
               uint16_T result = (uint16_T) outValue;
-              CANRcvFcn_B.CANFDUnpack3_o33 = result;
+              CANRcvFcn_B.CANFDUnpack3_o34 = result;
             }
           }
 
-          /* --------------- START Unpacking signal 33 ------------------
+          /* --------------- START Unpacking signal 34 ------------------
            *  startBit                = 144
            *  length                  = 8
            *  desiredSignalByteLayout = BIGENDIAN
@@ -2190,11 +2222,11 @@ void bms_CANRcvFcn(void)
 
             {
               uint16_T result = (uint16_T) outValue;
-              CANRcvFcn_B.CANFDUnpack3_o34 = result;
+              CANRcvFcn_B.CANFDUnpack3_o35 = result;
             }
           }
 
-          /* --------------- START Unpacking signal 34 ------------------
+          /* --------------- START Unpacking signal 35 ------------------
            *  startBit                = 107
            *  length                  = 1
            *  desiredSignalByteLayout = BIGENDIAN
@@ -2224,11 +2256,11 @@ void bms_CANRcvFcn(void)
 
             {
               uint16_T result = (uint16_T) outValue;
-              CANRcvFcn_B.CANFDUnpack3_o35 = result;
+              CANRcvFcn_B.CANFDUnpack3_o36 = result;
             }
           }
 
-          /* --------------- START Unpacking signal 35 ------------------
+          /* --------------- START Unpacking signal 36 ------------------
            *  startBit                = 80
            *  length                  = 8
            *  desiredSignalByteLayout = BIGENDIAN
@@ -2257,11 +2289,11 @@ void bms_CANRcvFcn(void)
 
             {
               uint16_T result = (uint16_T) outValue;
-              CANRcvFcn_B.CANFDUnpack3_o36 = result;
+              CANRcvFcn_B.CANFDUnpack3_o37 = result;
             }
           }
 
-          /* --------------- START Unpacking signal 36 ------------------
+          /* --------------- START Unpacking signal 37 ------------------
            *  startBit                = 24
            *  length                  = 8
            *  desiredSignalByteLayout = BIGENDIAN
@@ -2290,11 +2322,11 @@ void bms_CANRcvFcn(void)
 
             {
               uint16_T result = (uint16_T) outValue;
-              CANRcvFcn_B.CANFDUnpack3_o37 = result;
+              CANRcvFcn_B.CANFDUnpack3_o38 = result;
             }
           }
 
-          /* --------------- START Unpacking signal 37 ------------------
+          /* --------------- START Unpacking signal 38 ------------------
            *  startBit                = 0
            *  length                  = 8
            *  desiredSignalByteLayout = BIGENDIAN
@@ -2324,11 +2356,11 @@ void bms_CANRcvFcn(void)
             {
               int16_T result = (int16_T) outValue;
               result = result + -40;
-              CANRcvFcn_B.CANFDUnpack3_o38 = result;
+              CANRcvFcn_B.CANFDUnpack3_o39 = result;
             }
           }
 
-          /* --------------- START Unpacking signal 38 ------------------
+          /* --------------- START Unpacking signal 39 ------------------
            *  startBit                = 16
            *  length                  = 8
            *  desiredSignalByteLayout = BIGENDIAN
@@ -2358,11 +2390,11 @@ void bms_CANRcvFcn(void)
             {
               int16_T result = (int16_T) outValue;
               result = result + -40;
-              CANRcvFcn_B.CANFDUnpack3_o39 = result;
+              CANRcvFcn_B.CANFDUnpack3_o40 = result;
             }
           }
 
-          /* --------------- START Unpacking signal 39 ------------------
+          /* --------------- START Unpacking signal 40 ------------------
            *  startBit                = 8
            *  length                  = 8
            *  desiredSignalByteLayout = BIGENDIAN
@@ -2392,7 +2424,7 @@ void bms_CANRcvFcn(void)
             {
               int16_T result = (int16_T) outValue;
               result = result + -40;
-              CANRcvFcn_B.CANFDUnpack3_o40 = result;
+              CANRcvFcn_B.CANFDUnpack3_o41 = result;
             }
           }
         }
@@ -7690,9 +7722,9 @@ void bms_CANRcvFcn(void)
    *  Sum: '<S4>/Add1'
    */
   if ((uint8_T)(CANRcvFcn_B.CANFDUnpack4_o61 - 1) <= 1) {
-    y = (uint8_T)(CANRcvFcn_B.CANFDUnpack4_o61 - 1);
+    port_index = (uint8_T)(CANRcvFcn_B.CANFDUnpack4_o61 - 1);
   } else {
-    y = 1;
+    port_index = 1U;
   }
 
   /* SignalConversion generated from: '<S31>/ SFunction ' incorporates:
@@ -7824,20 +7856,20 @@ void bms_CANRcvFcn(void)
    *  Sum: '<S4>/Add1'
    */
   if ((uint8_T)(CANRcvFcn_B.CANFDUnpack4_o61 - 1) <= 1) {
-    tmp = (uint8_T)(CANRcvFcn_B.CANFDUnpack4_o61 - 1);
+    port_len = (uint8_T)(CANRcvFcn_B.CANFDUnpack4_o61 - 1);
   } else {
-    tmp = 1;
+    port_len = 1U;
   }
 
   /* MATLAB Function: '<S4>/MATLAB Function' incorporates:
    *  Saturate: '<S4>/Saturation1'
    */
-  tmp = (int32_T)((uint32_T)tmp * 60U + 1U);
-  port_index = (uint32_T)y * 60U;
-  rtb_DataTypeConversion27 = (uint16_T)(port_index + 1U);
-  c = (uint16_T)(port_index + 60U);
+  port_len = port_len * 60U + 1U;
+  rtb_DataTypeConversion27 = (uint16_T)(port_index * 60U + 1U);
+  c = (uint16_T)(port_index * 60U + 60U);
   for (i = rtb_DataTypeConversion27; i <= c; i++) {
-    CANRcvFcn_DW.tmp_h[i - 1] = rtb_TmpSignalConversionAtSFun_a[i - tmp];
+    CANRcvFcn_DW.tmp_a[i - 1] = rtb_TmpSignalConversionAtSFun_a[i - (int32_T)
+      port_len];
   }
 
   /* S-Function (scanfdunpack): '<S1>/CAN FD Unpack5' incorporates:
@@ -9072,29 +9104,29 @@ void bms_CANRcvFcn(void)
     CANRcvFcn_B.CANFDUnpack5_o30) >> 19);
 
   /* MATLAB Function: '<S5>/MATLAB Function2' */
-  tmp = (int32_T)(rtb_Saturation2 * 30U + 1U);
+  port_len = rtb_Saturation2 * 30U + 1U;
   b = (uint8_T)((uint8_T)(rtb_Saturation2 * 30) + 1);
   rtb_Saturation2 = (uint8_T)((uint8_T)(rtb_Saturation2 * 30) + 30);
   for (i_0 = b; i_0 <= rtb_Saturation2; i_0++) {
     CANRcvFcn_DW.tmp[i_0 - 1] = rtb_TmpSignalConversionAtSFu_kh[i_0 - (uint8_T)
-      tmp];
+      port_len];
   }
 
   /* CFunction: '<S12>/C Function11' incorporates:
    *  DataTypeConversion: '<S1>/Data Type Conversion32'
    */
-  CANRcvFcn_B.CFunction11 = (uint16_T)((int32_T)(CANRcvFcn_B.CFunction11 &
-    4294967294U) | CANRcvFcn_ConstB.DataTypeConversion27);
-  CANRcvFcn_B.CFunction11 = (uint16_T)((int32_T)(CANRcvFcn_B.CFunction11 &
-    4294967293U) | CANRcvFcn_ConstB.DataTypeConversion28 << 1);
-  CANRcvFcn_B.CFunction11 = (uint16_T)((int32_T)(CANRcvFcn_B.CFunction11 &
-    4294967291U) | CANRcvFcn_ConstB.DataTypeConversion29 << 2);
-  CANRcvFcn_B.CFunction11 = (uint16_T)((int32_T)(CANRcvFcn_B.CFunction11 &
-    4294967287U) | CANRcvFcn_ConstB.DataTypeConversion30 << 3);
-  CANRcvFcn_B.CFunction11 = (uint16_T)((int32_T)(CANRcvFcn_B.CFunction11 &
-    4294967279U) | (CANRcvFcn_B.CANFDUnpack3_o29 != 0) << 4);
-  CANRcvFcn_B.CFunction11 = (uint16_T)((int32_T)(CANRcvFcn_B.CFunction11 &
-    4294967263U) | CANRcvFcn_ConstB.DataTypeConversion38 << 5);
+  CANRcvFcn_B.CFunction11 = (uint16_T)((CANRcvFcn_B.CFunction11 & 4294967294U) |
+    CANRcvFcn_ConstB.DataTypeConversion27);
+  CANRcvFcn_B.CFunction11 = (uint16_T)((CANRcvFcn_B.CFunction11 & 4294967293U) |
+    (uint32_T)(CANRcvFcn_ConstB.DataTypeConversion28 << 1));
+  CANRcvFcn_B.CFunction11 = (uint16_T)((CANRcvFcn_B.CFunction11 & 4294967291U) |
+    (uint32_T)(CANRcvFcn_ConstB.DataTypeConversion29 << 2));
+  CANRcvFcn_B.CFunction11 = (uint16_T)((CANRcvFcn_B.CFunction11 & 4294967287U) |
+    (uint32_T)(CANRcvFcn_ConstB.DataTypeConversion30 << 3));
+  CANRcvFcn_B.CFunction11 = (uint16_T)((CANRcvFcn_B.CFunction11 & 4294967279U) |
+    (uint32_T)((CANRcvFcn_B.CANFDUnpack3_o30 != 0) << 4));
+  CANRcvFcn_B.CFunction11 = (uint16_T)((CANRcvFcn_B.CFunction11 & 4294967263U) |
+    (uint32_T)(CANRcvFcn_ConstB.DataTypeConversion38 << 5));
 
   /* DataTypeConversion: '<S1>/Data Type Conversion27' incorporates:
    *  Gain: '<S1>/Gain9'
@@ -9106,7 +9138,8 @@ void bms_CANRcvFcn(void)
   /* CFunction: '<S1>/U32_to_F32' incorporates:
    *  DataTypeConversion: '<S1>/Data Type Conversion40'
    */
-  CANRcvFcn_DW.U32_to_F32_float_value = rtb_DataTypeConversion29 /10.0f;// 整型转浮点
+  CANRcvFcn_DW.U32_to_F32_float_value = (uint32_T)rtb_DataTypeConversion29 /
+    10.0f;                             // 整型转浮点
 
   // 方法1：使用 memcpy（避免指针别名问题，推荐）
   memcpy(&CANRcvFcn_DW.U32_to_F32_float_bits,
@@ -9133,7 +9166,7 @@ void bms_CANRcvFcn(void)
   /* CFunction: '<S1>/U32_to_F1' incorporates:
    *  DataTypeConversion: '<S1>/Data Type Conversion33'
    */
-  CANRcvFcn_DW.U32_to_F1_float_value = rtb_DataTypeConversion27/10.0f;// 整型转浮点
+  CANRcvFcn_DW.U32_to_F1_float_value = (uint32_T)rtb_DataTypeConversion27/10.0f;// 整型转浮点
 
   // 方法1：使用 memcpy（避免指针别名问题，推荐）
   memcpy(&CANRcvFcn_DW.U32_to_F1_float_bits, &CANRcvFcn_DW.U32_to_F1_float_value,
@@ -9157,12 +9190,12 @@ void bms_CANRcvFcn(void)
     CANRcvFcn_DW.U32_to_F1_byteA;      // BA 寄存器
 
   /* S-Function (scanunpack): '<S3>/0x180110E4' incorporates:
-   *  Inport: '<Root>/CANMsg'
+   *  Inport: '<Root>/CANRcvMsg'
    */
   {
     /* S-Function (scanunpack): '<S3>/0x180110E4' */
-    if ((8 == CANMsg.Length) && (CANMsg.ID != INVALID_CAN_ID) ) {
-      if ((402985169 == CANMsg.ID) && (1U == CANMsg.Extended) ) {
+    if ((8 == CANRcvMsg.Length) && (CANRcvMsg.ID != INVALID_CAN_ID) ) {
+      if ((402985169 == CANRcvMsg.ID) && (1U == CANRcvMsg.Extended) ) {
         {
           /* --------------- START Unpacking signal 0 ------------------
            *  startBit                = 8
@@ -9182,7 +9215,7 @@ void bms_CANRcvFcn(void)
                 uint8_T tempValue = (uint8_T) (0);
 
                 {
-                  tempValue = tempValue | (uint8_T)(CANMsg.Data[1]);
+                  tempValue = tempValue | (uint8_T)(CANRcvMsg.Data[1]);
                 }
 
                 unpackedValue = tempValue;
@@ -9215,7 +9248,7 @@ void bms_CANRcvFcn(void)
                 uint8_T tempValue = (uint8_T) (0);
 
                 {
-                  tempValue = tempValue | (uint8_T)(CANMsg.Data[0]);
+                  tempValue = tempValue | (uint8_T)(CANRcvMsg.Data[0]);
                 }
 
                 unpackedValue = tempValue;
@@ -9235,12 +9268,12 @@ void bms_CANRcvFcn(void)
   }
 
   /* S-Function (scanunpack): '<S3>/0x180110E2' incorporates:
-   *  Inport: '<Root>/CANMsg'
+   *  Inport: '<Root>/CANRcvMsg'
    */
   {
     /* S-Function (scanunpack): '<S3>/0x180110E2' */
-    if ((8 == CANMsg.Length) && (CANMsg.ID != INVALID_CAN_ID) ) {
-      if ((402985170 == CANMsg.ID) && (1U == CANMsg.Extended) ) {
+    if ((8 == CANRcvMsg.Length) && (CANRcvMsg.ID != INVALID_CAN_ID) ) {
+      if ((402985170 == CANRcvMsg.ID) && (1U == CANRcvMsg.Extended) ) {
         {
           /* --------------- START Unpacking signal 0 ------------------
            *  startBit                = 8
@@ -9260,7 +9293,7 @@ void bms_CANRcvFcn(void)
                 uint8_T tempValue = (uint8_T) (0);
 
                 {
-                  tempValue = tempValue | (uint8_T)(CANMsg.Data[1]);
+                  tempValue = tempValue | (uint8_T)(CANRcvMsg.Data[1]);
                 }
 
                 unpackedValue = tempValue;
@@ -9293,7 +9326,7 @@ void bms_CANRcvFcn(void)
                 uint8_T tempValue = (uint8_T) (0);
 
                 {
-                  tempValue = tempValue | (uint8_T)(CANMsg.Data[0]);
+                  tempValue = tempValue | (uint8_T)(CANRcvMsg.Data[0]);
                 }
 
                 unpackedValue = tempValue;
@@ -9313,12 +9346,12 @@ void bms_CANRcvFcn(void)
   }
 
   /* S-Function (scanunpack): '<S3>/0x180110E1' incorporates:
-   *  Inport: '<Root>/CANMsg'
+   *  Inport: '<Root>/CANRcvMsg'
    */
   {
     /* S-Function (scanunpack): '<S3>/0x180110E1' */
-    if ((8 == CANMsg.Length) && (CANMsg.ID != INVALID_CAN_ID) ) {
-      if ((402985171 == CANMsg.ID) && (1U == CANMsg.Extended) ) {
+    if ((8 == CANRcvMsg.Length) && (CANRcvMsg.ID != INVALID_CAN_ID) ) {
+      if ((402985171 == CANRcvMsg.ID) && (1U == CANRcvMsg.Extended) ) {
         {
           /* --------------- START Unpacking signal 0 ------------------
            *  startBit                = 8
@@ -9338,7 +9371,7 @@ void bms_CANRcvFcn(void)
                 uint8_T tempValue = (uint8_T) (0);
 
                 {
-                  tempValue = tempValue | (uint8_T)(CANMsg.Data[1]);
+                  tempValue = tempValue | (uint8_T)(CANRcvMsg.Data[1]);
                 }
 
                 unpackedValue = tempValue;
@@ -9371,7 +9404,7 @@ void bms_CANRcvFcn(void)
                 uint8_T tempValue = (uint8_T) (0);
 
                 {
-                  tempValue = tempValue | (uint8_T)(CANMsg.Data[0]);
+                  tempValue = tempValue | (uint8_T)(CANRcvMsg.Data[0]);
                 }
 
                 unpackedValue = tempValue;
@@ -9391,12 +9424,12 @@ void bms_CANRcvFcn(void)
   }
 
   /* S-Function (scanunpack): '<S3>/0x180110E5' incorporates:
-   *  Inport: '<Root>/CANMsg'
+   *  Inport: '<Root>/CANRcvMsg'
    */
   {
     /* S-Function (scanunpack): '<S3>/0x180110E5' */
-    if ((8 == CANMsg.Length) && (CANMsg.ID != INVALID_CAN_ID) ) {
-      if ((402985172 == CANMsg.ID) && (1U == CANMsg.Extended) ) {
+    if ((8 == CANRcvMsg.Length) && (CANRcvMsg.ID != INVALID_CAN_ID) ) {
+      if ((402985172 == CANRcvMsg.ID) && (1U == CANRcvMsg.Extended) ) {
         {
           /* --------------- START Unpacking signal 0 ------------------
            *  startBit                = 8
@@ -9416,7 +9449,7 @@ void bms_CANRcvFcn(void)
                 uint8_T tempValue = (uint8_T) (0);
 
                 {
-                  tempValue = tempValue | (uint8_T)(CANMsg.Data[1]);
+                  tempValue = tempValue | (uint8_T)(CANRcvMsg.Data[1]);
                 }
 
                 unpackedValue = tempValue;
@@ -9449,7 +9482,7 @@ void bms_CANRcvFcn(void)
                 uint8_T tempValue = (uint8_T) (0);
 
                 {
-                  tempValue = tempValue | (uint8_T)(CANMsg.Data[0]);
+                  tempValue = tempValue | (uint8_T)(CANRcvMsg.Data[0]);
                 }
 
                 unpackedValue = tempValue;
@@ -9469,12 +9502,12 @@ void bms_CANRcvFcn(void)
   }
 
   /* S-Function (scanunpack): '<S3>/0x180110E3' incorporates:
-   *  Inport: '<Root>/CANMsg'
+   *  Inport: '<Root>/CANRcvMsg'
    */
   {
     /* S-Function (scanunpack): '<S3>/0x180110E3' */
-    if ((8 == CANMsg.Length) && (CANMsg.ID != INVALID_CAN_ID) ) {
-      if ((402985173 == CANMsg.ID) && (1U == CANMsg.Extended) ) {
+    if ((8 == CANRcvMsg.Length) && (CANRcvMsg.ID != INVALID_CAN_ID) ) {
+      if ((402985173 == CANRcvMsg.ID) && (1U == CANRcvMsg.Extended) ) {
         {
           /* --------------- START Unpacking signal 0 ------------------
            *  startBit                = 8
@@ -9494,7 +9527,7 @@ void bms_CANRcvFcn(void)
                 uint8_T tempValue = (uint8_T) (0);
 
                 {
-                  tempValue = tempValue | (uint8_T)(CANMsg.Data[1]);
+                  tempValue = tempValue | (uint8_T)(CANRcvMsg.Data[1]);
                 }
 
                 unpackedValue = tempValue;
@@ -9527,7 +9560,7 @@ void bms_CANRcvFcn(void)
                 uint8_T tempValue = (uint8_T) (0);
 
                 {
-                  tempValue = tempValue | (uint8_T)(CANMsg.Data[0]);
+                  tempValue = tempValue | (uint8_T)(CANRcvMsg.Data[0]);
                 }
 
                 unpackedValue = tempValue;
@@ -9547,12 +9580,12 @@ void bms_CANRcvFcn(void)
   }
 
   /* S-Function (scanunpack): '<S3>/0x180110E7' incorporates:
-   *  Inport: '<Root>/CANMsg'
+   *  Inport: '<Root>/CANRcvMsg'
    */
   {
     /* S-Function (scanunpack): '<S3>/0x180110E7' */
-    if ((8 == CANMsg.Length) && (CANMsg.ID != INVALID_CAN_ID) ) {
-      if ((402985174 == CANMsg.ID) && (1U == CANMsg.Extended) ) {
+    if ((8 == CANRcvMsg.Length) && (CANRcvMsg.ID != INVALID_CAN_ID) ) {
+      if ((402985174 == CANRcvMsg.ID) && (1U == CANRcvMsg.Extended) ) {
         {
           /* --------------- START Unpacking signal 0 ------------------
            *  startBit                = 8
@@ -9572,7 +9605,7 @@ void bms_CANRcvFcn(void)
                 uint8_T tempValue = (uint8_T) (0);
 
                 {
-                  tempValue = tempValue | (uint8_T)(CANMsg.Data[1]);
+                  tempValue = tempValue | (uint8_T)(CANRcvMsg.Data[1]);
                 }
 
                 unpackedValue = tempValue;
@@ -9605,7 +9638,7 @@ void bms_CANRcvFcn(void)
                 uint8_T tempValue = (uint8_T) (0);
 
                 {
-                  tempValue = tempValue | (uint8_T)(CANMsg.Data[0]);
+                  tempValue = tempValue | (uint8_T)(CANRcvMsg.Data[0]);
                 }
 
                 unpackedValue = tempValue;
@@ -9625,12 +9658,12 @@ void bms_CANRcvFcn(void)
   }
 
   /* S-Function (scanunpack): '<S3>/0x180110E6' incorporates:
-   *  Inport: '<Root>/CANMsg'
+   *  Inport: '<Root>/CANRcvMsg'
    */
   {
     /* S-Function (scanunpack): '<S3>/0x180110E6' */
-    if ((8 == CANMsg.Length) && (CANMsg.ID != INVALID_CAN_ID) ) {
-      if ((402985175 == CANMsg.ID) && (1U == CANMsg.Extended) ) {
+    if ((8 == CANRcvMsg.Length) && (CANRcvMsg.ID != INVALID_CAN_ID) ) {
+      if ((402985175 == CANRcvMsg.ID) && (1U == CANRcvMsg.Extended) ) {
         {
           /* --------------- START Unpacking signal 0 ------------------
            *  startBit                = 8
@@ -9650,7 +9683,7 @@ void bms_CANRcvFcn(void)
                 uint8_T tempValue = (uint8_T) (0);
 
                 {
-                  tempValue = tempValue | (uint8_T)(CANMsg.Data[1]);
+                  tempValue = tempValue | (uint8_T)(CANRcvMsg.Data[1]);
                 }
 
                 unpackedValue = tempValue;
@@ -9683,7 +9716,7 @@ void bms_CANRcvFcn(void)
                 uint8_T tempValue = (uint8_T) (0);
 
                 {
-                  tempValue = tempValue | (uint8_T)(CANMsg.Data[0]);
+                  tempValue = tempValue | (uint8_T)(CANRcvMsg.Data[0]);
                 }
 
                 unpackedValue = tempValue;
@@ -9703,12 +9736,12 @@ void bms_CANRcvFcn(void)
   }
 
   /* S-Function (scanunpack): '<S3>/0x180110E9' incorporates:
-   *  Inport: '<Root>/CANMsg'
+   *  Inport: '<Root>/CANRcvMsg'
    */
   {
     /* S-Function (scanunpack): '<S3>/0x180110E9' */
-    if ((8 == CANMsg.Length) && (CANMsg.ID != INVALID_CAN_ID) ) {
-      if ((402985176 == CANMsg.ID) && (1U == CANMsg.Extended) ) {
+    if ((8 == CANRcvMsg.Length) && (CANRcvMsg.ID != INVALID_CAN_ID) ) {
+      if ((402985176 == CANRcvMsg.ID) && (1U == CANRcvMsg.Extended) ) {
         {
           /* --------------- START Unpacking signal 0 ------------------
            *  startBit                = 8
@@ -9728,7 +9761,7 @@ void bms_CANRcvFcn(void)
                 uint8_T tempValue = (uint8_T) (0);
 
                 {
-                  tempValue = tempValue | (uint8_T)(CANMsg.Data[1]);
+                  tempValue = tempValue | (uint8_T)(CANRcvMsg.Data[1]);
                 }
 
                 unpackedValue = tempValue;
@@ -9761,7 +9794,7 @@ void bms_CANRcvFcn(void)
                 uint8_T tempValue = (uint8_T) (0);
 
                 {
-                  tempValue = tempValue | (uint8_T)(CANMsg.Data[0]);
+                  tempValue = tempValue | (uint8_T)(CANRcvMsg.Data[0]);
                 }
 
                 unpackedValue = tempValue;
@@ -9781,12 +9814,12 @@ void bms_CANRcvFcn(void)
   }
 
   /* S-Function (scanunpack): '<S3>/0x180110E8' incorporates:
-   *  Inport: '<Root>/CANMsg'
+   *  Inport: '<Root>/CANRcvMsg'
    */
   {
     /* S-Function (scanunpack): '<S3>/0x180110E8' */
-    if ((8 == CANMsg.Length) && (CANMsg.ID != INVALID_CAN_ID) ) {
-      if ((402985177 == CANMsg.ID) && (1U == CANMsg.Extended) ) {
+    if ((8 == CANRcvMsg.Length) && (CANRcvMsg.ID != INVALID_CAN_ID) ) {
+      if ((402985177 == CANRcvMsg.ID) && (1U == CANRcvMsg.Extended) ) {
         {
           /* --------------- START Unpacking signal 0 ------------------
            *  startBit                = 8
@@ -9806,7 +9839,7 @@ void bms_CANRcvFcn(void)
                 uint8_T tempValue = (uint8_T) (0);
 
                 {
-                  tempValue = tempValue | (uint8_T)(CANMsg.Data[1]);
+                  tempValue = tempValue | (uint8_T)(CANRcvMsg.Data[1]);
                 }
 
                 unpackedValue = tempValue;
@@ -9839,7 +9872,7 @@ void bms_CANRcvFcn(void)
                 uint8_T tempValue = (uint8_T) (0);
 
                 {
-                  tempValue = tempValue | (uint8_T)(CANMsg.Data[0]);
+                  tempValue = tempValue | (uint8_T)(CANRcvMsg.Data[0]);
                 }
 
                 unpackedValue = tempValue;
@@ -9859,12 +9892,12 @@ void bms_CANRcvFcn(void)
   }
 
   /* S-Function (scanunpack): '<S3>/0x180110E11' incorporates:
-   *  Inport: '<Root>/CANMsg'
+   *  Inport: '<Root>/CANRcvMsg'
    */
   {
     /* S-Function (scanunpack): '<S3>/0x180110E11' */
-    if ((8 == CANMsg.Length) && (CANMsg.ID != INVALID_CAN_ID) ) {
-      if ((402985178 == CANMsg.ID) && (1U == CANMsg.Extended) ) {
+    if ((8 == CANRcvMsg.Length) && (CANRcvMsg.ID != INVALID_CAN_ID) ) {
+      if ((402985178 == CANRcvMsg.ID) && (1U == CANRcvMsg.Extended) ) {
         {
           /* --------------- START Unpacking signal 0 ------------------
            *  startBit                = 8
@@ -9884,7 +9917,7 @@ void bms_CANRcvFcn(void)
                 uint8_T tempValue = (uint8_T) (0);
 
                 {
-                  tempValue = tempValue | (uint8_T)(CANMsg.Data[1]);
+                  tempValue = tempValue | (uint8_T)(CANRcvMsg.Data[1]);
                 }
 
                 unpackedValue = tempValue;
@@ -9917,7 +9950,7 @@ void bms_CANRcvFcn(void)
                 uint8_T tempValue = (uint8_T) (0);
 
                 {
-                  tempValue = tempValue | (uint8_T)(CANMsg.Data[0]);
+                  tempValue = tempValue | (uint8_T)(CANRcvMsg.Data[0]);
                 }
 
                 unpackedValue = tempValue;
@@ -9937,12 +9970,12 @@ void bms_CANRcvFcn(void)
   }
 
   /* S-Function (scanunpack): '<S3>/0x180110E10' incorporates:
-   *  Inport: '<Root>/CANMsg'
+   *  Inport: '<Root>/CANRcvMsg'
    */
   {
     /* S-Function (scanunpack): '<S3>/0x180110E10' */
-    if ((8 == CANMsg.Length) && (CANMsg.ID != INVALID_CAN_ID) ) {
-      if ((402985179 == CANMsg.ID) && (1U == CANMsg.Extended) ) {
+    if ((8 == CANRcvMsg.Length) && (CANRcvMsg.ID != INVALID_CAN_ID) ) {
+      if ((402985179 == CANRcvMsg.ID) && (1U == CANRcvMsg.Extended) ) {
         {
           /* --------------- START Unpacking signal 0 ------------------
            *  startBit                = 8
@@ -9962,7 +9995,7 @@ void bms_CANRcvFcn(void)
                 uint8_T tempValue = (uint8_T) (0);
 
                 {
-                  tempValue = tempValue | (uint8_T)(CANMsg.Data[1]);
+                  tempValue = tempValue | (uint8_T)(CANRcvMsg.Data[1]);
                 }
 
                 unpackedValue = tempValue;
@@ -9995,7 +10028,7 @@ void bms_CANRcvFcn(void)
                 uint8_T tempValue = (uint8_T) (0);
 
                 {
-                  tempValue = tempValue | (uint8_T)(CANMsg.Data[0]);
+                  tempValue = tempValue | (uint8_T)(CANRcvMsg.Data[0]);
                 }
 
                 unpackedValue = tempValue;
@@ -10015,12 +10048,12 @@ void bms_CANRcvFcn(void)
   }
 
   /* S-Function (scanunpack): '<S3>/0x180110E13' incorporates:
-   *  Inport: '<Root>/CANMsg'
+   *  Inport: '<Root>/CANRcvMsg'
    */
   {
     /* S-Function (scanunpack): '<S3>/0x180110E13' */
-    if ((8 == CANMsg.Length) && (CANMsg.ID != INVALID_CAN_ID) ) {
-      if ((402985180 == CANMsg.ID) && (1U == CANMsg.Extended) ) {
+    if ((8 == CANRcvMsg.Length) && (CANRcvMsg.ID != INVALID_CAN_ID) ) {
+      if ((402985180 == CANRcvMsg.ID) && (1U == CANRcvMsg.Extended) ) {
         {
           /* --------------- START Unpacking signal 0 ------------------
            *  startBit                = 8
@@ -10040,7 +10073,7 @@ void bms_CANRcvFcn(void)
                 uint8_T tempValue = (uint8_T) (0);
 
                 {
-                  tempValue = tempValue | (uint8_T)(CANMsg.Data[1]);
+                  tempValue = tempValue | (uint8_T)(CANRcvMsg.Data[1]);
                 }
 
                 unpackedValue = tempValue;
@@ -10073,7 +10106,7 @@ void bms_CANRcvFcn(void)
                 uint8_T tempValue = (uint8_T) (0);
 
                 {
-                  tempValue = tempValue | (uint8_T)(CANMsg.Data[0]);
+                  tempValue = tempValue | (uint8_T)(CANRcvMsg.Data[0]);
                 }
 
                 unpackedValue = tempValue;
@@ -10093,12 +10126,12 @@ void bms_CANRcvFcn(void)
   }
 
   /* S-Function (scanunpack): '<S3>/0x180110E12' incorporates:
-   *  Inport: '<Root>/CANMsg'
+   *  Inport: '<Root>/CANRcvMsg'
    */
   {
     /* S-Function (scanunpack): '<S3>/0x180110E12' */
-    if ((8 == CANMsg.Length) && (CANMsg.ID != INVALID_CAN_ID) ) {
-      if ((402985181 == CANMsg.ID) && (1U == CANMsg.Extended) ) {
+    if ((8 == CANRcvMsg.Length) && (CANRcvMsg.ID != INVALID_CAN_ID) ) {
+      if ((402985181 == CANRcvMsg.ID) && (1U == CANRcvMsg.Extended) ) {
         {
           /* --------------- START Unpacking signal 0 ------------------
            *  startBit                = 8
@@ -10118,7 +10151,7 @@ void bms_CANRcvFcn(void)
                 uint8_T tempValue = (uint8_T) (0);
 
                 {
-                  tempValue = tempValue | (uint8_T)(CANMsg.Data[1]);
+                  tempValue = tempValue | (uint8_T)(CANRcvMsg.Data[1]);
                 }
 
                 unpackedValue = tempValue;
@@ -10151,7 +10184,7 @@ void bms_CANRcvFcn(void)
                 uint8_T tempValue = (uint8_T) (0);
 
                 {
-                  tempValue = tempValue | (uint8_T)(CANMsg.Data[0]);
+                  tempValue = tempValue | (uint8_T)(CANRcvMsg.Data[0]);
                 }
 
                 unpackedValue = tempValue;
@@ -10171,12 +10204,12 @@ void bms_CANRcvFcn(void)
   }
 
   /* S-Function (scanunpack): '<S3>/0x180110E15' incorporates:
-   *  Inport: '<Root>/CANMsg'
+   *  Inport: '<Root>/CANRcvMsg'
    */
   {
     /* S-Function (scanunpack): '<S3>/0x180110E15' */
-    if ((8 == CANMsg.Length) && (CANMsg.ID != INVALID_CAN_ID) ) {
-      if ((402985182 == CANMsg.ID) && (1U == CANMsg.Extended) ) {
+    if ((8 == CANRcvMsg.Length) && (CANRcvMsg.ID != INVALID_CAN_ID) ) {
+      if ((402985182 == CANRcvMsg.ID) && (1U == CANRcvMsg.Extended) ) {
         {
           /* --------------- START Unpacking signal 0 ------------------
            *  startBit                = 8
@@ -10196,7 +10229,7 @@ void bms_CANRcvFcn(void)
                 uint8_T tempValue = (uint8_T) (0);
 
                 {
-                  tempValue = tempValue | (uint8_T)(CANMsg.Data[1]);
+                  tempValue = tempValue | (uint8_T)(CANRcvMsg.Data[1]);
                 }
 
                 unpackedValue = tempValue;
@@ -10229,7 +10262,7 @@ void bms_CANRcvFcn(void)
                 uint8_T tempValue = (uint8_T) (0);
 
                 {
-                  tempValue = tempValue | (uint8_T)(CANMsg.Data[0]);
+                  tempValue = tempValue | (uint8_T)(CANRcvMsg.Data[0]);
                 }
 
                 unpackedValue = tempValue;
@@ -10249,12 +10282,12 @@ void bms_CANRcvFcn(void)
   }
 
   /* S-Function (scanunpack): '<S3>/0x180110E14' incorporates:
-   *  Inport: '<Root>/CANMsg'
+   *  Inport: '<Root>/CANRcvMsg'
    */
   {
     /* S-Function (scanunpack): '<S3>/0x180110E14' */
-    if ((8 == CANMsg.Length) && (CANMsg.ID != INVALID_CAN_ID) ) {
-      if ((402985183 == CANMsg.ID) && (1U == CANMsg.Extended) ) {
+    if ((8 == CANRcvMsg.Length) && (CANRcvMsg.ID != INVALID_CAN_ID) ) {
+      if ((402985183 == CANRcvMsg.ID) && (1U == CANRcvMsg.Extended) ) {
         {
           /* --------------- START Unpacking signal 0 ------------------
            *  startBit                = 8
@@ -10274,7 +10307,7 @@ void bms_CANRcvFcn(void)
                 uint8_T tempValue = (uint8_T) (0);
 
                 {
-                  tempValue = tempValue | (uint8_T)(CANMsg.Data[1]);
+                  tempValue = tempValue | (uint8_T)(CANRcvMsg.Data[1]);
                 }
 
                 unpackedValue = tempValue;
@@ -10307,7 +10340,7 @@ void bms_CANRcvFcn(void)
                 uint8_T tempValue = (uint8_T) (0);
 
                 {
-                  tempValue = tempValue | (uint8_T)(CANMsg.Data[0]);
+                  tempValue = tempValue | (uint8_T)(CANRcvMsg.Data[0]);
                 }
 
                 unpackedValue = tempValue;
@@ -10327,12 +10360,12 @@ void bms_CANRcvFcn(void)
   }
 
   /* S-Function (scanunpack): '<S3>/0x180110E16' incorporates:
-   *  Inport: '<Root>/CANMsg'
+   *  Inport: '<Root>/CANRcvMsg'
    */
   {
     /* S-Function (scanunpack): '<S3>/0x180110E16' */
-    if ((8 == CANMsg.Length) && (CANMsg.ID != INVALID_CAN_ID) ) {
-      if ((402919633 == CANMsg.ID) && (1U == CANMsg.Extended) ) {
+    if ((8 == CANRcvMsg.Length) && (CANRcvMsg.ID != INVALID_CAN_ID) ) {
+      if ((402919633 == CANRcvMsg.ID) && (1U == CANRcvMsg.Extended) ) {
         {
           /* --------------- START Unpacking signal 0 ------------------
            *  startBit                = 24
@@ -10352,13 +10385,13 @@ void bms_CANRcvFcn(void)
                 uint32_T tempValue = (uint32_T) (0);
 
                 {
-                  tempValue = tempValue | (uint32_T)(CANMsg.Data[3]);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[2]) <<
-                    8);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[1]) <<
-                    16);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[0]) <<
-                    24);
+                  tempValue = tempValue | (uint32_T)(CANRcvMsg.Data[3]);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[2])
+                    << 8);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[1])
+                    << 16);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[0])
+                    << 24);
                 }
 
                 unpackedValue = tempValue;
@@ -10391,13 +10424,13 @@ void bms_CANRcvFcn(void)
                 uint32_T tempValue = (uint32_T) (0);
 
                 {
-                  tempValue = tempValue | (uint32_T)(CANMsg.Data[7]);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[6]) <<
-                    8);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[5]) <<
-                    16);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[4]) <<
-                    24);
+                  tempValue = tempValue | (uint32_T)(CANRcvMsg.Data[7]);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[6])
+                    << 8);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[5])
+                    << 16);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[4])
+                    << 24);
                 }
 
                 unpackedValue = tempValue;
@@ -10417,12 +10450,12 @@ void bms_CANRcvFcn(void)
   }
 
   /* S-Function (scanunpack): '<S3>/0x180110E17' incorporates:
-   *  Inport: '<Root>/CANMsg'
+   *  Inport: '<Root>/CANRcvMsg'
    */
   {
     /* S-Function (scanunpack): '<S3>/0x180110E17' */
-    if ((8 == CANMsg.Length) && (CANMsg.ID != INVALID_CAN_ID) ) {
-      if ((402919634 == CANMsg.ID) && (1U == CANMsg.Extended) ) {
+    if ((8 == CANRcvMsg.Length) && (CANRcvMsg.ID != INVALID_CAN_ID) ) {
+      if ((402919634 == CANRcvMsg.ID) && (1U == CANRcvMsg.Extended) ) {
         {
           /* --------------- START Unpacking signal 0 ------------------
            *  startBit                = 24
@@ -10442,13 +10475,13 @@ void bms_CANRcvFcn(void)
                 uint32_T tempValue = (uint32_T) (0);
 
                 {
-                  tempValue = tempValue | (uint32_T)(CANMsg.Data[3]);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[2]) <<
-                    8);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[1]) <<
-                    16);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[0]) <<
-                    24);
+                  tempValue = tempValue | (uint32_T)(CANRcvMsg.Data[3]);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[2])
+                    << 8);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[1])
+                    << 16);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[0])
+                    << 24);
                 }
 
                 unpackedValue = tempValue;
@@ -10481,13 +10514,13 @@ void bms_CANRcvFcn(void)
                 uint32_T tempValue = (uint32_T) (0);
 
                 {
-                  tempValue = tempValue | (uint32_T)(CANMsg.Data[7]);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[6]) <<
-                    8);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[5]) <<
-                    16);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[4]) <<
-                    24);
+                  tempValue = tempValue | (uint32_T)(CANRcvMsg.Data[7]);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[6])
+                    << 8);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[5])
+                    << 16);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[4])
+                    << 24);
                 }
 
                 unpackedValue = tempValue;
@@ -10507,12 +10540,12 @@ void bms_CANRcvFcn(void)
   }
 
   /* S-Function (scanunpack): '<S3>/0x180110E18' incorporates:
-   *  Inport: '<Root>/CANMsg'
+   *  Inport: '<Root>/CANRcvMsg'
    */
   {
     /* S-Function (scanunpack): '<S3>/0x180110E18' */
-    if ((8 == CANMsg.Length) && (CANMsg.ID != INVALID_CAN_ID) ) {
-      if ((402919635 == CANMsg.ID) && (1U == CANMsg.Extended) ) {
+    if ((8 == CANRcvMsg.Length) && (CANRcvMsg.ID != INVALID_CAN_ID) ) {
+      if ((402919635 == CANRcvMsg.ID) && (1U == CANRcvMsg.Extended) ) {
         {
           /* --------------- START Unpacking signal 0 ------------------
            *  startBit                = 24
@@ -10532,13 +10565,13 @@ void bms_CANRcvFcn(void)
                 uint32_T tempValue = (uint32_T) (0);
 
                 {
-                  tempValue = tempValue | (uint32_T)(CANMsg.Data[3]);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[2]) <<
-                    8);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[1]) <<
-                    16);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[0]) <<
-                    24);
+                  tempValue = tempValue | (uint32_T)(CANRcvMsg.Data[3]);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[2])
+                    << 8);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[1])
+                    << 16);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[0])
+                    << 24);
                 }
 
                 unpackedValue = tempValue;
@@ -10571,13 +10604,13 @@ void bms_CANRcvFcn(void)
                 uint32_T tempValue = (uint32_T) (0);
 
                 {
-                  tempValue = tempValue | (uint32_T)(CANMsg.Data[7]);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[6]) <<
-                    8);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[5]) <<
-                    16);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[4]) <<
-                    24);
+                  tempValue = tempValue | (uint32_T)(CANRcvMsg.Data[7]);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[6])
+                    << 8);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[5])
+                    << 16);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[4])
+                    << 24);
                 }
 
                 unpackedValue = tempValue;
@@ -10597,12 +10630,12 @@ void bms_CANRcvFcn(void)
   }
 
   /* S-Function (scanunpack): '<S3>/0x180110E19' incorporates:
-   *  Inport: '<Root>/CANMsg'
+   *  Inport: '<Root>/CANRcvMsg'
    */
   {
     /* S-Function (scanunpack): '<S3>/0x180110E19' */
-    if ((8 == CANMsg.Length) && (CANMsg.ID != INVALID_CAN_ID) ) {
-      if ((402919636 == CANMsg.ID) && (1U == CANMsg.Extended) ) {
+    if ((8 == CANRcvMsg.Length) && (CANRcvMsg.ID != INVALID_CAN_ID) ) {
+      if ((402919636 == CANRcvMsg.ID) && (1U == CANRcvMsg.Extended) ) {
         {
           /* --------------- START Unpacking signal 0 ------------------
            *  startBit                = 24
@@ -10622,13 +10655,13 @@ void bms_CANRcvFcn(void)
                 uint32_T tempValue = (uint32_T) (0);
 
                 {
-                  tempValue = tempValue | (uint32_T)(CANMsg.Data[3]);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[2]) <<
-                    8);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[1]) <<
-                    16);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[0]) <<
-                    24);
+                  tempValue = tempValue | (uint32_T)(CANRcvMsg.Data[3]);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[2])
+                    << 8);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[1])
+                    << 16);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[0])
+                    << 24);
                 }
 
                 unpackedValue = tempValue;
@@ -10661,13 +10694,13 @@ void bms_CANRcvFcn(void)
                 uint32_T tempValue = (uint32_T) (0);
 
                 {
-                  tempValue = tempValue | (uint32_T)(CANMsg.Data[7]);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[6]) <<
-                    8);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[5]) <<
-                    16);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[4]) <<
-                    24);
+                  tempValue = tempValue | (uint32_T)(CANRcvMsg.Data[7]);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[6])
+                    << 8);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[5])
+                    << 16);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[4])
+                    << 24);
                 }
 
                 unpackedValue = tempValue;
@@ -10687,12 +10720,12 @@ void bms_CANRcvFcn(void)
   }
 
   /* S-Function (scanunpack): '<S3>/0x180110E20' incorporates:
-   *  Inport: '<Root>/CANMsg'
+   *  Inport: '<Root>/CANRcvMsg'
    */
   {
     /* S-Function (scanunpack): '<S3>/0x180110E20' */
-    if ((8 == CANMsg.Length) && (CANMsg.ID != INVALID_CAN_ID) ) {
-      if ((402919637 == CANMsg.ID) && (1U == CANMsg.Extended) ) {
+    if ((8 == CANRcvMsg.Length) && (CANRcvMsg.ID != INVALID_CAN_ID) ) {
+      if ((402919637 == CANRcvMsg.ID) && (1U == CANRcvMsg.Extended) ) {
         {
           /* --------------- START Unpacking signal 0 ------------------
            *  startBit                = 24
@@ -10712,13 +10745,13 @@ void bms_CANRcvFcn(void)
                 uint32_T tempValue = (uint32_T) (0);
 
                 {
-                  tempValue = tempValue | (uint32_T)(CANMsg.Data[3]);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[2]) <<
-                    8);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[1]) <<
-                    16);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[0]) <<
-                    24);
+                  tempValue = tempValue | (uint32_T)(CANRcvMsg.Data[3]);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[2])
+                    << 8);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[1])
+                    << 16);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[0])
+                    << 24);
                 }
 
                 unpackedValue = tempValue;
@@ -10751,13 +10784,13 @@ void bms_CANRcvFcn(void)
                 uint32_T tempValue = (uint32_T) (0);
 
                 {
-                  tempValue = tempValue | (uint32_T)(CANMsg.Data[7]);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[6]) <<
-                    8);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[5]) <<
-                    16);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[4]) <<
-                    24);
+                  tempValue = tempValue | (uint32_T)(CANRcvMsg.Data[7]);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[6])
+                    << 8);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[5])
+                    << 16);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[4])
+                    << 24);
                 }
 
                 unpackedValue = tempValue;
@@ -10777,12 +10810,12 @@ void bms_CANRcvFcn(void)
   }
 
   /* S-Function (scanunpack): '<S3>/0x180110E21' incorporates:
-   *  Inport: '<Root>/CANMsg'
+   *  Inport: '<Root>/CANRcvMsg'
    */
   {
     /* S-Function (scanunpack): '<S3>/0x180110E21' */
-    if ((8 == CANMsg.Length) && (CANMsg.ID != INVALID_CAN_ID) ) {
-      if ((402919638 == CANMsg.ID) && (1U == CANMsg.Extended) ) {
+    if ((8 == CANRcvMsg.Length) && (CANRcvMsg.ID != INVALID_CAN_ID) ) {
+      if ((402919638 == CANRcvMsg.ID) && (1U == CANRcvMsg.Extended) ) {
         {
           /* --------------- START Unpacking signal 0 ------------------
            *  startBit                = 24
@@ -10802,13 +10835,13 @@ void bms_CANRcvFcn(void)
                 uint32_T tempValue = (uint32_T) (0);
 
                 {
-                  tempValue = tempValue | (uint32_T)(CANMsg.Data[3]);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[2]) <<
-                    8);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[1]) <<
-                    16);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[0]) <<
-                    24);
+                  tempValue = tempValue | (uint32_T)(CANRcvMsg.Data[3]);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[2])
+                    << 8);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[1])
+                    << 16);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[0])
+                    << 24);
                 }
 
                 unpackedValue = tempValue;
@@ -10841,13 +10874,13 @@ void bms_CANRcvFcn(void)
                 uint32_T tempValue = (uint32_T) (0);
 
                 {
-                  tempValue = tempValue | (uint32_T)(CANMsg.Data[7]);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[6]) <<
-                    8);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[5]) <<
-                    16);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[4]) <<
-                    24);
+                  tempValue = tempValue | (uint32_T)(CANRcvMsg.Data[7]);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[6])
+                    << 8);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[5])
+                    << 16);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[4])
+                    << 24);
                 }
 
                 unpackedValue = tempValue;
@@ -10867,12 +10900,12 @@ void bms_CANRcvFcn(void)
   }
 
   /* S-Function (scanunpack): '<S3>/0x180110E22' incorporates:
-   *  Inport: '<Root>/CANMsg'
+   *  Inport: '<Root>/CANRcvMsg'
    */
   {
     /* S-Function (scanunpack): '<S3>/0x180110E22' */
-    if ((8 == CANMsg.Length) && (CANMsg.ID != INVALID_CAN_ID) ) {
-      if ((402919639 == CANMsg.ID) && (1U == CANMsg.Extended) ) {
+    if ((8 == CANRcvMsg.Length) && (CANRcvMsg.ID != INVALID_CAN_ID) ) {
+      if ((402919639 == CANRcvMsg.ID) && (1U == CANRcvMsg.Extended) ) {
         {
           /* --------------- START Unpacking signal 0 ------------------
            *  startBit                = 24
@@ -10892,13 +10925,13 @@ void bms_CANRcvFcn(void)
                 uint32_T tempValue = (uint32_T) (0);
 
                 {
-                  tempValue = tempValue | (uint32_T)(CANMsg.Data[3]);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[2]) <<
-                    8);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[1]) <<
-                    16);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[0]) <<
-                    24);
+                  tempValue = tempValue | (uint32_T)(CANRcvMsg.Data[3]);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[2])
+                    << 8);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[1])
+                    << 16);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[0])
+                    << 24);
                 }
 
                 unpackedValue = tempValue;
@@ -10931,13 +10964,13 @@ void bms_CANRcvFcn(void)
                 uint32_T tempValue = (uint32_T) (0);
 
                 {
-                  tempValue = tempValue | (uint32_T)(CANMsg.Data[7]);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[6]) <<
-                    8);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[5]) <<
-                    16);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[4]) <<
-                    24);
+                  tempValue = tempValue | (uint32_T)(CANRcvMsg.Data[7]);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[6])
+                    << 8);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[5])
+                    << 16);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[4])
+                    << 24);
                 }
 
                 unpackedValue = tempValue;
@@ -10957,12 +10990,12 @@ void bms_CANRcvFcn(void)
   }
 
   /* S-Function (scanunpack): '<S3>/0x180110E23' incorporates:
-   *  Inport: '<Root>/CANMsg'
+   *  Inport: '<Root>/CANRcvMsg'
    */
   {
     /* S-Function (scanunpack): '<S3>/0x180110E23' */
-    if ((8 == CANMsg.Length) && (CANMsg.ID != INVALID_CAN_ID) ) {
-      if ((402919640 == CANMsg.ID) && (1U == CANMsg.Extended) ) {
+    if ((8 == CANRcvMsg.Length) && (CANRcvMsg.ID != INVALID_CAN_ID) ) {
+      if ((402919640 == CANRcvMsg.ID) && (1U == CANRcvMsg.Extended) ) {
         {
           /* --------------- START Unpacking signal 0 ------------------
            *  startBit                = 24
@@ -10982,13 +11015,13 @@ void bms_CANRcvFcn(void)
                 uint32_T tempValue = (uint32_T) (0);
 
                 {
-                  tempValue = tempValue | (uint32_T)(CANMsg.Data[3]);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[2]) <<
-                    8);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[1]) <<
-                    16);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[0]) <<
-                    24);
+                  tempValue = tempValue | (uint32_T)(CANRcvMsg.Data[3]);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[2])
+                    << 8);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[1])
+                    << 16);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[0])
+                    << 24);
                 }
 
                 unpackedValue = tempValue;
@@ -11021,13 +11054,13 @@ void bms_CANRcvFcn(void)
                 uint32_T tempValue = (uint32_T) (0);
 
                 {
-                  tempValue = tempValue | (uint32_T)(CANMsg.Data[7]);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[6]) <<
-                    8);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[5]) <<
-                    16);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[4]) <<
-                    24);
+                  tempValue = tempValue | (uint32_T)(CANRcvMsg.Data[7]);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[6])
+                    << 8);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[5])
+                    << 16);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[4])
+                    << 24);
                 }
 
                 unpackedValue = tempValue;
@@ -11047,12 +11080,12 @@ void bms_CANRcvFcn(void)
   }
 
   /* S-Function (scanunpack): '<S3>/0x180110E24' incorporates:
-   *  Inport: '<Root>/CANMsg'
+   *  Inport: '<Root>/CANRcvMsg'
    */
   {
     /* S-Function (scanunpack): '<S3>/0x180110E24' */
-    if ((8 == CANMsg.Length) && (CANMsg.ID != INVALID_CAN_ID) ) {
-      if ((402919641 == CANMsg.ID) && (1U == CANMsg.Extended) ) {
+    if ((8 == CANRcvMsg.Length) && (CANRcvMsg.ID != INVALID_CAN_ID) ) {
+      if ((402919641 == CANRcvMsg.ID) && (1U == CANRcvMsg.Extended) ) {
         {
           /* --------------- START Unpacking signal 0 ------------------
            *  startBit                = 24
@@ -11072,13 +11105,13 @@ void bms_CANRcvFcn(void)
                 uint32_T tempValue = (uint32_T) (0);
 
                 {
-                  tempValue = tempValue | (uint32_T)(CANMsg.Data[3]);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[2]) <<
-                    8);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[1]) <<
-                    16);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[0]) <<
-                    24);
+                  tempValue = tempValue | (uint32_T)(CANRcvMsg.Data[3]);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[2])
+                    << 8);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[1])
+                    << 16);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[0])
+                    << 24);
                 }
 
                 unpackedValue = tempValue;
@@ -11111,13 +11144,13 @@ void bms_CANRcvFcn(void)
                 uint32_T tempValue = (uint32_T) (0);
 
                 {
-                  tempValue = tempValue | (uint32_T)(CANMsg.Data[7]);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[6]) <<
-                    8);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[5]) <<
-                    16);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[4]) <<
-                    24);
+                  tempValue = tempValue | (uint32_T)(CANRcvMsg.Data[7]);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[6])
+                    << 8);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[5])
+                    << 16);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[4])
+                    << 24);
                 }
 
                 unpackedValue = tempValue;
@@ -11137,12 +11170,12 @@ void bms_CANRcvFcn(void)
   }
 
   /* S-Function (scanunpack): '<S3>/0x180110E25' incorporates:
-   *  Inport: '<Root>/CANMsg'
+   *  Inport: '<Root>/CANRcvMsg'
    */
   {
     /* S-Function (scanunpack): '<S3>/0x180110E25' */
-    if ((8 == CANMsg.Length) && (CANMsg.ID != INVALID_CAN_ID) ) {
-      if ((402919642 == CANMsg.ID) && (1U == CANMsg.Extended) ) {
+    if ((8 == CANRcvMsg.Length) && (CANRcvMsg.ID != INVALID_CAN_ID) ) {
+      if ((402919642 == CANRcvMsg.ID) && (1U == CANRcvMsg.Extended) ) {
         {
           /* --------------- START Unpacking signal 0 ------------------
            *  startBit                = 24
@@ -11162,13 +11195,13 @@ void bms_CANRcvFcn(void)
                 uint32_T tempValue = (uint32_T) (0);
 
                 {
-                  tempValue = tempValue | (uint32_T)(CANMsg.Data[3]);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[2]) <<
-                    8);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[1]) <<
-                    16);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[0]) <<
-                    24);
+                  tempValue = tempValue | (uint32_T)(CANRcvMsg.Data[3]);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[2])
+                    << 8);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[1])
+                    << 16);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[0])
+                    << 24);
                 }
 
                 unpackedValue = tempValue;
@@ -11201,13 +11234,13 @@ void bms_CANRcvFcn(void)
                 uint32_T tempValue = (uint32_T) (0);
 
                 {
-                  tempValue = tempValue | (uint32_T)(CANMsg.Data[7]);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[6]) <<
-                    8);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[5]) <<
-                    16);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[4]) <<
-                    24);
+                  tempValue = tempValue | (uint32_T)(CANRcvMsg.Data[7]);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[6])
+                    << 8);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[5])
+                    << 16);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[4])
+                    << 24);
                 }
 
                 unpackedValue = tempValue;
@@ -11227,12 +11260,12 @@ void bms_CANRcvFcn(void)
   }
 
   /* S-Function (scanunpack): '<S3>/0x180110E26' incorporates:
-   *  Inport: '<Root>/CANMsg'
+   *  Inport: '<Root>/CANRcvMsg'
    */
   {
     /* S-Function (scanunpack): '<S3>/0x180110E26' */
-    if ((8 == CANMsg.Length) && (CANMsg.ID != INVALID_CAN_ID) ) {
-      if ((402919643 == CANMsg.ID) && (1U == CANMsg.Extended) ) {
+    if ((8 == CANRcvMsg.Length) && (CANRcvMsg.ID != INVALID_CAN_ID) ) {
+      if ((402919643 == CANRcvMsg.ID) && (1U == CANRcvMsg.Extended) ) {
         {
           /* --------------- START Unpacking signal 0 ------------------
            *  startBit                = 24
@@ -11252,13 +11285,13 @@ void bms_CANRcvFcn(void)
                 uint32_T tempValue = (uint32_T) (0);
 
                 {
-                  tempValue = tempValue | (uint32_T)(CANMsg.Data[3]);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[2]) <<
-                    8);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[1]) <<
-                    16);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[0]) <<
-                    24);
+                  tempValue = tempValue | (uint32_T)(CANRcvMsg.Data[3]);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[2])
+                    << 8);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[1])
+                    << 16);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[0])
+                    << 24);
                 }
 
                 unpackedValue = tempValue;
@@ -11291,13 +11324,13 @@ void bms_CANRcvFcn(void)
                 uint32_T tempValue = (uint32_T) (0);
 
                 {
-                  tempValue = tempValue | (uint32_T)(CANMsg.Data[7]);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[6]) <<
-                    8);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[5]) <<
-                    16);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[4]) <<
-                    24);
+                  tempValue = tempValue | (uint32_T)(CANRcvMsg.Data[7]);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[6])
+                    << 8);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[5])
+                    << 16);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[4])
+                    << 24);
                 }
 
                 unpackedValue = tempValue;
@@ -11317,12 +11350,12 @@ void bms_CANRcvFcn(void)
   }
 
   /* S-Function (scanunpack): '<S3>/0x180110E27' incorporates:
-   *  Inport: '<Root>/CANMsg'
+   *  Inport: '<Root>/CANRcvMsg'
    */
   {
     /* S-Function (scanunpack): '<S3>/0x180110E27' */
-    if ((8 == CANMsg.Length) && (CANMsg.ID != INVALID_CAN_ID) ) {
-      if ((402919644 == CANMsg.ID) && (1U == CANMsg.Extended) ) {
+    if ((8 == CANRcvMsg.Length) && (CANRcvMsg.ID != INVALID_CAN_ID) ) {
+      if ((402919644 == CANRcvMsg.ID) && (1U == CANRcvMsg.Extended) ) {
         {
           /* --------------- START Unpacking signal 0 ------------------
            *  startBit                = 24
@@ -11342,13 +11375,13 @@ void bms_CANRcvFcn(void)
                 uint32_T tempValue = (uint32_T) (0);
 
                 {
-                  tempValue = tempValue | (uint32_T)(CANMsg.Data[3]);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[2]) <<
-                    8);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[1]) <<
-                    16);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[0]) <<
-                    24);
+                  tempValue = tempValue | (uint32_T)(CANRcvMsg.Data[3]);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[2])
+                    << 8);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[1])
+                    << 16);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[0])
+                    << 24);
                 }
 
                 unpackedValue = tempValue;
@@ -11381,13 +11414,13 @@ void bms_CANRcvFcn(void)
                 uint32_T tempValue = (uint32_T) (0);
 
                 {
-                  tempValue = tempValue | (uint32_T)(CANMsg.Data[7]);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[6]) <<
-                    8);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[5]) <<
-                    16);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[4]) <<
-                    24);
+                  tempValue = tempValue | (uint32_T)(CANRcvMsg.Data[7]);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[6])
+                    << 8);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[5])
+                    << 16);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[4])
+                    << 24);
                 }
 
                 unpackedValue = tempValue;
@@ -11407,12 +11440,12 @@ void bms_CANRcvFcn(void)
   }
 
   /* S-Function (scanunpack): '<S3>/0x180110E28' incorporates:
-   *  Inport: '<Root>/CANMsg'
+   *  Inport: '<Root>/CANRcvMsg'
    */
   {
     /* S-Function (scanunpack): '<S3>/0x180110E28' */
-    if ((8 == CANMsg.Length) && (CANMsg.ID != INVALID_CAN_ID) ) {
-      if ((402919645 == CANMsg.ID) && (1U == CANMsg.Extended) ) {
+    if ((8 == CANRcvMsg.Length) && (CANRcvMsg.ID != INVALID_CAN_ID) ) {
+      if ((402919645 == CANRcvMsg.ID) && (1U == CANRcvMsg.Extended) ) {
         {
           /* --------------- START Unpacking signal 0 ------------------
            *  startBit                = 24
@@ -11432,13 +11465,13 @@ void bms_CANRcvFcn(void)
                 uint32_T tempValue = (uint32_T) (0);
 
                 {
-                  tempValue = tempValue | (uint32_T)(CANMsg.Data[3]);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[2]) <<
-                    8);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[1]) <<
-                    16);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[0]) <<
-                    24);
+                  tempValue = tempValue | (uint32_T)(CANRcvMsg.Data[3]);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[2])
+                    << 8);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[1])
+                    << 16);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[0])
+                    << 24);
                 }
 
                 unpackedValue = tempValue;
@@ -11471,13 +11504,13 @@ void bms_CANRcvFcn(void)
                 uint32_T tempValue = (uint32_T) (0);
 
                 {
-                  tempValue = tempValue | (uint32_T)(CANMsg.Data[7]);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[6]) <<
-                    8);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[5]) <<
-                    16);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[4]) <<
-                    24);
+                  tempValue = tempValue | (uint32_T)(CANRcvMsg.Data[7]);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[6])
+                    << 8);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[5])
+                    << 16);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[4])
+                    << 24);
                 }
 
                 unpackedValue = tempValue;
@@ -11497,12 +11530,12 @@ void bms_CANRcvFcn(void)
   }
 
   /* S-Function (scanunpack): '<S3>/0x180110E29' incorporates:
-   *  Inport: '<Root>/CANMsg'
+   *  Inport: '<Root>/CANRcvMsg'
    */
   {
     /* S-Function (scanunpack): '<S3>/0x180110E29' */
-    if ((8 == CANMsg.Length) && (CANMsg.ID != INVALID_CAN_ID) ) {
-      if ((402919646 == CANMsg.ID) && (1U == CANMsg.Extended) ) {
+    if ((8 == CANRcvMsg.Length) && (CANRcvMsg.ID != INVALID_CAN_ID) ) {
+      if ((402919646 == CANRcvMsg.ID) && (1U == CANRcvMsg.Extended) ) {
         {
           /* --------------- START Unpacking signal 0 ------------------
            *  startBit                = 24
@@ -11522,13 +11555,13 @@ void bms_CANRcvFcn(void)
                 uint32_T tempValue = (uint32_T) (0);
 
                 {
-                  tempValue = tempValue | (uint32_T)(CANMsg.Data[3]);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[2]) <<
-                    8);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[1]) <<
-                    16);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[0]) <<
-                    24);
+                  tempValue = tempValue | (uint32_T)(CANRcvMsg.Data[3]);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[2])
+                    << 8);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[1])
+                    << 16);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[0])
+                    << 24);
                 }
 
                 unpackedValue = tempValue;
@@ -11561,13 +11594,13 @@ void bms_CANRcvFcn(void)
                 uint32_T tempValue = (uint32_T) (0);
 
                 {
-                  tempValue = tempValue | (uint32_T)(CANMsg.Data[7]);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[6]) <<
-                    8);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[5]) <<
-                    16);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[4]) <<
-                    24);
+                  tempValue = tempValue | (uint32_T)(CANRcvMsg.Data[7]);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[6])
+                    << 8);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[5])
+                    << 16);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[4])
+                    << 24);
                 }
 
                 unpackedValue = tempValue;
@@ -11587,12 +11620,12 @@ void bms_CANRcvFcn(void)
   }
 
   /* S-Function (scanunpack): '<S3>/0x180110E30' incorporates:
-   *  Inport: '<Root>/CANMsg'
+   *  Inport: '<Root>/CANRcvMsg'
    */
   {
     /* S-Function (scanunpack): '<S3>/0x180110E30' */
-    if ((8 == CANMsg.Length) && (CANMsg.ID != INVALID_CAN_ID) ) {
-      if ((402919647 == CANMsg.ID) && (1U == CANMsg.Extended) ) {
+    if ((8 == CANRcvMsg.Length) && (CANRcvMsg.ID != INVALID_CAN_ID) ) {
+      if ((402919647 == CANRcvMsg.ID) && (1U == CANRcvMsg.Extended) ) {
         {
           /* --------------- START Unpacking signal 0 ------------------
            *  startBit                = 24
@@ -11612,13 +11645,13 @@ void bms_CANRcvFcn(void)
                 uint32_T tempValue = (uint32_T) (0);
 
                 {
-                  tempValue = tempValue | (uint32_T)(CANMsg.Data[3]);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[2]) <<
-                    8);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[1]) <<
-                    16);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[0]) <<
-                    24);
+                  tempValue = tempValue | (uint32_T)(CANRcvMsg.Data[3]);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[2])
+                    << 8);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[1])
+                    << 16);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[0])
+                    << 24);
                 }
 
                 unpackedValue = tempValue;
@@ -11651,13 +11684,13 @@ void bms_CANRcvFcn(void)
                 uint32_T tempValue = (uint32_T) (0);
 
                 {
-                  tempValue = tempValue | (uint32_T)(CANMsg.Data[7]);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[6]) <<
-                    8);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[5]) <<
-                    16);
-                  tempValue = tempValue | (uint32_T)((uint32_T)(CANMsg.Data[4]) <<
-                    24);
+                  tempValue = tempValue | (uint32_T)(CANRcvMsg.Data[7]);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[6])
+                    << 8);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[5])
+                    << 16);
+                  tempValue = tempValue | (uint32_T)((uint32_T)(CANRcvMsg.Data[4])
+                    << 24);
                 }
 
                 unpackedValue = tempValue;
@@ -11726,8 +11759,9 @@ void bms_CANRcvFcn(void)
   u = fmodf(floorf(10.0F * CANRcvFcn_B.CANFDUnpack1_o5), 65536.0F);
   rtb_TmpSignalConversionAtSFunct[3] = (uint16_T)(u < 0.0F ? (int32_T)(uint16_T)
     -(int16_T)(uint16_T)-u : (int32_T)(uint16_T)u);
-  rtb_TmpSignalConversionAtSFunct[4] = (uint16_T)(CANRcvFcn_B.CANFDUnpack1_o14 <<
-    2 | CANRcvFcn_B.CANFDUnpack1_o15 | CANRcvFcn_B.CANFDUnpack1_o16 << 4);
+  rtb_TmpSignalConversionAtSFunct[4] = (uint16_T)((uint32_T)
+    (CANRcvFcn_B.CANFDUnpack1_o14 << 2) | CANRcvFcn_B.CANFDUnpack1_o15 |
+    (uint32_T)(CANRcvFcn_B.CANFDUnpack1_o16 << 4));
   rtb_TmpSignalConversionAtSFunct[5] = BCU_SystemStatus;
   rtb_TmpSignalConversionAtSFunct[6] = 0U;
   rtb_TmpSignalConversionAtSFunct[7] = 0U;
@@ -12028,24 +12062,24 @@ void bms_CANRcvFcn(void)
   rtb_TmpSignalConversionAtSFunct[101] = CANRcvFcn_B.CANFDUnpack2_o45;
   rtb_TmpSignalConversionAtSFunct[102] = CANRcvFcn_B.CANFDUnpack2_o46;
   rtb_TmpSignalConversionAtSFunct[103] = (uint16_T)(BCU_FaultInfoLv4L & 65535U);
-  memcpy(&rtb_TmpSignalConversionAtSFunct[104], &CANRcvFcn_DW.tmp_h[0], 120U *
+  memcpy(&rtb_TmpSignalConversionAtSFunct[104], &CANRcvFcn_DW.tmp_a[0], 120U *
          sizeof(uint16_T));
   memcpy(&rtb_TmpSignalConversionAtSFunct[224], &CANRcvFcn_DW.tmp[0], 240U *
          sizeof(uint16_T));
   rtb_TmpSignalConversionAtSFunct[464] = (uint16_T)((int32_T)((uint32_T)
     ((uint8_T)(CANRcvFcn_B.CANFDUnpack2_o32 - 1) << 7) + ((uint32_T)
     CANRcvFcn_B.CANFDUnpack2_o35 << 3)) >> 3);
-  rtb_TmpSignalConversionAtSFunct[465] = (uint16_T)CANRcvFcn_B.CANFDUnpack3_o19;
-  rtb_TmpSignalConversionAtSFunct[466] = CANRcvFcn_B.CANFDUnpack3_o20;
-  rtb_TmpSignalConversionAtSFunct[467] = (uint16_T)CANRcvFcn_B.CANFDUnpack3_o31;
-  rtb_TmpSignalConversionAtSFunct[468] = (uint16_T)CANRcvFcn_B.CANFDUnpack3_o24;
-  rtb_TmpSignalConversionAtSFunct[469] = CANRcvFcn_B.CANFDUnpack3_o37;
+  rtb_TmpSignalConversionAtSFunct[465] = (uint16_T)CANRcvFcn_B.CANFDUnpack3_o20;
+  rtb_TmpSignalConversionAtSFunct[466] = CANRcvFcn_B.CANFDUnpack3_o21;
+  rtb_TmpSignalConversionAtSFunct[467] = (uint16_T)CANRcvFcn_B.CANFDUnpack3_o32;
+  rtb_TmpSignalConversionAtSFunct[468] = (uint16_T)CANRcvFcn_B.CANFDUnpack3_o25;
+  rtb_TmpSignalConversionAtSFunct[469] = CANRcvFcn_B.CANFDUnpack3_o38;
   rtb_TmpSignalConversionAtSFunct[470] = (uint16_T)(10 *
-    CANRcvFcn_B.CANFDUnpack3_o38);
-  rtb_TmpSignalConversionAtSFunct[471] = (uint16_T)(10 *
     CANRcvFcn_B.CANFDUnpack3_o39);
-  rtb_TmpSignalConversionAtSFunct[472] = (uint16_T)(10 *
+  rtb_TmpSignalConversionAtSFunct[471] = (uint16_T)(10 *
     CANRcvFcn_B.CANFDUnpack3_o40);
+  rtb_TmpSignalConversionAtSFunct[472] = (uint16_T)(10 *
+    CANRcvFcn_B.CANFDUnpack3_o41);
   u = 0.00999999F * (real32_T)CANRcvFcn_B.CANFDUnpack1_o17;
   if (u >= 0.5F) {
     tmp = (int32_T)floorf(u + 0.5F);
@@ -12054,12 +12088,12 @@ void bms_CANRcvFcn(void)
   }
 
   rtb_TmpSignalConversionAtSFunct[473] = (uint16_T)fmodf((real32_T)tmp, 65536.0F);
-  rtb_TmpSignalConversionAtSFunct[474] = (uint16_T)CANRcvFcn_B.CANFDUnpack3_o21;
-  rtb_TmpSignalConversionAtSFunct[475] = (uint16_T)CANRcvFcn_B.CANFDUnpack3_o28;
-  u = fmodf(floorf(10.0F * CANRcvFcn_B.CANFDUnpack3_o22), 65536.0F);
+  rtb_TmpSignalConversionAtSFunct[474] = (uint16_T)CANRcvFcn_B.CANFDUnpack3_o22;
+  rtb_TmpSignalConversionAtSFunct[475] = (uint16_T)CANRcvFcn_B.CANFDUnpack3_o29;
+  u = fmodf(floorf(10.0F * CANRcvFcn_B.CANFDUnpack3_o23), 65536.0F);
   rtb_TmpSignalConversionAtSFunct[476] = (uint16_T)(u < 0.0F ? (int32_T)
     (uint16_T)-(int16_T)(uint16_T)-u : (int32_T)(uint16_T)u);
-  u = fmodf(floorf(10.0F * CANRcvFcn_B.CANFDUnpack3_o25), 65536.0F);
+  u = fmodf(floorf(10.0F * CANRcvFcn_B.CANFDUnpack3_o26), 65536.0F);
   rtb_TmpSignalConversionAtSFunct[477] = (uint16_T)(u < 0.0F ? (int32_T)
     (uint16_T)-(int16_T)(uint16_T)-u : (int32_T)(uint16_T)u);
   rtb_TmpSignalConversionAtSFunct[478] = CANRcvFcn_B.CFunction11;
@@ -12070,7 +12104,7 @@ void bms_CANRcvFcn(void)
   rtb_TmpSignalConversionAtSFunct[482] = (uint16_T)(u < 0.0F ? (int32_T)
     (uint16_T)-(int16_T)(uint16_T)-u : (int32_T)(uint16_T)u);
   rtb_TmpSignalConversionAtSFunct[483] = CANRcvFcn_ConstB.DataTypeConversion65;
-  rtb_TmpSignalConversionAtSFunct[484] = CANRcvFcn_B.CANFDUnpack3_o23;
+  rtb_TmpSignalConversionAtSFunct[484] = CANRcvFcn_B.CANFDUnpack3_o24;
   rtb_TmpSignalConversionAtSFunct[485] = (uint16_T)(CANRcvFcn_B.CANFDUnpack2_o3 >>
     16);
   rtb_TmpSignalConversionAtSFunct[486] = (uint16_T)(CANRcvFcn_B.CANFDUnpack2_o3
@@ -12094,11 +12128,11 @@ void bms_CANRcvFcn(void)
   rtb_TmpSignalConversionAtSFunct[501] = (uint16_T)CANRcvFcn_B.CANFDUnpack_o13;
   rtb_TmpSignalConversionAtSFunct[502] = (uint16_T)CANRcvFcn_B.CANFDUnpack_o14;
   rtb_TmpSignalConversionAtSFunct[503] = (uint16_T)CANRcvFcn_B.CANFDUnpack_o15;
-  rtb_TmpSignalConversionAtSFunct[504] = (uint16_T)(CANRcvFcn_B.CANFDUnpack3_o26
-    << 8 | CANRcvFcn_B.CANFDUnpack3_o27);
-  rtb_TmpSignalConversionAtSFunct[505] = (uint16_T)(CANRcvFcn_B.CANFDUnpack3_o33
-    << 8 | CANRcvFcn_B.CANFDUnpack3_o34);
-  rtb_TmpSignalConversionAtSFunct[506] = CANRcvFcn_B.CANFDUnpack3_o32;
+  rtb_TmpSignalConversionAtSFunct[504] = (uint16_T)((uint32_T)
+    (CANRcvFcn_B.CANFDUnpack3_o27 << 8) | CANRcvFcn_B.CANFDUnpack3_o28);
+  rtb_TmpSignalConversionAtSFunct[505] = (uint16_T)((uint32_T)
+    (CANRcvFcn_B.CANFDUnpack3_o34 << 8) | CANRcvFcn_B.CANFDUnpack3_o35);
+  rtb_TmpSignalConversionAtSFunct[506] = CANRcvFcn_B.CANFDUnpack3_o33;
   rtb_TmpSignalConversionAtSFunct[507] = (uint16_T)((uint32_T)
     (CANRcvFcn_B.CANFDUnpack3_o15 - 8388608) >> 16);
   rtb_TmpSignalConversionAtSFunct[508] = (uint16_T)((uint32_T)
@@ -12112,36 +12146,36 @@ void bms_CANRcvFcn(void)
   rtb_TmpSignalConversionAtSFunct[515] = CFunction1_o2;
   rtb_TmpSignalConversionAtSFunct[516] = CANRcvFcn_B.BCU_Curr2_H;
   rtb_TmpSignalConversionAtSFunct[517] = CANRcvFcn_B.BCU_Curr2_L;
-  rtb_TmpSignalConversionAtSFunct[518] = (uint16_T)(CANRcvFcn_B.ux180110E4_o2 <<
-    8 | CANRcvFcn_B.ux180110E4_o1);
-  rtb_TmpSignalConversionAtSFunct[519] = (uint16_T)(CANRcvFcn_B.ux180110E2_o2 <<
-    8 | CANRcvFcn_B.ux180110E2_o1);
-  rtb_TmpSignalConversionAtSFunct[520] = (uint16_T)(CANRcvFcn_B.ux180110E1_o2 <<
-    8 | CANRcvFcn_B.ux180110E1_o1);
-  rtb_TmpSignalConversionAtSFunct[521] = (uint16_T)(CANRcvFcn_B.ux180110E5_o2 <<
-    8 | CANRcvFcn_B.ux180110E5_o1);
-  rtb_TmpSignalConversionAtSFunct[522] = (uint16_T)(CANRcvFcn_B.ux180110E3_o2 <<
-    8 | CANRcvFcn_B.ux180110E3_o1);
-  rtb_TmpSignalConversionAtSFunct[523] = (uint16_T)(CANRcvFcn_B.ux180110E7_o2 <<
-    8 | CANRcvFcn_B.ux180110E7_o1);
-  rtb_TmpSignalConversionAtSFunct[524] = (uint16_T)(CANRcvFcn_B.ux180110E6_o2 <<
-    8 | CANRcvFcn_B.ux180110E6_o1);
-  rtb_TmpSignalConversionAtSFunct[525] = (uint16_T)(CANRcvFcn_B.ux180110E9_o2 <<
-    8 | CANRcvFcn_B.ux180110E9_o1);
-  rtb_TmpSignalConversionAtSFunct[526] = (uint16_T)(CANRcvFcn_B.ux180110E8_o2 <<
-    8 | CANRcvFcn_B.ux180110E8_o1);
-  rtb_TmpSignalConversionAtSFunct[527] = (uint16_T)(CANRcvFcn_B.ux180110E11_o2 <<
-    8 | CANRcvFcn_B.ux180110E11_o1);
-  rtb_TmpSignalConversionAtSFunct[528] = (uint16_T)(CANRcvFcn_B.ux180110E10_o2 <<
-    8 | CANRcvFcn_B.ux180110E10_o1);
-  rtb_TmpSignalConversionAtSFunct[529] = (uint16_T)(CANRcvFcn_B.ux180110E13_o2 <<
-    8 | CANRcvFcn_B.ux180110E13_o1);
-  rtb_TmpSignalConversionAtSFunct[530] = (uint16_T)(CANRcvFcn_B.ux180110E12_o2 <<
-    8 | CANRcvFcn_B.ux180110E12_o1);
-  rtb_TmpSignalConversionAtSFunct[531] = (uint16_T)(CANRcvFcn_B.ux180110E15_o2 <<
-    8 | CANRcvFcn_B.ux180110E15_o1);
-  rtb_TmpSignalConversionAtSFunct[532] = (uint16_T)(CANRcvFcn_B.ux180110E14_o2 <<
-    8 | CANRcvFcn_B.ux180110E14_o1);
+  rtb_TmpSignalConversionAtSFunct[518] = (uint16_T)((uint32_T)
+    (CANRcvFcn_B.ux180110E4_o2 << 8) | CANRcvFcn_B.ux180110E4_o1);
+  rtb_TmpSignalConversionAtSFunct[519] = (uint16_T)((uint32_T)
+    (CANRcvFcn_B.ux180110E2_o2 << 8) | CANRcvFcn_B.ux180110E2_o1);
+  rtb_TmpSignalConversionAtSFunct[520] = (uint16_T)((uint32_T)
+    (CANRcvFcn_B.ux180110E1_o2 << 8) | CANRcvFcn_B.ux180110E1_o1);
+  rtb_TmpSignalConversionAtSFunct[521] = (uint16_T)((uint32_T)
+    (CANRcvFcn_B.ux180110E5_o2 << 8) | CANRcvFcn_B.ux180110E5_o1);
+  rtb_TmpSignalConversionAtSFunct[522] = (uint16_T)((uint32_T)
+    (CANRcvFcn_B.ux180110E3_o2 << 8) | CANRcvFcn_B.ux180110E3_o1);
+  rtb_TmpSignalConversionAtSFunct[523] = (uint16_T)((uint32_T)
+    (CANRcvFcn_B.ux180110E7_o2 << 8) | CANRcvFcn_B.ux180110E7_o1);
+  rtb_TmpSignalConversionAtSFunct[524] = (uint16_T)((uint32_T)
+    (CANRcvFcn_B.ux180110E6_o2 << 8) | CANRcvFcn_B.ux180110E6_o1);
+  rtb_TmpSignalConversionAtSFunct[525] = (uint16_T)((uint32_T)
+    (CANRcvFcn_B.ux180110E9_o2 << 8) | CANRcvFcn_B.ux180110E9_o1);
+  rtb_TmpSignalConversionAtSFunct[526] = (uint16_T)((uint32_T)
+    (CANRcvFcn_B.ux180110E8_o2 << 8) | CANRcvFcn_B.ux180110E8_o1);
+  rtb_TmpSignalConversionAtSFunct[527] = (uint16_T)((uint32_T)
+    (CANRcvFcn_B.ux180110E11_o2 << 8) | CANRcvFcn_B.ux180110E11_o1);
+  rtb_TmpSignalConversionAtSFunct[528] = (uint16_T)((uint32_T)
+    (CANRcvFcn_B.ux180110E10_o2 << 8) | CANRcvFcn_B.ux180110E10_o1);
+  rtb_TmpSignalConversionAtSFunct[529] = (uint16_T)((uint32_T)
+    (CANRcvFcn_B.ux180110E13_o2 << 8) | CANRcvFcn_B.ux180110E13_o1);
+  rtb_TmpSignalConversionAtSFunct[530] = (uint16_T)((uint32_T)
+    (CANRcvFcn_B.ux180110E12_o2 << 8) | CANRcvFcn_B.ux180110E12_o1);
+  rtb_TmpSignalConversionAtSFunct[531] = (uint16_T)((uint32_T)
+    (CANRcvFcn_B.ux180110E15_o2 << 8) | CANRcvFcn_B.ux180110E15_o1);
+  rtb_TmpSignalConversionAtSFunct[532] = (uint16_T)((uint32_T)
+    (CANRcvFcn_B.ux180110E14_o2 << 8) | CANRcvFcn_B.ux180110E14_o1);
   rtb_TmpSignalConversionAtSFunct[533] = (uint16_T)(CANRcvFcn_B.ux180110E16_o1 >>
     16);
   rtb_TmpSignalConversionAtSFunct[534] = (uint16_T)(CANRcvFcn_B.ux180110E16_o1 &
@@ -12358,181 +12392,181 @@ void CANRcvFcn_initialize(void)
   /*-----------S-Function Block: <S1>/CAN FD Unpack5 -----------------*/
 
   /* Start for S-Function (scanunpack): '<S3>/0x180110E4' incorporates:
-   *  Inport: '<Root>/CANMsg'
+   *  Inport: '<Root>/CANRcvMsg'
    */
 
   /*-----------S-Function Block: <S3>/0x180110E4 -----------------*/
 
   /* Start for S-Function (scanunpack): '<S3>/0x180110E2' incorporates:
-   *  Inport: '<Root>/CANMsg'
+   *  Inport: '<Root>/CANRcvMsg'
    */
 
   /*-----------S-Function Block: <S3>/0x180110E2 -----------------*/
 
   /* Start for S-Function (scanunpack): '<S3>/0x180110E1' incorporates:
-   *  Inport: '<Root>/CANMsg'
+   *  Inport: '<Root>/CANRcvMsg'
    */
 
   /*-----------S-Function Block: <S3>/0x180110E1 -----------------*/
 
   /* Start for S-Function (scanunpack): '<S3>/0x180110E5' incorporates:
-   *  Inport: '<Root>/CANMsg'
+   *  Inport: '<Root>/CANRcvMsg'
    */
 
   /*-----------S-Function Block: <S3>/0x180110E5 -----------------*/
 
   /* Start for S-Function (scanunpack): '<S3>/0x180110E3' incorporates:
-   *  Inport: '<Root>/CANMsg'
+   *  Inport: '<Root>/CANRcvMsg'
    */
 
   /*-----------S-Function Block: <S3>/0x180110E3 -----------------*/
 
   /* Start for S-Function (scanunpack): '<S3>/0x180110E7' incorporates:
-   *  Inport: '<Root>/CANMsg'
+   *  Inport: '<Root>/CANRcvMsg'
    */
 
   /*-----------S-Function Block: <S3>/0x180110E7 -----------------*/
 
   /* Start for S-Function (scanunpack): '<S3>/0x180110E6' incorporates:
-   *  Inport: '<Root>/CANMsg'
+   *  Inport: '<Root>/CANRcvMsg'
    */
 
   /*-----------S-Function Block: <S3>/0x180110E6 -----------------*/
 
   /* Start for S-Function (scanunpack): '<S3>/0x180110E9' incorporates:
-   *  Inport: '<Root>/CANMsg'
+   *  Inport: '<Root>/CANRcvMsg'
    */
 
   /*-----------S-Function Block: <S3>/0x180110E9 -----------------*/
 
   /* Start for S-Function (scanunpack): '<S3>/0x180110E8' incorporates:
-   *  Inport: '<Root>/CANMsg'
+   *  Inport: '<Root>/CANRcvMsg'
    */
 
   /*-----------S-Function Block: <S3>/0x180110E8 -----------------*/
 
   /* Start for S-Function (scanunpack): '<S3>/0x180110E11' incorporates:
-   *  Inport: '<Root>/CANMsg'
+   *  Inport: '<Root>/CANRcvMsg'
    */
 
   /*-----------S-Function Block: <S3>/0x180110E11 -----------------*/
 
   /* Start for S-Function (scanunpack): '<S3>/0x180110E10' incorporates:
-   *  Inport: '<Root>/CANMsg'
+   *  Inport: '<Root>/CANRcvMsg'
    */
 
   /*-----------S-Function Block: <S3>/0x180110E10 -----------------*/
 
   /* Start for S-Function (scanunpack): '<S3>/0x180110E13' incorporates:
-   *  Inport: '<Root>/CANMsg'
+   *  Inport: '<Root>/CANRcvMsg'
    */
 
   /*-----------S-Function Block: <S3>/0x180110E13 -----------------*/
 
   /* Start for S-Function (scanunpack): '<S3>/0x180110E12' incorporates:
-   *  Inport: '<Root>/CANMsg'
+   *  Inport: '<Root>/CANRcvMsg'
    */
 
   /*-----------S-Function Block: <S3>/0x180110E12 -----------------*/
 
   /* Start for S-Function (scanunpack): '<S3>/0x180110E15' incorporates:
-   *  Inport: '<Root>/CANMsg'
+   *  Inport: '<Root>/CANRcvMsg'
    */
 
   /*-----------S-Function Block: <S3>/0x180110E15 -----------------*/
 
   /* Start for S-Function (scanunpack): '<S3>/0x180110E14' incorporates:
-   *  Inport: '<Root>/CANMsg'
+   *  Inport: '<Root>/CANRcvMsg'
    */
 
   /*-----------S-Function Block: <S3>/0x180110E14 -----------------*/
 
   /* Start for S-Function (scanunpack): '<S3>/0x180110E16' incorporates:
-   *  Inport: '<Root>/CANMsg'
+   *  Inport: '<Root>/CANRcvMsg'
    */
 
   /*-----------S-Function Block: <S3>/0x180110E16 -----------------*/
 
   /* Start for S-Function (scanunpack): '<S3>/0x180110E17' incorporates:
-   *  Inport: '<Root>/CANMsg'
+   *  Inport: '<Root>/CANRcvMsg'
    */
 
   /*-----------S-Function Block: <S3>/0x180110E17 -----------------*/
 
   /* Start for S-Function (scanunpack): '<S3>/0x180110E18' incorporates:
-   *  Inport: '<Root>/CANMsg'
+   *  Inport: '<Root>/CANRcvMsg'
    */
 
   /*-----------S-Function Block: <S3>/0x180110E18 -----------------*/
 
   /* Start for S-Function (scanunpack): '<S3>/0x180110E19' incorporates:
-   *  Inport: '<Root>/CANMsg'
+   *  Inport: '<Root>/CANRcvMsg'
    */
 
   /*-----------S-Function Block: <S3>/0x180110E19 -----------------*/
 
   /* Start for S-Function (scanunpack): '<S3>/0x180110E20' incorporates:
-   *  Inport: '<Root>/CANMsg'
+   *  Inport: '<Root>/CANRcvMsg'
    */
 
   /*-----------S-Function Block: <S3>/0x180110E20 -----------------*/
 
   /* Start for S-Function (scanunpack): '<S3>/0x180110E21' incorporates:
-   *  Inport: '<Root>/CANMsg'
+   *  Inport: '<Root>/CANRcvMsg'
    */
 
   /*-----------S-Function Block: <S3>/0x180110E21 -----------------*/
 
   /* Start for S-Function (scanunpack): '<S3>/0x180110E22' incorporates:
-   *  Inport: '<Root>/CANMsg'
+   *  Inport: '<Root>/CANRcvMsg'
    */
 
   /*-----------S-Function Block: <S3>/0x180110E22 -----------------*/
 
   /* Start for S-Function (scanunpack): '<S3>/0x180110E23' incorporates:
-   *  Inport: '<Root>/CANMsg'
+   *  Inport: '<Root>/CANRcvMsg'
    */
 
   /*-----------S-Function Block: <S3>/0x180110E23 -----------------*/
 
   /* Start for S-Function (scanunpack): '<S3>/0x180110E24' incorporates:
-   *  Inport: '<Root>/CANMsg'
+   *  Inport: '<Root>/CANRcvMsg'
    */
 
   /*-----------S-Function Block: <S3>/0x180110E24 -----------------*/
 
   /* Start for S-Function (scanunpack): '<S3>/0x180110E25' incorporates:
-   *  Inport: '<Root>/CANMsg'
+   *  Inport: '<Root>/CANRcvMsg'
    */
 
   /*-----------S-Function Block: <S3>/0x180110E25 -----------------*/
 
   /* Start for S-Function (scanunpack): '<S3>/0x180110E26' incorporates:
-   *  Inport: '<Root>/CANMsg'
+   *  Inport: '<Root>/CANRcvMsg'
    */
 
   /*-----------S-Function Block: <S3>/0x180110E26 -----------------*/
 
   /* Start for S-Function (scanunpack): '<S3>/0x180110E27' incorporates:
-   *  Inport: '<Root>/CANMsg'
+   *  Inport: '<Root>/CANRcvMsg'
    */
 
   /*-----------S-Function Block: <S3>/0x180110E27 -----------------*/
 
   /* Start for S-Function (scanunpack): '<S3>/0x180110E28' incorporates:
-   *  Inport: '<Root>/CANMsg'
+   *  Inport: '<Root>/CANRcvMsg'
    */
 
   /*-----------S-Function Block: <S3>/0x180110E28 -----------------*/
 
   /* Start for S-Function (scanunpack): '<S3>/0x180110E29' incorporates:
-   *  Inport: '<Root>/CANMsg'
+   *  Inport: '<Root>/CANRcvMsg'
    */
 
   /*-----------S-Function Block: <S3>/0x180110E29 -----------------*/
 
   /* Start for S-Function (scanunpack): '<S3>/0x180110E30' incorporates:
-   *  Inport: '<Root>/CANMsg'
+   *  Inport: '<Root>/CANRcvMsg'
    */
 
   /*-----------S-Function Block: <S3>/0x180110E30 -----------------*/

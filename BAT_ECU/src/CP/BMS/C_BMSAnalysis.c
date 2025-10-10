@@ -20,7 +20,7 @@ bool CP_BMSAnalysis(void)
 
     bms_CANSendFcn();
     
-    state = true;
+    state = true;  //天才的返回值 
     return state;
 }
 
@@ -28,9 +28,8 @@ bool CP_BMSAnalysis(void)
 
 void CP_get_BCU_FaultInfoLv3H(uint32_T faultValue) 
 {
-   
-    
-    if( faultValue & (1UL << 22))
+    //32- maltalb bit号，大小端转换
+    if( faultValue & (1UL << 10))
     {
         CP_set_emcu_fault(ANGLE_FAULT,SET_ERROR);//设置故障
     }
@@ -38,10 +37,10 @@ void CP_get_BCU_FaultInfoLv3H(uint32_T faultValue)
     {
         CP_set_emcu_fault(ANGLE_FAULT,SET_RECOVER);//恢复设置
     }
-    if( faultValue & (1UL << 23))
+    if( faultValue & (1UL << 9))
     {
         CP_set_emcu_fault(DOOR_OPEN,SET_ERROR);//设置故障
-         printf("BCU_FaultInfoLv3H: %x\n", faultValue);
+        // printf("BCU_FaultInfoLv3H: %x\n", faultValue);
     }
     else
     {
@@ -55,7 +54,7 @@ void CP_get_BCU_FaultInfoLv3H(uint32_T faultValue)
     // {
     //   
     // }
-    if( faultValue & (1UL << 25))
+    if( faultValue & (1UL << 7))
     {
         CP_set_emcu_fault(PCS_STOP,SET_ERROR);//设置故障
     }
@@ -63,15 +62,16 @@ void CP_get_BCU_FaultInfoLv3H(uint32_T faultValue)
     {
         CP_set_emcu_fault(PCS_STOP,SET_RECOVER);//恢复设置
     }
-    if( faultValue & (1UL << 26))
-    {
-        CP_set_emcu_fault(EMERGENCY_STOP,SET_ERROR);//设置故障
-    }
-    else
-    {
-        CP_set_emcu_fault(EMERGENCY_STOP,SET_RECOVER);//恢复设置
-    }
-    if( faultValue & (1UL << 27))
+    // if( faultValue & (1UL << 26))
+    // {
+    //     printf("BCU_FaultInfoLv3H: %x\n", faultValue);
+    //     CP_set_emcu_fault(EMERGENCY_STOP,SET_ERROR);//设置故障
+    // }
+    // else
+    // {
+    //     CP_set_emcu_fault(EMERGENCY_STOP,SET_RECOVER);//恢复设置
+    // }
+    if( faultValue & (1UL << 5))
     {
         CP_set_emcu_fault(SMOKE_FAULT,SET_ERROR);//设置故障
     }
@@ -277,6 +277,7 @@ void ConvertBusToCANFD(const CAN_FD_MESSAGE_BUS* msg, struct canfd_frame* frame)
     if (msg->ESI) {
         frame->flags |= CANFD_ESI;
         printf("msg->ESI : %d\r\n",msg->ESI);
+        //canfd 的错误帧状态
     }
     
     // printf("msg->Length : %d\r\n", msg->Length);

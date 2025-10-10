@@ -191,7 +191,7 @@ void update_bat_data(sqlite3 *db) {
     CP_get_modbus_reg_val(0x500E, &DAq_version15);
 
     memcpy(data.usSingleBatVal, CANRcvFcn_DW.tmp, sizeof(data.usSingleBatVal));
-    memcpy(data.usSingleBatTemp, CANRcvFcn_DW.tmp_h, sizeof(data.usSingleBatTemp));
+    memcpy(data.usSingleBatTemp, CANRcvFcn_DW.tmp_a, sizeof(data.usSingleBatTemp));
 
     // 使用类似 DAq_version1 的逻辑补全其余字段
     if (DAq_version1 != 0) {    

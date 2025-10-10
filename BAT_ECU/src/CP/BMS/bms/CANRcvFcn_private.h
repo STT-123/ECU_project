@@ -3,12 +3,12 @@
  *
  * Code generated for Simulink model 'CANRcvFcn'.
  *
- * Model version                  : 3.284
- * Simulink Coder version         : 24.2 (R2024b) 21-Jun-2024
- * C/C++ source code generated on : Wed Aug 13 13:48:29 2025
+ * Model version                  : 5.4
+ * Simulink Coder version         : 25.2 (R2025b) 28-Jul-2025
+ * C/C++ source code generated on : Fri Sep 26 17:36:05 2025
  *
  * Target selection: ert.tlc
- * Embedded hardware selection: NXP->Cortex-M4
+ * Embedded hardware selection: ARM Compatible->ARM Cortex-A (64-bit)
  * Code generation objectives: Unspecified
  * Validation result: Not run
  */
@@ -54,21 +54,14 @@ Verification pane for ERT based targets, which will disable the \
 preprocessor word size checks.
 #endif
 
-#if ( ULONG_MAX != (0xFFFFFFFFU) ) || ( LONG_MAX != (0x7FFFFFFF) )
-// #error Code was generated for compiler with different sized ulong/long. \
-Consider adjusting Test hardware word size settings on the \
-Hardware Implementation pane to match your compiler word sizes as \
-defined in limits.h of the compiler. Alternatively, you can \
-select the Test hardware is the same as production hardware option and \
-select the Enable portable word sizes option on the Code Generation > \
-Verification pane for ERT based targets, which will disable the \
-preprocessor word size checks.
-#endif
+/* Skipping ulong/long check: insufficient preprocessor integer range. */
+
+/* Skipping ulong_long/long_long check: insufficient preprocessor integer range. */
 
 /* Exported data declaration */
 
 /* Declaration for custom storage class: ImportFromFile */
-// extern uint16_T modbusBuff[16384];     /* '<Root>/modbusBuff' */
+//extern uint16_T modbusBuff[16384];     /* '<Root>/modbusBuff' */
 
 #endif                                 /* CANRcvFcn_private_h_ */
 

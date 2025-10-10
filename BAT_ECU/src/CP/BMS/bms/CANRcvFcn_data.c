@@ -3,12 +3,12 @@
  *
  * Code generated for Simulink model 'CANRcvFcn'.
  *
- * Model version                  : 3.284
- * Simulink Coder version         : 24.2 (R2024b) 21-Jun-2024
- * C/C++ source code generated on : Wed Aug 13 13:48:29 2025
+ * Model version                  : 5.4
+ * Simulink Coder version         : 25.2 (R2025b) 28-Jul-2025
+ * C/C++ source code generated on : Fri Sep 26 17:36:05 2025
  *
  * Target selection: ert.tlc
- * Embedded hardware selection: NXP->Cortex-M4
+ * Embedded hardware selection: ARM Compatible->ARM Cortex-A (64-bit)
  * Code generation objectives: Unspecified
  * Validation result: Not run
  */
@@ -55,7 +55,7 @@ const ConstP_CANRcvFcn_T CANRcvFcn_ConstP = {
     12800U, 12295U, 0U, 0U, 0U, 6944U, 6976U, 6950U, 6948U, 6949U, 12319U, 6952U,
     6951U, 6958U, 6961U, 6965U, 12550U, 12549U, 12551U, 12388U, 12389U, 6963U,
     14114U, 14115U, 12552U, 0U, 12452U, 12547U, 12546U, 12545U, 0U, 0U, 0U,
-    1120U, 1121U, 1129U, 1128U, 1127U, 1126U, 1122U, 0U, 8192U, 8193U, 8194U,
+    1120U, 1121U, 1129U, 1128U, 1127U, 1126U, 1122U, 1123U, 8192U, 8193U, 8194U,
     8195U, 8196U, 8197U, 8198U, 8199U, 8200U, 8201U, 8202U, 8203U, 8204U, 8205U,
     8206U, 7004U, 7005U, 7006U, 7007U, 7008U, 7009U, 7010U, 7011U, 7012U, 7013U,
     7014U, 7015U, 7016U, 7017U, 7018U, 7019U, 7020U, 7021U, 7022U, 7023U, 7024U,

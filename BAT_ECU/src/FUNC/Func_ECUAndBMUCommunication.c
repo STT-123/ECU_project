@@ -51,7 +51,7 @@ void *Func_thread_can1_dealwith(void *arg)
                 // printf("queue_post can1 data success\r\n");
                 if((flag == OTAIDLE  || flag == OTAFAILED ))
                 {
-                memcpy(&CANMsg,&canrev_frame,sizeof(CAN_MESSAGE));
+                memcpy(&CANRcvMsg,&canrev_frame,sizeof(CAN_MESSAGE));
                 // Convert_can_frame_to_CAN_MESSAGE(&canrev_frame,&bms_B.CAN_Daq_o2);
                 // Convert_canfd_frame_to_CAN_MESSAGE(&canrev_frame,&bms_B.CAN_Daq_o2);
                 Drv_BMS_Analysis();//BMS数据解析 临时取消

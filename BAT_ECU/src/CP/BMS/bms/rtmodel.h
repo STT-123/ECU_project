@@ -3,12 +3,12 @@
  *
  * Code generated for Simulink model 'CANRcvFcn'.
  *
- * Model version                  : 3.284
- * Simulink Coder version         : 24.2 (R2024b) 21-Jun-2024
- * C/C++ source code generated on : Wed Aug 13 13:48:29 2025
+ * Model version                  : 5.4
+ * Simulink Coder version         : 25.2 (R2025b) 28-Jul-2025
+ * C/C++ source code generated on : Fri Sep 26 17:36:05 2025
  *
  * Target selection: ert.tlc
- * Embedded hardware selection: NXP->Cortex-M4
+ * Embedded hardware selection: ARM Compatible->ARM Cortex-A (64-bit)
  * Code generation objectives: Unspecified
  * Validation result: Not run
  */

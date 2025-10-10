@@ -286,14 +286,12 @@ int CP_RTC_ModBus_Deal(uint16_t address,uint16_t data)
 
         for (int i = 0; i < 3; i++)
         {
-			CP_BMSAnalysis();
+			bms_CANSendFcn();
 			usleep(1*1000);
         }
 		CP_set_TCU_TimeCalFlg(0);    //RTC设置完毕标志位为0
-		CP_BMSAnalysis();
-		usleep(1*1000);
-		CP_set_TCU_TimeCalFlg(0);    //RTC设置完毕标志位为0
-		CP_BMSAnalysis();
+
+
 		return 1;  //完成
 	}
 	else
