@@ -1,7 +1,7 @@
 #include "C_OTAListenMonitor.h"
 #include "C_OTAStateMonitor.h"
 #include "C_OTADataMonitor.h"
-#include "./DRV/LOG/Drv_ZLog.h"
+#include "log/log.h"
 // pthread_t lwipDataTaskThread;
 // pthread_mutex_t task_mutex = PTHREAD_MUTEX_INITIALIZER;
 // pthread_t* pLwIPTCPDataTaskHandle_c = &lwipDataTaskThread;
@@ -57,10 +57,10 @@ void* Lwip_Listen_TASK(void* param)
                 pthread_mutex_lock(&task_mutex); // 临界区保护
                 if (pthread_create(pLwIPTCPDataTaskHandle, NULL, lwip_data_TASK, NULL) == 0) {
                     printf("create lwip_data_TASK success\n");
-                    zlog_info(debug_out,"create lwip_data_TASK success\n");
+                    LOG("create lwip_data_TASK success\n");
                 } else {
                     printf("create lwip_data_TASK failed\n");
-                    zlog_info(debug_out,"create lwip_data_TASK failed\n");
+                    LOG("create lwip_data_TASK failed\n");
                 }
                 pthread_mutex_unlock(&task_mutex);
             }

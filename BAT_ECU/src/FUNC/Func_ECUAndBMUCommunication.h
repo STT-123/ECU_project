@@ -23,7 +23,6 @@
 #include <sys/types.h>
 #include <sys/uio.h>
 
+void CAN1RecvDelTaskCreate(void);
 
-void *Func_thread_can1_dealwith(void *arg);
-void *Func_thread_can1_send(void *arg);
 #endif

@@ -86,17 +86,14 @@ real_T CP_get_TCU_TimeMonth(void);
 void CP_set_TCU_TimeSecond(real_T value);
 real_T CP_get_TCU_TimeSecond(void);
 
-
 void CP_set_TCU_TimeWeek(real_T value);
 real_T CP_get_TCU_TimeWeek(void);
 
 void CP_set_TCU_TimeYear(real_T value);
 real_T CP_get_TCU_TimeYear(void);
 
-
-
-void ConvertCANFDToBus(const struct canfd_frame* frame, CAN_FD_MESSAGE_BUS* msg);
-void ConvertBusToCANFD(const CAN_FD_MESSAGE_BUS* msg, struct canfd_frame* frame);
+void ConvertCANFDToBus(const struct canfd_frame *frame, CAN_FD_MESSAGE_BUS *msg);
+void ConvertBusToCANFD(const CAN_FD_MESSAGE_BUS *msg, struct canfd_frame *frame);
 void Convert_CAN_MESSAGE_to_can_frame(const CAN_MESSAGE *msg, struct can_frame *frame);
 void Convert_canfd_frame_to_CAN_MESSAGE(const struct canfd_frame *frame, CAN_MESSAGE *msg);
 void Convert_can_frame_to_CAN_MESSAGE(const struct can_frame *frame, CAN_MESSAGE *msg);

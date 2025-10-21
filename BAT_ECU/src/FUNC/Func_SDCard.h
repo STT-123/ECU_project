@@ -1,8 +1,6 @@
 #ifndef __FUNC_SDCARD_H__
 #define __FUNC_SDCARD_H__
 
-
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -12,7 +10,8 @@
 #include <sys/time.h>
 #include <time.h>
 
-extern unsigned short flag ;
-void *Func_file_write_task(void *arg);
+extern unsigned short ota_flag;
+
+void SDCardDataSaveTaskCreate(void);
 
 #endif

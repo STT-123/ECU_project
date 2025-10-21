@@ -1,74 +1,126 @@
 #include "Func_CapacityChenk.h"
 #include "./GLB/G_SystemConf.h"
-#include "./DRV/LOG/Drv_ZLog.h"
-// #define ROOT_PATH "./dev/test_sdcard" 
-// #define ROOT_PATH "/media/usb0" 
-#define ROOT_PATH "/mnt/sda" 
-#define CHECKSD_TRIGGERING_TIME 60000*1000
-#define GETFREE_TRIGGERING_TIME 1000*1000
+#include "log/log.h"
+// #define ROOT_PATH "./dev/test_sdcard"
+// #define ROOT_PATH "/media/usb0"
+#define ROOT_PATH "/mnt/sda"
+#define CHECKSD_TRIGGERING_TIME 60000 * 1000
 
-// 删除最旧的文件夹（假设文件夹名为日期字符串）
+char *Drv_my_strdup(const char *str)
+{
+    if (!str)
+        return NULL;
+    char *dup = malloc(strlen(str) + 1);
+    if (dup)
+        strcpy(dup, str);
+    return dup;
+}
 
-int CompareFolderNames(const void *a, const void *b) {
+// 递归删除目录及内容
+int Drv_remove_directory(const char *path)
+{
+    DIR *dir = opendir(path);
+    struct dirent *entry;
+    char subPath[512];
+
+    if (!dir)
+        return -1;
+
+    while ((entry = readdir(dir)) != NULL)
+    {
+        if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)
+            continue;
+
+        snprintf(subPath, sizeof(subPath), "%s/%s", path, entry->d_name);
+
+        struct stat statbuf;
+        if (stat(subPath, &statbuf) == 0)
+        {
+            if (S_ISDIR(statbuf.st_mode))
+            {
+                Drv_remove_directory(subPath); // 递归删除
+            }
+            else
+            {
+                unlink(subPath); // 删除文件
+            }
+        }
+    }
+
+    closedir(dir);
+    return rmdir(path); // 删除目录
+}
+
+int CompareFolderNames(const void *a, const void *b)
+{
     return strcmp(*(const char **)a, *(const char **)b);
 }
-void Func_DeleteOldestFolder(void) {
+
+// 删除最旧的文件夹（假设文件夹名为日期字符串）
+void Func_DeleteOldestFolder(void)
+{
     DIR *dir = opendir(ROOT_PATH);
     struct dirent *entry;
     char *folders[100];
     int folderCount = 0;
 
-    if (!dir) {
+    if (!dir)
+    {
         perror("opendir");
         return;
     }
 
-while ((entry = readdir(dir)) != NULL) {
-    if (strcmp(entry->d_name, ".") != 0 &&
-        strcmp(entry->d_name, "..") != 0 &&
-        strcmp(entry->d_name, "19700101") != 0) {
-        
-        // 用 stat 判断是不是目录
-        char fullPath[512];
-        snprintf(fullPath, sizeof(fullPath), "%s/%s", ROOT_PATH, entry->d_name);
+    while ((entry = readdir(dir)) != NULL)
+    {
+        if (strcmp(entry->d_name, ".") != 0 &&
+            strcmp(entry->d_name, "..") != 0 &&
+            strcmp(entry->d_name, "19700101") != 0)
+        {
 
-        struct stat st;
-        if (stat(fullPath, &st) == 0 && S_ISDIR(st.st_mode)) {
-            folders[folderCount] = Drv_my_strdup(entry->d_name);
-            if (!folders[folderCount]) break;
-            folderCount++;
+            // 用 stat 判断是不是目录
+            char fullPath[512];
+            snprintf(fullPath, sizeof(fullPath), "%s/%s", ROOT_PATH, entry->d_name);
+
+            struct stat st;
+            if (stat(fullPath, &st) == 0 && S_ISDIR(st.st_mode))
+            {
+                folders[folderCount] = Drv_my_strdup(entry->d_name);
+                if (!folders[folderCount])
+                    break;
+                folderCount++;
+            }
         }
     }
-}
-
 
     closedir(dir);
 
-    if (folderCount > 0) {
+    if (folderCount > 0)
+    {
         qsort(folders, folderCount, sizeof(char *), CompareFolderNames);
 
         char path[512];
         snprintf(path, sizeof(path), "%s/%s", ROOT_PATH, folders[0]);
-        printf("Deleting oldest folder: %s\n", path);
-        zlog_info(debug_out,"Deleting oldest folder: %s\n", path);
+
+        LOG("Deleting oldest folder: %s\n", path);
         Drv_remove_directory(path);
 
-        for (int i = 0; i < folderCount; i++) {
+        for (int i = 0; i < folderCount; i++)
+        {
             free(folders[i]);
         }
     }
 }
 
 // 检查SD卡容量并删除旧文件夹的线程任务
-void *Func_CheckSDCardCapacityTask(void *arg) {
-    while (1) {
-
-
+void *Func_CheckSDCardCapacityTask(void *arg)
+{
+    while (1)
+    {
         struct statvfs stat;
-        if (statvfs(ROOT_PATH, &stat) != 0) {
+        if (statvfs(ROOT_PATH, &stat) != 0)
+        {
             perror("statvfs");
-            printf("Failed to get SD card capacity.\n");
-            zlog_info(debug_out,"Failed to get SD card capacity.\n");
+            LOG("Failed to get SD card capacity.\n");
             usleep(CHECKSD_TRIGGERING_TIME);
             continue;
         }
@@ -82,19 +134,34 @@ void *Func_CheckSDCardCapacityTask(void *arg) {
 
         float usage_percent = ((float)used / (float)total) * 100.0f;
 
-        
-        // printf("SD Card Usage: %.2f%%\n", usage_percent);
-        zlog_info(debug_out,"SD Card Usage:%.2f%%\n",usage_percent);
+        LOG("SD Card Usage:%.2f%%\n", usage_percent);
 
-        if (usage_percent >= 90) {
+        if (usage_percent >= 90)
+        {
             Func_DeleteOldestFolder();
         }
 
-        G_set_system_time_from_bcu();//时间同步
+        G_set_system_time_from_bcu(); // 时间同步
         usleep(CHECKSD_TRIGGERING_TIME);
-
     }
     return NULL;
 }
 
-
+pthread_t SDCapacityChenk_TASKHandle;
+void SDCapacityChenkTaskCreate(void)
+{
+    int ret;
+    do
+    {
+        ret = pthread_create(&SDCapacityChenk_TASKHandle, NULL, Func_CheckSDCardCapacityTask, NULL);
+        if (ret != 0)
+        {
+            LOG("Failed to create SDCapacityChenkTaskCreate thread : %s", strerror(ret));
+            sleep(1);
+        }
+        else
+        {
+            LOG("SDCapacityChenkTaskCreate thread created successfully.\r\n");
+        }
+    } while (ret != 0);
+}

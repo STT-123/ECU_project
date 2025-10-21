@@ -8,15 +8,12 @@
 #include <unistd.h>
 #include <stdint.h>
 
-// #define EMERGENCY_STOP     496			
-// #define PCSSTOP     32	
+// #define EMERGENCY_STOP     496
+// #define PCSSTOP     32
 
-#define Emergencystop_output    32
+#define Emergencystop_output 32
 
-       				
-
-extern time_t last_can0_rx_time ;
-
+extern time_t last_can0_rx_time;
 
 void gpio_all_init(void);
 void PHYlinktate();

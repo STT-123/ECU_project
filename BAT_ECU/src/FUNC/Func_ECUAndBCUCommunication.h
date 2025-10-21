@@ -1,7 +1,6 @@
 #ifndef __FUNC_ECUANDBCUCOMMUNICATION_H__
 #define __FUNC_ECUANDBCUCOMMUNICATION_H__
 
-
 #include "stdbool.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -25,7 +24,6 @@
 #include <sys/types.h>
 #include <sys/uio.h>
 
+void CAN0RecvDelTaskCreate(void);
 
-void *Func_thread_can0_dealwith(void *arg);
-// void *Func_thread_can1_send(void *arg);
 #endif

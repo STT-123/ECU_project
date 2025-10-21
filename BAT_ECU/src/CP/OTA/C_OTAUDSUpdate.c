@@ -6,7 +6,7 @@
 #include "./Xmodem/C_OTADataMonitor.h"
 #include "./Xmodem/C_OTAStateMonitor.h"
 #include "./CP/BMS/C_BMSAnalysis.h"
-#include "./DRV/LOG/Drv_ZLog.h"
+#include "log/log.h"
 #include "main.h"
 flashDataType flashData;
 appDataType appData[SUP_MAX_BLOCK + 1];
@@ -1950,7 +1950,7 @@ void CP_UDS_OTA(OTAObject* pOTA)
         if(udsstatus.ErrorReg == 0)
         {
             printf("can id 0x%x device ota success!\r\n", pOTA->deviceID);
-			zlog_info(debug_out,"can id 0x%x device ota success!\r\n", pOTA->deviceID);
+			LOG("can id 0x%x device ota success!\r\n", pOTA->deviceID);
             udsstatus.DeviceProgramOkFlag = 1;
             CP_set_modbus_reg_val(OTAPPROGRESSREGADDR, 100);//0124,升级进度
             CP_set_modbus_reg_val(OTASTATUSREGADDR, OTASUCCESS);
@@ -1961,7 +1961,7 @@ void CP_UDS_OTA(OTAObject* pOTA)
         else
         {
             printf("can id 0x%x device ota failed, error register val 0x%x!\r\n", pOTA->deviceID, udsstatus.ErrorReg);
-			zlog_info(debug_out,"can id 0x%x device ota failed, error register val 0x%x!\r\n", pOTA->deviceID, udsstatus.ErrorReg);
+			LOG("can id 0x%x device ota failed, error register val 0x%x!\r\n", pOTA->deviceID, udsstatus.ErrorReg);
             // CP_set_modbus_reg_val(OTASTATUSREGADDR, OTAFAILED);
         }
 

@@ -3,7 +3,7 @@
 #include "C_OTAStateMonitor.h"
 #include "./GLB/G_GloabalVariable.h"
 #include "./GLB/G_AddressDefinition.h"
-#include "./DRV/LOG/Drv_ZLog.h"
+#include "log/log.h"
 #include "./CP/OTA/C_OTAUDSUpdate.h"
 #include "./CP/OTA/C_OTAXCPUpdate.h"
 #include "./CP/OTA/C_OTAOtherUpdate.h"
@@ -51,12 +51,7 @@ const unsigned int crc_table[256] = {
     0xef1f, 0xff3e, 0xcf5d, 0xdf7c, 0xaf9b, 0xbfba, 0x8fd9, 0x9ff8,
     0x6e17, 0x7e36, 0x4e55, 0x5e74, 0x2e93, 0x3eb2, 0x0ed1, 0x1ef0
 };
-// unsigned int GetTimeDifference_ms(unsigned int lastTick) {
-//     struct timespec now;
-//     clock_gettime(CLOCK_MONOTONIC, &now);
-//     unsigned int now_ms = (now.tv_sec * 1000 + now.tv_nsec / 1000000);
-//     return now_ms - lastTick;
-// }
+
 
 // unsigned int OsIf_GetMilliseconds(void) {
 //     struct timespec now;
@@ -187,7 +182,7 @@ void *lwip_data_TASK(void *param)
 										otadeviceType = 0;
 										delete_files_with_prefix("USB_MOUNT_POINT", "XC");
 										printf("Invalid upgrade file\r\n");
-										zlog_info(debug_out,"Invalid upgrade file\r\n");
+										LOG("Invalid upgrade file\r\n");
 										setXmodemServerReceiveFileEnd(1);
 										// XmodemServerReceiveFileEnd = 1;
 										CP_set_modbus_reg_val(OTASTATUSREGADDR, OTAFAILED);
@@ -205,16 +200,16 @@ void *lwip_data_TASK(void *param)
 									if (fclose(&OTAfil) != 0)
 									{
 										printf("Error file close failed err code!\r\n");
-										zlog_info(debug_out,"Error file close failed err code!\r\n");
+										LOG("Error file close failed err code!\r\n");
 									}
 									else
 									{
 										printf("file closed successfully!\r\n");
-										zlog_info(debug_out,"file closed successfully!\r\n");
+										LOG("file closed successfully!\r\n");
 									}
 									delete_files_with_prefix("0:", "XC");
 									printf("Failed to write upgrade file\r\n");
-									zlog_info(debug_out,"Failed to write upgrade file\r\n");
+									LOG("Failed to write upgrade file\r\n");
 									// XmodemServerReceiveFileEnd = 1;
 									setXmodemServerReceiveFileEnd(1);
 //									set_emcu_fault(SD_FAULT,SET_ERROR);
@@ -235,16 +230,16 @@ void *lwip_data_TASK(void *param)
 									if (fclose(&OTAfil) != 0)
 									{
 										printf("Error file close failed err code!\r\n");
-										zlog_info(debug_out,"Error file close failed err code!\r\n");
+										LOG("Error file close failed err code!\r\n");
 									}
 									else
 									{
 										printf("file closed successfully!\r\n");
-										zlog_info(debug_out,"file closed successfully!\r\n");
+										LOG("file closed successfully!\r\n");
 									}
 									delete_files_with_prefix("0:", "XC");
 									printf("Failed to write upgrade file\r\n");
-									zlog_info(debug_out,"Failed to write upgrade file\r\n");
+									LOG("Failed to write upgrade file\r\n");
 									// XmodemServerReceiveFileEnd = 1;
 									setXmodemServerReceiveFileEnd(1);
 //									set_emcu_fault(SD_FAULT,SET_ERROR);
@@ -516,16 +511,16 @@ void *lwip_data_TASK(void *param)
 								if (fclose(&OTAfil) != 0)
 								{
 									printf("Error file close failed err code!\r\n");
-									zlog_info(debug_out,"Error file close failed err code!\r\n");
+									LOG("Error file close failed err code!\r\n");
 								}
 								else
 								{
 									printf("file closed successfully!\r\n");
-									zlog_info(debug_out,"file closed successfully!\r\n");
+									LOG("file closed successfully!\r\n");
 								}
 								delete_files_with_prefix("0:", "XC");
 								printf("Failed to write upgrade file\r\n");
-								zlog_info(debug_out,"Failed to write upgrade file\r\n");
+								LOG("Failed to write upgrade file\r\n");
 								// XmodemServerReceiveFileEnd = 1;
 								setXmodemServerReceiveFileEnd(1);
 //									set_emcu_fault(SD_FAULT,SET_ERROR);
@@ -547,16 +542,16 @@ void *lwip_data_TASK(void *param)
 								if (fclose(&OTAfil) != 0)
 								{
 									printf("Error file close failed err code!\r\n");
-									zlog_info(debug_out,"Error file close failed err code!\r\n");
+									LOG("Error file close failed err code!\r\n");
 								}
 								else
 								{
 									printf("file closed successfully!\r\n");
-									zlog_info(debug_out,"file closed successfully!\r\n");
+									LOG("file closed successfully!\r\n");
 								}
 								delete_files_with_prefix("0:", "XC");
 								printf("Failed to write upgrade file\r\n");
-								zlog_info(debug_out,"Failed to write upgrade file\r\n");
+								LOG("Failed to write upgrade file\r\n");
 								// XmodemServerReceiveFileEnd = 1;
 								setXmodemServerReceiveFileEnd(1);
 //									set_emcu_fault(SD_FAULT,SET_ERROR);
@@ -626,7 +621,7 @@ void *lwip_data_TASK(void *param)
 									if(strstr(otafilenamestr1, "ECU") != NULL)
 									{
 										printf("ECU tar.bz2 file\r\n");
-										zlog_info(debug_out,"ECU tar.bz2 file\r\n");
+										LOG("ECU tar.bz2 file\r\n");
 										otactrl.deviceType = otadeviceType;
 										memset(otactrl.OTAFilename ,0 ,sizeof(otactrl.OTAFilename));
 										memcpy(otactrl.OTAFilename, otafilenamestr, strlen(otafilenamestr));

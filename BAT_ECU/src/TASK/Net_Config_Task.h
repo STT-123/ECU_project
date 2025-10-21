@@ -5,6 +5,8 @@
 #include <unistd.h>
 #include <string.h>
 #include <pthread.h>
+
 void NETConfigTaskCreate(void);
+void TcpServerExampleTaskCreate(void);
 
 #endif

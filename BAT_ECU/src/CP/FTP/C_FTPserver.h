@@ -15,7 +15,6 @@
 #include <sys/select.h>
 #include <fcntl.h>
 
+void FtpServiceThreadCreate(void);
 
-
-void *ftp_service(void* arg);
 #endif

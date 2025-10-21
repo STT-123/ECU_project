@@ -4,7 +4,7 @@
 #include "./DRV/Drv_ECUAndBCUCommunication.h"
 #include "./DRV/Drv_ECUAndBMUCommunication.h"
 #include "./GLB/G_AddressDefinition.h"
-#include "./DRV/LOG/Drv_ZLog.h"
+#include "log/log.h"
 #include "./Xmodem/C_OTADataMonitor.h"
 #include "main.h"
 XCPStatus xcpstatus;
@@ -1143,7 +1143,7 @@ void CP_XCP_OTA(OTAObject *pOTA)
             if (rfile == NULL)
             {
                 printf("%s open error, error code %d (%s)\n", otafilenamestr1, errno, strerror(errno));
-                zlog_info(debug_out,"%s open error, error code %d %s\r\n",otafilenamestr1, errno, strerror(errno));
+                LOG("%s open error, error code %d %s\r\n",otafilenamestr1, errno, strerror(errno));
                 xcpstatus.ErrorReg |= 1 << 1;
                 xcpstatus.ErrorDeviceID = pOTA->deviceID;
             }
@@ -1162,7 +1162,7 @@ void CP_XCP_OTA(OTAObject *pOTA)
                 else
                 {
                     printf("1111111_XcpTryConnectDevice_111111 error, error code %d\r\n", ret);
-                    zlog_info(debug_out,"1111111_XcpTryConnectDevice_111111 error, error code %d\r\n", ret);
+                    LOG("1111111_XcpTryConnectDevice_111111 error, error code %d\r\n", ret);
                     // return 1;
                     return;
                 }
@@ -1179,7 +1179,7 @@ void CP_XCP_OTA(OTAObject *pOTA)
                 else
                 {
                     printf("2222222222_XcpTryQueryStatusOnce_222222222 error, error code %d\r\n", ret);
-                    zlog_info(debug_out,"2222222222_XcpTryQueryStatusOnce_222222222 error, error code %d\r\n", ret);
+                    LOG("2222222222_XcpTryQueryStatusOnce_222222222 error, error code %d\r\n", ret);
                      return;
                 }
 
@@ -1195,7 +1195,7 @@ void CP_XCP_OTA(OTAObject *pOTA)
             else
             {
                 printf("333333333_ReadFileAndSendData_333333333 error, error code %d\r\n", ret);
-                zlog_info(debug_out,"333333333_ReadFileAndSendData_333333333 error, error code %d\r\n", ret);
+                LOG("333333333_ReadFileAndSendData_333333333 error, error code %d\r\n", ret);
                  return;
             }
 
@@ -1211,7 +1211,7 @@ void CP_XCP_OTA(OTAObject *pOTA)
             else
             {
                 printf("4444444444_HandleXcpCommunication_44444444444 error, error code %d\r\n", ret);
-                zlog_info(debug_out,"4444444444_HandleXcpCommunication_44444444444 error, error code %d\r\n", ret);
+                LOG("4444444444_HandleXcpCommunication_44444444444 error, error code %d\r\n", ret);
                  return;
             }
 
@@ -1224,14 +1224,14 @@ void CP_XCP_OTA(OTAObject *pOTA)
             else
             {
                 printf("XcpProgramResetHandler error, error code %d\r\n", ret);
-                zlog_info(debug_out,"XcpProgramResetHandler error, error code %d\r\n", ret);
+                LOG("XcpProgramResetHandler error, error code %d\r\n", ret);
                 return;
             }
 
             if(xcpstatus.ErrorReg == 0)
             {
                 printf("can id 0x%x device ota success!\r\n", pOTA->deviceID);
-                zlog_info(debug_out,"can id 0x%x device ota success!\r\n", pOTA->deviceID);
+                LOG("can id 0x%x device ota success!\r\n", pOTA->deviceID);
                 xcpstatus.DeviceProgramOkFlag = 1;
                 CP_set_modbus_reg_val(OTAPPROGRESSREGADDR, 100);//0124,升级进度
                 CP_set_modbus_reg_val(OTASTATUSREGADDR, OTASUCCESS);
@@ -1240,7 +1240,7 @@ void CP_XCP_OTA(OTAObject *pOTA)
             else
             {
                 printf("can id 0x%x device ota failed, error register val 0x%x!\r\n", pOTA->deviceID, xcpstatus.ErrorReg);
-                zlog_info(debug_out,"can id 0x%x device ota failed, error register val 0x%x!\r\n", pOTA->deviceID, xcpstatus.ErrorReg);
+                LOG("can id 0x%x device ota failed, error register val 0x%x!\r\n", pOTA->deviceID, xcpstatus.ErrorReg);
                 CP_set_modbus_reg_val(OTASTATUSREGADDR, OTAFAILED);
             }
 

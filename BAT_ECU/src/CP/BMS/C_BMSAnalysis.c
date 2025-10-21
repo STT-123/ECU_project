@@ -1,9 +1,8 @@
-#include <arpa/inet.h>  // htonl
-#include <byteswap.h>   // bswap_16, bswap_32
+#include <arpa/inet.h> // htonl
+#include <byteswap.h>  // bswap_16, bswap_32
 #include "C_BMSAnalysis.h"
 #include "./GLB/G_AddressDefinition.h"
 #include "./CP/BMS/bms/CANSendFcn.h"
-
 
 float Electric_Meter_BCU_V3 = 102.3;
 float Electric_Meter_BCU_Curr2;
@@ -11,56 +10,52 @@ int32_t Electric_Meter_BCU_RealtimePower;
 float Electric_Meter_BCU_EngryAccumulateChrg;
 float Electric_Meter_BCU_EngryAccumulateDisChrg;
 
-
-
 bool CP_BMSAnalysis(void)
 {
     bool state = false;
     bms_CANRcvFcn();
 
     bms_CANSendFcn();
-    
-    state = true;  //天才的返回值 
+
+    state = true; // 天才的返回值
     return state;
 }
 
-
-
-void CP_get_BCU_FaultInfoLv3H(uint32_T faultValue) 
+void CP_get_BCU_FaultInfoLv3H(uint32_T faultValue)
 {
-    //32- maltalb bit号，大小端转换
-    if( faultValue & (1UL << 10))
+    // 32- maltalb bit号，大小端转换
+    if (faultValue & (1UL << 10))
     {
-        CP_set_emcu_fault(ANGLE_FAULT,SET_ERROR);//设置故障
+        CP_set_emcu_fault(ANGLE_FAULT, SET_ERROR); // 设置故障
     }
     else
     {
-        CP_set_emcu_fault(ANGLE_FAULT,SET_RECOVER);//恢复设置
+        CP_set_emcu_fault(ANGLE_FAULT, SET_RECOVER); // 恢复设置
     }
-    if( faultValue & (1UL << 9))
+    if (faultValue & (1UL << 9))
     {
-        CP_set_emcu_fault(DOOR_OPEN,SET_ERROR);//设置故障
+        CP_set_emcu_fault(DOOR_OPEN, SET_ERROR); // 设置故障
         // printf("BCU_FaultInfoLv3H: %x\n", faultValue);
     }
     else
     {
-        CP_set_emcu_fault(DOOR_OPEN,SET_RECOVER);//恢复设置
+        CP_set_emcu_fault(DOOR_OPEN, SET_RECOVER); // 恢复设置
     }
     // if( faultValue & (1UL << 24))//新增隔离开关，暂无该寄存器
     // {
-    //   
+    //
     // }
     // else
     // {
-    //   
+    //
     // }
-    if( faultValue & (1UL << 7))
+    if (faultValue & (1UL << 7))
     {
-        CP_set_emcu_fault(PCS_STOP,SET_ERROR);//设置故障
+        CP_set_emcu_fault(PCS_STOP, SET_ERROR); // 设置故障
     }
     else
     {
-        CP_set_emcu_fault(PCS_STOP,SET_RECOVER);//恢复设置
+        CP_set_emcu_fault(PCS_STOP, SET_RECOVER); // 恢复设置
     }
     // if( faultValue & (1UL << 26))
     // {
@@ -71,15 +66,14 @@ void CP_get_BCU_FaultInfoLv3H(uint32_T faultValue)
     // {
     //     CP_set_emcu_fault(EMERGENCY_STOP,SET_RECOVER);//恢复设置
     // }
-    if( faultValue & (1UL << 5))
+    if (faultValue & (1UL << 5))
     {
-        CP_set_emcu_fault(SMOKE_FAULT,SET_ERROR);//设置故障
+        CP_set_emcu_fault(SMOKE_FAULT, SET_ERROR); // 设置故障
     }
     else
     {
-        CP_set_emcu_fault(SMOKE_FAULT,SET_RECOVER);//恢复设置
+        CP_set_emcu_fault(SMOKE_FAULT, SET_RECOVER); // 恢复设置
     }
-
 }
 
 void CP_modbus_set_float_badc(float f, uint16_t *dest)
@@ -92,14 +86,13 @@ void CP_modbus_set_float_badc(float f, uint16_t *dest)
     dest[1] = (uint16_t)bswap_16(i & 0xFFFF);
 }
 
-
 void Set_BCU_Voltage(float voltage)
 {
     uint16_t temp[2] = {0};
     // printf("voltage: %f\n", voltage);
-    float adjusted_voltage = voltage; 
+    float adjusted_voltage = voltage;
     CP_modbus_set_float_badc(adjusted_voltage, temp);
-    CP_set_modbus_reg_val(MDBUS_ADDR_DC_VOL,     temp[0]);
+    CP_set_modbus_reg_val(MDBUS_ADDR_DC_VOL, temp[0]);
     CP_set_modbus_reg_val(MDBUS_ADDR_DC_VOL + 1, temp[1]);
 }
 
@@ -107,12 +100,11 @@ void Set_BCU_Current(float current)
 {
     uint16_t temp[2] = {0};
     // printf("current: %f\n", current);
-    float adjusted_current = current; 
+    float adjusted_current = current;
     CP_modbus_set_float_badc(adjusted_current, temp);
-    CP_set_modbus_reg_val(MDBUS_ADDR_DC_CUR,     temp[0]);
+    CP_set_modbus_reg_val(MDBUS_ADDR_DC_CUR, temp[0]);
     CP_set_modbus_reg_val(MDBUS_ADDR_DC_CUR + 1, temp[1]);
 }
-
 
 void Set_BCU_Power(int32_t power_watt)
 {
@@ -120,28 +112,25 @@ void Set_BCU_Power(int32_t power_watt)
     // printf("power_watt: %f\n", power_watt);
     uint16_t temp[2] = {0};
     CP_modbus_set_float_badc(power_watt, temp);
-    CP_set_modbus_reg_val(MDBUS_ADDR_DC_POW,     temp[0]);
+    CP_set_modbus_reg_val(MDBUS_ADDR_DC_POW, temp[0]);
     CP_set_modbus_reg_val(MDBUS_ADDR_DC_POW + 1, temp[1]);
 }
 
-
 void Set_BCU_PositiveEnergy(float energy_wh)
 {
-    uint32_t energy_mwh = energy_wh * 1000; 
+    uint32_t energy_mwh = energy_wh * 1000;
     // printf("energy_mwh: %d\n", energy_mwh);
-    CP_set_modbus_reg_val(MDBUS_ADDR_P_ENERGY,     energy_mwh & 0xFFFF);
+    CP_set_modbus_reg_val(MDBUS_ADDR_P_ENERGY, energy_mwh & 0xFFFF);
     CP_set_modbus_reg_val(MDBUS_ADDR_P_ENERGY + 1, energy_mwh >> 16);
 }
 
-
 void Set_BCU_NegativeEnergy(float energy_wh)
 {
-    uint32_t energy_mwh = energy_wh * 1000; 
+    uint32_t energy_mwh = energy_wh * 1000;
     // printf("energy_mwh: %d\n", energy_mwh);
-    CP_set_modbus_reg_val(MDBUS_ADDR_N_ENERGY,     energy_mwh & 0xFFFF);
+    CP_set_modbus_reg_val(MDBUS_ADDR_N_ENERGY, energy_mwh & 0xFFFF);
     CP_set_modbus_reg_val(MDBUS_ADDR_N_ENERGY + 1, energy_mwh >> 16);
 }
-
 
 void CP_set_OTA_XCPConnect(real_T value) { OTA_XCPConnect = value; }
 real_T CP_get_OTA_XCPConnect(void) { return OTA_XCPConnect; }
@@ -194,15 +183,11 @@ real_T CP_get_TCU_TimeWeek(void) { return TCU_TimeWeek; }
 void CP_set_TCU_TimeYear(real_T value) { TCU_TimeYear = value; }
 real_T CP_get_TCU_TimeYear(void) { return TCU_TimeYear; }
 
-
 void CP_set_TCU_FcnStopSet(real_T value) { TCU_FcnStopSet = value; }
 real_T CP_get_TCU_FcnStopSet(void) { return TCU_FcnStopSet; }
 
-
-
 void CP_set_TCU_HighVoltType(real_T value) { TCU_HighVoltType = value; }
 real_T CP_get_TCU_HighVoltType(void) { return TCU_HighVoltType; }
-
 
 void CP_set_TCU_HighVoltValue(real_T value) { TCU_HighVoltValue = value; }
 real_T CP_get_TCU_HighVoltValue(void) { return TCU_HighVoltValue; }
@@ -210,20 +195,21 @@ real_T CP_get_TCU_HighVoltValue(void) { return TCU_HighVoltValue; }
 /**
  * 将标准 canfd_frame 转换为 CAN_FD_MESSAGE_BUS
  */
-void ConvertCANFDToBus(const struct canfd_frame* frame, CAN_FD_MESSAGE_BUS* msg)
+void ConvertCANFDToBus(const struct canfd_frame *frame, CAN_FD_MESSAGE_BUS *msg)
 {
-    if (!frame || !msg) return;
+    if (!frame || !msg)
+        return;
     // printf("Raw can_id      : 0x%08lX\n", frame->can_id);
     msg->ProtocolMode = 1; // 1 表示 CAN FD
-    msg->Extended     = 1;
-    msg->Remote       = 0;
-    msg->Error        = 0;
+    msg->Extended = 1;
+    msg->Remote = 0;
+    msg->Error = 0;
 
-    msg->BRS          = 0;
-    msg->ESI          = 0;
+    msg->BRS = 0;
+    msg->ESI = 0;
 
-    msg->Length       = frame->len;
-    msg->DLC          = frame->len;
+    msg->Length = frame->len;
+    msg->DLC = frame->len;
     // printf("Raw can_id      : 0x%08lX\n", frame->can_id);
     // printf("Extended    : %d\n", (frame->can_id & CAN_EFF_FLAG) ? 1 : 0);
     // printf(" frame->can_id : %08lX\r\n", frame->can_id);
@@ -236,10 +222,10 @@ void ConvertCANFDToBus(const struct canfd_frame* frame, CAN_FD_MESSAGE_BUS* msg)
     memcpy(msg->Data, frame->data, frame->len);
 }
 
-
-void ConvertBusToCANFD(const CAN_FD_MESSAGE_BUS* msg, struct canfd_frame* frame)
+void ConvertBusToCANFD(const CAN_FD_MESSAGE_BUS *msg, struct canfd_frame *frame)
 {
-    if (!msg || !frame) return;
+    if (!msg || !frame)
+        return;
 
     // 清空目标结构体
     memset(frame, 0, sizeof(*frame));
@@ -248,21 +234,24 @@ void ConvertBusToCANFD(const CAN_FD_MESSAGE_BUS* msg, struct canfd_frame* frame)
     frame->can_id = msg->ID;
     // printf("frame->can_id : %08lX\r\n", frame->can_id);
     // 添加扩展帧标志（EFF）
-    if (msg->Extended) {
+    if (msg->Extended)
+    {
         frame->can_id |= CAN_EFF_FLAG;
         // printf("msg->Extended : %d\r\n",msg->Extended);
     }
 
     // 添加远程帧标志（RTR）
-    if (msg->Remote) {
+    if (msg->Remote)
+    {
         frame->can_id |= CAN_RTR_FLAG;
-         printf("msg->Remote : %d\r\n",msg->Remote);
+        //  printf("msg->Remote : %d\r\n",msg->Remote);
     }
 
     // 添加错误帧标志（ERR）
-    if (msg->Error) {
+    if (msg->Error)
+    {
         frame->can_id |= CAN_ERR_FLAG;
-         printf("msg->Error : %d\r\n",msg->Error);
+        //  printf("msg->Error : %d\r\n",msg->Error);
     }
 
     // 设置数据长度
@@ -270,18 +259,20 @@ void ConvertBusToCANFD(const CAN_FD_MESSAGE_BUS* msg, struct canfd_frame* frame)
     // frame->len = msg->DLC;
     // 设置 CAN FD 特有标志（BRS 和 ESI）
     frame->flags = 0;
-    if (msg->BRS) {
+    if (msg->BRS)
+    {
         frame->flags |= CANFD_BRS;
-        printf("msg->BRS : %d\r\n",msg->BRS);
+        // printf("msg->BRS : %d\r\n",msg->BRS);
     }
-    if (msg->ESI) {
+    if (msg->ESI)
+    {
         frame->flags |= CANFD_ESI;
-        printf("msg->ESI : %d\r\n",msg->ESI);
-        //canfd 的错误帧状态
+        // printf("msg->ESI : %d\r\n",msg->ESI);
+        // canfd 的错误帧状态
     }
-    
+
     // printf("msg->Length : %d\r\n", msg->Length);
-        // printf("Data: ");
+    // printf("Data: ");
     // for (int i = 0; i < msg->Length; ++i) {
     //     printf("%02X ", msg->Data[i]);
     // }
@@ -294,38 +285,39 @@ void ConvertBusToCANFD(const CAN_FD_MESSAGE_BUS* msg, struct canfd_frame* frame)
     //     printf("%02X ", frame->data[i]);
     // }
     // printf("\r\n");
-
 }
-
-
 
 void Convert_CAN_MESSAGE_to_can_frame(const CAN_MESSAGE *msg, struct can_frame *frame)
 {
- 
+
     memset(frame, 0, sizeof(struct can_frame));
 
     // printf("msg->ID : %08lX\r\n", msg->ID);
     frame->can_id = msg->ID;
 
-    if (msg->Extended) {
-        frame->can_id |= CAN_EFF_FLAG; 
+    if (msg->Extended)
+    {
+        frame->can_id |= CAN_EFF_FLAG;
     }
 
- 
-    if (msg->Remote) {
-        frame->can_id |= CAN_RTR_FLAG;  
+    if (msg->Remote)
+    {
+        frame->can_id |= CAN_RTR_FLAG;
     }
 
-    
-    if (msg->Error) {
-        frame->can_id |= CAN_ERR_FLAG;  
+    if (msg->Error)
+    {
+        frame->can_id |= CAN_ERR_FLAG;
     }
 
     //  printf("msg->Length  : %d\r\n", msg->Length );
-    if (msg->Length <= 8) {
+    if (msg->Length <= 8)
+    {
         frame->can_dlc = msg->Length;
-    } else {
-        frame->can_dlc = 8; 
+    }
+    else
+    {
+        frame->can_dlc = 8;
     }
 
     memcpy(frame->data, msg->Data, frame->can_dlc);
@@ -337,7 +329,6 @@ void Convert_CAN_MESSAGE_to_can_frame(const CAN_MESSAGE *msg, struct can_frame *
     // printf("\r\n");
 }
 
-
 void Convert_canfd_frame_to_CAN_MESSAGE(const struct canfd_frame *frame, CAN_MESSAGE *msg)
 {
     memset(msg, 0, sizeof(CAN_MESSAGE));
@@ -345,9 +336,9 @@ void Convert_canfd_frame_to_CAN_MESSAGE(const struct canfd_frame *frame, CAN_MES
     // 提取 CAN ID
     msg->ID = frame->can_id & CAN_EFF_MASK;
 
-    msg->Extended     = 1;
-    msg->Remote       = 0;
-    msg->Error        = 0;
+    msg->Extended = 1;
+    msg->Remote = 0;
+    msg->Error = 0;
 
     // 判断是否是扩展帧
     // msg->Extended = (frame->can_id & CAN_EFF_FLAG) ? 1 : 0;
@@ -362,15 +353,11 @@ void Convert_canfd_frame_to_CAN_MESSAGE(const struct canfd_frame *frame, CAN_MES
     // 数据长度：截断为最大8字节
     msg->Length = (frame->len > 8) ? 8 : frame->len;
 
-
     msg->Timestamp = 0;
 
     // 拷贝数据
     memcpy(msg->Data, frame->data, msg->Length);
 }
-
-
-
 
 void Convert_can_frame_to_CAN_MESSAGE(const struct can_frame *frame, CAN_MESSAGE *msg)
 {
@@ -387,14 +374,17 @@ void Convert_can_frame_to_CAN_MESSAGE(const struct can_frame *frame, CAN_MESSAGE
 
     // // 判断是否为错误帧
     // msg->Error = (frame->can_id & CAN_ERR_FLAG) ? 1 : 0;
-    msg->Extended     = 1;
-    msg->Remote       = 0;
-    msg->Error        = 0;
+    msg->Extended = 1;
+    msg->Remote = 0;
+    msg->Error = 0;
 
     // 数据长度控制在 0~8 之间
-    if (frame->can_dlc <= 8) {
+    if (frame->can_dlc <= 8)
+    {
         msg->Length = frame->can_dlc;
-    } else {
+    }
+    else
+    {
         msg->Length = 8;
     }
     // printf("msg->Length : %d\r\n", msg->Length);

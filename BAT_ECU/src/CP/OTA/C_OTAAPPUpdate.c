@@ -1,6 +1,6 @@
 #include "C_OTAAPPUpdate.h"
 #include "../GLB/G_GloabalVariable.h"
-#include "./DRV/LOG/Drv_ZLog.h"
+#include "log/log.h"
 #include "./CP/BMS/C_BMSAnalysis.h"
 #include "./GLB/G_AddressDefinition.h"
 #include "C_OTADataMonitor.h"
@@ -24,7 +24,7 @@ void CP_ECU_OTA(OTAObject *pOTA)
 			char otafilenamestr1[OTAFILENAMEMAXLENGTH + 64] = {'\0'};
 			snprintf(otafilenamestr1, sizeof(otafilenamestr1), "%s/%s", USB_MOUNT_POINT, pOTA->OTAFilename);
             printf("otafilenamestr1 %s\r\n", otafilenamestr1);
-			zlog_info(debug_out,"otafilenamestr1 %s\r\n", otafilenamestr1);
+			LOG("otafilenamestr1 %s\r\n", otafilenamestr1);
 
 
 			if (access(otafilenamestr1, F_OK) != 0) {
@@ -45,12 +45,12 @@ void CP_ECU_OTA(OTAObject *pOTA)
 			int ret = system(cmd);
 			if (ret == 0) {
 				printf("Decompression successful.\n");
-				zlog_info(debug_out,"Decompression successful.\n");
+				LOG("Decompression successful.\n");
 			}
 			else 
 			{
 			printf("Decompression failed.\n");
-			zlog_info(debug_out,"Decompression failed.\n");
+			LOG("Decompression failed.\n");
 			ecustatus.ErrorReg  |= 1<<1;			
 			}
 
@@ -64,12 +64,12 @@ void CP_ECU_OTA(OTAObject *pOTA)
 			int ret = system(cmd);
 			if (ret == 0) {
 				printf("Copy successful.\n");
-				zlog_info(debug_out,"Copy successful.\n");
+				LOG("Copy successful.\n");
 			} 
 			else 
 			{
 				printf("Copy failed.\n");
-				zlog_info(debug_out,"Copy failed.\n");
+				LOG("Copy failed.\n");
 				ecustatus.ErrorReg  |= 1<<2;			
 			}
 
@@ -84,7 +84,7 @@ void CP_ECU_OTA(OTAObject *pOTA)
 			if (ret == 0) {
 				FinshhECUOtaAndCleanup(pOTA);
 				printf("Permission settings have been successfully configured.\n");
-				zlog_info(debug_out,"Permission settings have been successfully configured.\n");
+				LOG("Permission settings have been successfully configured.\n");
 
 				system("sync");
 				system("reboot");
@@ -92,7 +92,7 @@ void CP_ECU_OTA(OTAObject *pOTA)
 			else 
 			{
 				printf("Permission setting failed.\n");
-				zlog_info(debug_out,"Permission setting failed.\n");
+				LOG("Permission setting failed.\n");
 				ecustatus.ErrorReg  |= 1<<3;			
 			}
 
@@ -103,7 +103,7 @@ void CP_ECU_OTA(OTAObject *pOTA)
 		if(ecustatus.ErrorReg != 0)
 		{
 			printf("can id 0x%x device ota failed, error register val 0x%x!\r\n", pOTA->deviceID, ecustatus.ErrorReg);
-			zlog_info(debug_out,"can id 0x%x device ota failed, error register val 0x%x!\r\n", pOTA->deviceID, ecustatus.ErrorReg);
+			LOG("can id 0x%x device ota failed, error register val 0x%x!\r\n", pOTA->deviceID, ecustatus.ErrorReg);
 			CP_set_modbus_reg_val(OTASTATUSREGADDR, OTAFAILED);
 		}
 		pOTA->OTAStart =0;

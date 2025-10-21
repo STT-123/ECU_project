@@ -1,0 +1,30 @@
+{
+    "files.associations": {
+        "canrcvfcn.h": "c",
+        "log.h": "c",
+        "hal_can.h": "c",
+        "func_sdcard.h": "c",
+        "stdio.h": "c",
+        "g_gloabalvariable.h": "c",
+        "log_save_task.h": "c",
+        "func_ecuandbcucommunication.h": "c",
+        "types.h": "c",
+        "main.h": "c",
+        "uio.h": "c",
+        "epoll.h": "c",
+        "drv_epoll.h": "c",
+        "can.h": "c",
+        "queue.h": "c",
+        "drv_externalemergencystop.h": "c",
+        "myepoll.h": "c",
+        "c_bmsanalysis.h": "c",
+        "socket.h": "c",
+        "c_s19operation.h": "c",
+        "c_ftpserver.h": "c",
+        "drv_ecuandbmucommunication.h": "c",
+        "drv_ecuandbcucommunication.h": "c",
+        "func_ecuandbmucommunication.h": "c",
+        "externalemergencystop_task.h": "c",
+        "string.h": "c"
+    }
+}

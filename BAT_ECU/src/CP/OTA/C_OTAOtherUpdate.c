@@ -3,7 +3,7 @@
 #include "../GLB/G_GloabalVariable.h"
 #include "./DRV/Drv_ECUAndBCUCommunication.h"
 #include "./GLB/G_AddressDefinition.h"
-#include "./DRV/LOG/Drv_ZLog.h"
+#include "log/log.h"
 #include "./Xmodem/C_OTADataMonitor.h"
 #include "main.h"
 #define ACPDC_BLOCK_SIZE 120
@@ -304,7 +304,7 @@ void CP_ACPDCDC_OTA(OTAObject* pOTA)
         if(rfile == NULL)
         {
 			printf("%s open error, error code %d (%s)\n", otafilenamestr1, errno, strerror(errno));
-			zlog_info(debug_out,"%s open error, error code %d %s\r\n",otafilenamestr1, errno, strerror(errno));
+			LOG("%s open error, error code %d %s\r\n",otafilenamestr1, errno, strerror(errno));
 			independentStatus.ErrorReg |= 1 << 0;
             independentStatus.ErrorDeviceID = pOTA->deviceID;
         }
@@ -399,7 +399,7 @@ void CP_ACPDCDC_OTA(OTAObject* pOTA)
 		if(independentStatus.ErrorReg == 0)
 		{
 			printf("can id 0x%x device ota success!\r\n", pOTA->deviceID);
-			zlog_info(debug_out,"can id 0x%x device ota success!\r\n", pOTA->deviceID);
+			LOG("can id 0x%x device ota success!\r\n", pOTA->deviceID);
 			independentStatus.DeviceProgramOkFlag = 1;
 			CP_set_modbus_reg_val(OTAPPROGRESSREGADDR, 100);//0124,升级进度
 			CP_set_modbus_reg_val(OTASTATUSREGADDR, OTASUCCESS);
@@ -410,7 +410,7 @@ void CP_ACPDCDC_OTA(OTAObject* pOTA)
 		else
 		{
 			printf("can id 0x%x device ota failed, error register val 0x%x!\r\n", pOTA->deviceID, independentStatus.ErrorReg);
-			zlog_info(debug_out,"can id 0x%x device ota failed, error register val 0x%x!\r\n", pOTA->deviceID, independentStatus.ErrorReg);
+			LOG("can id 0x%x device ota failed, error register val 0x%x!\r\n", pOTA->deviceID, independentStatus.ErrorReg);
 			CP_set_modbus_reg_val(OTASTATUSREGADDR, OTAFAILED);
 
 		}
