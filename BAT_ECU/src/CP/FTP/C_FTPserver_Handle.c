@@ -306,7 +306,6 @@ void set_ftp_read_file_flag(bool flag)
 
 bool CP_get_ftp_read_file_flag()
 {
-
     return ftp_read_flag;
 }
 

@@ -5,24 +5,201 @@
 #include "log/log.h"
 #include "./CP/BMS/bms/CANRcvFcn.h"
 
+// 检查U盘是否可用
+// 0正常 1不正常
+static int CheckUsbStatus(void)
+{
+    static int lastUsbStatus = 0;
+    int ret = 1; // 默认不存在
+
+    // 直接打开
+    FILE *fp = fopen("/proc/mounts", "r");
+    if (!fp)
+    {
+        perror("fopen /proc/mounts failed");
+        ret = 1; // 认为U盘不可用
+    }
+    else
+    {
+        char line[128];
+        while (fgets(line, sizeof(line), fp))
+        {
+            if (strstr(line, USB_MOUNT_POINT))
+            {
+                ret = 0; // 找到了
+                break;
+            }
+        }
+        fclose(fp);
+    }
+
+    // 变化打印
+    if (ret != lastUsbStatus)
+    {
+        LOG("[SD Card] SDCard Status From %d to %d(0:ok, 1:not exist). \n", lastUsbStatus, ret);
+        lastUsbStatus = ret;
+    }
+
+    return ret;
+}
+
+// 获取当前时间
+static int GetNowTime(struct tm *nowTime)
+{
+    struct tm timeinfo;
+
+    // 检查时间
+    if (BCU_TimeYear != 0) // bcu发来时间了
+    {
+        // 填充外部时间变量到 tm 结构体
+        timeinfo.tm_year = BCU_TimeYear + 100;
+        timeinfo.tm_mon = BCU_TimeMonth - 1;
+        timeinfo.tm_mday = BCU_TimeDay;
+        timeinfo.tm_hour = BCU_TimeHour;
+        timeinfo.tm_min = BCU_TimeMinute;
+        timeinfo.tm_sec = BCU_TimeSencond;
+        timeinfo.tm_isdst = -1;
+        LOG("[SD Card] Time Source From Bcu. ");
+    }
+    else // bcu没发过来时间 用自己本地的时间
+    {
+        time_t now = time(NULL);
+        struct tm *tm_info = localtime(&now);
+        timeinfo = *tm_info;
+        mktime(&timeinfo);
+        LOG("[SD Card] Time Source From Local. ");
+    }
+
+    // 得到当前时间
+    *nowTime = timeinfo;
+    LOG("[SD Card] Now Time: %d-%d-%d %d:%d:%d. ", timeinfo.tm_year, timeinfo.tm_mon, timeinfo.tm_mday, timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec);
+
+    return 0;
+}
+
+// 使用一个时间创建一个文件路径（文件夹+文件名）
+static int CreateAscFilePathWithTime(struct tm timeInfo, char *filePath)
+{
+    // 创建文件夹路径
+    char folderPath[100];
+    snprintf(folderPath, sizeof(folderPath), "%s/%04d%02d%02d",
+             USB_MOUNT_POINT,         // 挂载点
+             timeInfo.tm_year + 1900, // 年
+             timeInfo.tm_mon + 1,     // 月
+             timeInfo.tm_mday);       // 日
+
+    // 创建目录（如果不存在）
+    struct stat st = {0};
+    if (stat(folderPath, &st) == -1)
+    {
+        if (mkdir(folderPath, 0777) == -1)
+        {
+            perror("mkdir failed");
+            LOG("[SD Card] mkdir failed");
+            return 1;
+        }
+    }
+
+    // 生成完整文件路径（年月日时分秒）
+    sprintf(filePath, "%s/%04d%02d%02d%02d%02d%02d.asc",
+            folderPath,              // 文件夹路径
+            timeInfo.tm_year + 1900, // 年
+            timeInfo.tm_mon + 1,     // 月
+            timeInfo.tm_mday,        // 日
+            timeInfo.tm_hour,        // 时
+            timeInfo.tm_min,         // 分
+            timeInfo.tm_sec);        // 秒
+
+    LOG("[SD Card] new asc file path is = %04d%02d%02d%02d%02d%02d. \n",
+        timeInfo.tm_year + 1900,
+        timeInfo.tm_mon + 1,
+        timeInfo.tm_mday,
+        timeInfo.tm_hour,
+        timeInfo.tm_min,
+        timeInfo.tm_sec);
+
+    return 0;
+}
+
+// 打开当前需要写的Asc文件
+static int OpenNowWriteAscFile(char *filePath, FILE **file)
+{
+    static int failed_count = 0;
+
+    *file = fopen(filePath, "a");
+    if (!*file)
+    {
+        // 打开失败
+        failed_count++;
+        if (failed_count >= 5)
+        {
+            if (failed_count <= 5)
+            {
+                LOG("[SD Card] OpenNowWriteAscFile  %s failed, count: %d\n", filePath, failed_count);
+            }
+            failed_count = 10;
+            CP_set_emcu_fault(SD_FAULT, SET_ERROR); // 标记modbus寄存器错误
+        }
+
+        return 1;
+    }
+    else
+    {
+        if (failed_count >= 5)
+        {
+            LOG("[SD Card] OpenNowWriteAscFile %s ok, count: %d\n", filePath, failed_count);
+        }
+        failed_count = 0;
+        CP_set_emcu_fault(SD_FAULT, SET_RECOVER);
+
+        return 0;
+    }
+
+    return 1;
+}
+
+// ASC文件写一个时间头
+static int AscFileWriteTimeHeader(FILE *file, struct tm *timeinfo)
+{
+    if (file == NULL)
+    {
+        printf("Error: File pointer is NULL.\n");
+        return;
+    }
+    char header[256];
+    const char *weekDays[] = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
+    const char *months[] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                            "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+
+    // 格式化头信息
+    sprintf(header, "date %s %s %02d %02d:%02d:%02d %s %04d\r\n",
+            weekDays[timeinfo->tm_wday],
+            months[timeinfo->tm_mon],
+            timeinfo->tm_mday,
+            (timeinfo->tm_hour > 12) ? (timeinfo->tm_hour - 12) : timeinfo->tm_hour,
+            timeinfo->tm_min, timeinfo->tm_sec,
+            (timeinfo->tm_hour >= 12) ? "PM" : "AM",
+            timeinfo->tm_year + 1900);
+    strcat(header, "base hex timestamps absolute\r\n");
+    strcat(header, "// version 7.0.0\r\n");
+
+    size_t written = fwrite(header, sizeof(char), strlen(header), file);
+    if (written < strlen(header))
+    {
+        // printf("Warning: Header not fully written to file.\n");
+    }
+    // printf("Header written to file :%d\n",strlen(header));
+}
+
 DoubleRingBuffer canDoubleRingBuffer;
 
-struct tm timeinfo;
-static bool newFileNeeded = false;
+static bool newFileNeeded = true;
 
 Rtc_Ip_TimedateType initialTime;
 Rtc_Ip_TimedateType currentTime;
 struct timespec start_tick;
 #define CAN_ID_HISTORY_SIZE 6
 static char filePath[256];
-// uint32_t CAN_IDs[] = {
-//     0x180110E4, 0x180210E4, 0x180310E4, 0x180410E4, 0x180510E4,0x180610E4,
-//     0x180710E4, 0x180810E4, 0x180A10E4, 0x180B10E4, 0x180C10E4,0x180D10E4,
-//     0x180E10E4, 0x180F10E4, 0x181010E4, 0x181110E4, 0x181210E4,0x181310E4,
-//     0x181410E4, 0x181510E4, 0x181610E4, 0x181710E4, 0x181810E4,0x1A0110E4,
-//     0x1B0110E4, 0x1B0210E4, 0x1B0310E4, 0x1B0410E4, 0x1B0510E4,0x1C0110E4,
-//     0x1CA010E4, 0x1CA010E5
-// };
 uint32_t CAN_IDs[] = {
     0x180110E4,
     0x180210E4,
@@ -33,8 +210,6 @@ uint32_t CAN_IDs[] = {
 };
 static CAN_MESSAGE can_msg_1A0110E4_cache[8]; // 单体电压，一包30个，一共240个，索引分8帧
 static CAN_MESSAGE can_msg_1B0110E4_cache[2]; // 单体温度，一包60个，一共120个，索引分2帧
-// static CAN_MESSAGE can_msg_1B0210E4_cache[1];  //AFE温度，一包五个，一共15个，索引分5帧
-// static CAN_MESSAGE can_msg_1B0310E4_cache[5]; //bmu电压，一包三个，一共15个，索引分5帧
 static CAN_MESSAGE can_msg_180410E4_cache[1]; // bmu电压，AFE温度，一包15个，一共15个，索引分1帧
 CAN_MESSAGE can_msg_cache[CAN_ID_HISTORY_SIZE] = {0};
 
@@ -66,112 +241,6 @@ void Drv_init_can_id_history()
         can_msg_180410E4_cache[i].ID = 0x180410E4;
         can_msg_180410E4_cache[i].Length = 64;
         can_msg_180410E4_cache[i].Data[0] = i + 1;
-    }
-}
-
-// 写入缓冲
-
-void Drv_CAN_Receive_Callback(CANFD_MESSAGE *msg)
-{
-    struct timespec now_tick;
-    clock_gettime(CLOCK_MONOTONIC, &now_tick);
-
-    RingBuffer *active = &canDoubleRingBuffer.buffers[canDoubleRingBuffer.activeBuffer];
-
-    struct timespec timeout;
-    clock_gettime(CLOCK_REALTIME, &timeout);
-    timeout.tv_nsec += 10 * 1000 * 1000; // 10ms = 10,000,000 ns
-    if (timeout.tv_nsec >= 1000000000)
-    {
-        timeout.tv_sec += timeout.tv_nsec / 1000000000;
-        timeout.tv_nsec = timeout.tv_nsec % 1000000000;
-    }
-
-    if (pthread_mutex_timedlock(&active->mutex, &timeout) == 0)
-    { // 成功拿到锁
-        if (active->count < BUFFER_SIZE)
-        {
-            CAN_LOG_MESSAGE *log = &active->buffer[active->writeIndex];
-            log->msg = *msg; // 修改0507
-
-            // 计算相对时间戳（单位：毫秒，或者根据你的需求）
-            uint32_t diff_ms = (now_tick.tv_sec - start_tick.tv_sec) * 1000 + (now_tick.tv_nsec - start_tick.tv_nsec) / 1000000;
-            log->relativeTimestamp = diff_ms;
-
-            printf("log->relativeTimestamp: %d\n", log->relativeTimestamp);
-
-            active->writeIndex = (active->writeIndex + 1) % BUFFER_SIZE;
-            active->count++;
-        }
-        pthread_mutex_unlock(&active->mutex);
-    }
-}
-
-void Drv_save_buffered_data_to_file(const char *basePath)
-{
-    RingBuffer *active = &canDoubleRingBuffer.buffers[canDoubleRingBuffer.activeBuffer];
-    RingBuffer *backup = &canDoubleRingBuffer.buffers[1 - canDoubleRingBuffer.activeBuffer];
-
-    struct timespec timeout;
-    clock_gettime(CLOCK_REALTIME, &timeout);
-    timeout.tv_nsec += 10 * 1000 * 1000; // 10ms
-    if (timeout.tv_nsec >= 1000000000)
-    {
-        timeout.tv_sec += timeout.tv_nsec / 1000000000;
-        timeout.tv_nsec %= 1000000000;
-    }
-
-    if (pthread_mutex_timedlock(&canDoubleRingBuffer.switchMutex, &timeout) == 0)
-    {
-        canDoubleRingBuffer.activeBuffer = 1 - canDoubleRingBuffer.activeBuffer;
-        pthread_mutex_unlock(&canDoubleRingBuffer.switchMutex);
-    }
-    else
-    {
-        // 拿不到锁就不切换，直接返回
-        return;
-    }
-
-    clock_gettime(CLOCK_REALTIME, &timeout);
-    timeout.tv_nsec += 100 * 1000 * 1000; // 100ms
-    if (timeout.tv_nsec >= 1000000000)
-    {
-        timeout.tv_sec += timeout.tv_nsec / 1000000000;
-        timeout.tv_nsec %= 1000000000;
-    }
-
-    if (pthread_mutex_timedlock(&backup->mutex, &timeout) == 0)
-    {
-        if (backup->count > 0)
-        {
-            // 生成文件名
-            time_t now = time(NULL);
-            struct tm *t = localtime(&now);
-            char filename[256];
-            snprintf(filename, sizeof(filename), "%s/%04d%02d%02d%02d%02d%02d.asc",
-                     basePath, t->tm_year + 1900, t->tm_mon + 1, t->tm_mday,
-                     t->tm_hour, t->tm_min, t->tm_sec);
-
-            FILE *file = fopen(filename, "w");
-            if (file)
-            {
-                for (size_t i = 0; i < backup->count; i++)
-                {
-                    CAN_LOG_MESSAGE *log = &backup->buffer[(backup->readIndex + i) % BUFFER_SIZE];
-                    fprintf(file, "%08X [%u] ", log->msg.ID, log->msg.Length);
-                    for (int j = 0; j < log->msg.Length; j++)
-                    {
-                        fprintf(file, "%02X ", log->msg.Data[j]);
-                    }
-                    fprintf(file, "\r\n");
-                }
-                fclose(file);
-            }
-            // 清空备份缓冲区
-            backup->count = 0;
-            backup->writeIndex = backup->readIndex = 0;
-        }
-        pthread_mutex_unlock(&backup->mutex);
     }
 }
 
@@ -239,10 +308,6 @@ void Drv_RTCGetTime(Rtc_Ip_TimedateType *rtcTime)
     rtcTime->hour = tm_info->tm_hour;
     rtcTime->minutes = tm_info->tm_min;
     rtcTime->seconds = tm_info->tm_sec;
-    //     printf("Drv_RTCGetTime tm_info: %04d-%02d-%02d %02d:%02d:%02d\n",tm_info->tm_year + 1900, tm_info->tm_mon + 1, tm_info->tm_mday,tm_info->tm_hour,tm_info ->tm_min,
-    // tm_info ->tm_sec);
-    //     printf("Drv_RTCGetTime Current time: %04d-%02d-%02d %02d:%02d:%02d\n", rtcTime->year, rtcTime->month, rtcTime->day,
-    //                rtcTime->hour, rtcTime->minutes, rtcTime->seconds);
 }
 
 bool Drv_CheckTimeChange(Rtc_Ip_TimedateType *currentTime)
@@ -286,8 +351,6 @@ void Drv_init_double_ring_buffer(DoubleRingBuffer *drb)
     }
     drb->activeBuffer = 0;
     pthread_mutex_init(&drb->switchMutex, NULL);
-
-    // clock_gettime(CLOCK_MONOTONIC, &start_tick);
 }
 
 // 查找指定CAN ID的历史消息，并与当前消息对比
@@ -375,7 +438,6 @@ void Drv_write_to_active_buffer(const CANFD_MESSAGE *msg, uint8_t channel)
 
     if (Drv_check_and_update_message(msg) == 0)
     {
-        // printf("The message has not been modified.\n");
         return; // 临时取消
     }
 
@@ -385,7 +447,6 @@ void Drv_write_to_active_buffer(const CANFD_MESSAGE *msg, uint8_t channel)
 
     CAN_LOG_MESSAGE *logMsg = &activeBuffer->buffer[activeBuffer->writeIndex];
     logMsg->relativeTimestamp = GetTimeDifference_ms(start_tick);
-    // printf("logMsg->relativeTimestamp: %d\n", logMsg->relativeTimestamp);
     memcpy(&logMsg->msg, msg, sizeof(CANFD_MESSAGE));
     logMsg->channel = channel;
 
@@ -404,14 +465,6 @@ void Drv_write_to_active_buffer(const CANFD_MESSAGE *msg, uint8_t channel)
     pthread_mutex_unlock(&drb->switchMutex);
 }
 
-void Drv_swap_buffers(DoubleRingBuffer *drb)
-{
-    pthread_mutex_lock(&drb->switchMutex);
-    drb->activeBuffer = 1 - drb->activeBuffer;
-    // printf("Swapped buffers\n");
-    pthread_mutex_unlock(&drb->switchMutex);
-}
-
 void Drv_write_canmsg_cache_to_file(FILE *file, uint32_t timestamp_ms)
 {
     if (file == NULL)
@@ -419,7 +472,7 @@ void Drv_write_canmsg_cache_to_file(FILE *file, uint32_t timestamp_ms)
         printf("Error: File pointer is NULL.\n");
         return;
     }
-    // printf("Writing CAN message cache to file...\n");
+
     unsigned short index = 0;
     for (int i = 0; i < CAN_ID_HISTORY_SIZE; i++)
     {
@@ -467,12 +520,9 @@ void Drv_write_canmsg_cache_to_file(FILE *file, uint32_t timestamp_ms)
         // 时间戳
         offset += snprintf(timeStampedMessage + offset, sizeof(timeStampedMessage),
                            "%d.%03d 1 ", timestamp_ms / 1000, timestamp_ms % 1000);
-
         // ID + 长度
         offset += snprintf(timeStampedMessage + offset, sizeof(timeStampedMessage),
                            "%03lXx Rx d %d ", logMsg->ID, logMsg->Length);
-
-        // printf("logMsg->msg.Length %d \r\n",logMsg->Length);
         // 数据
         for (int j = 0; j < logMsg->Length; ++j)
         {
@@ -481,21 +531,13 @@ void Drv_write_canmsg_cache_to_file(FILE *file, uint32_t timestamp_ms)
         }
         // 换行
         offset += snprintf(timeStampedMessage + offset, 4, "\r\n");
-        // printf("%s\r\n",timeStampedMessage);
-        // printf("file pointer address: %p\r\n", (void *)file);
-        // printf("Wrote %zu bytes to file\r\n", offset);
         // 写入文件//阻塞
         size_t err = fseek(file, 0, SEEK_END);
-        // printf("fseek error: %d\r\n", err);
         if (err != 0)
         {
             perror("fseek");
             printf("Failed to seek to end of file\n");
             return;
-        }
-        else
-        {
-            // printf("Success to seek to end of file\n");
         }
 
         err = fwrite(timeStampedMessage, 1, offset, file);
@@ -504,340 +546,122 @@ void Drv_write_canmsg_cache_to_file(FILE *file, uint32_t timestamp_ms)
             printf("Failed to write to file\n");
             return;
         }
-        else
-        {
-            // printf("Success to write to file\n");
-        }
-        // printf("Wrote %zu bytes to file\n", offset);
     }
-    // printf("Flushing file\r\n");
     fflush(file);
 }
-
-void Drv_CreateFilePath(char *filePath, struct tm *timeinfo)
-{
-    // 创建一级目录（年月日）
-    char firstLevelFolderPath[100];
-    // sprintf(firstLevelFolderPath, "./%04d%02d%02d", timeinfo->tm_year + 1900, timeinfo->tm_mon + 1, timeinfo->tm_mday);
-    snprintf(firstLevelFolderPath, sizeof(firstLevelFolderPath), "%s/%04d%02d%02d", USB_MOUNT_POINT,
-             timeinfo->tm_year + 1900, timeinfo->tm_mon + 1, timeinfo->tm_mday);
-
-    // 创建目录（如果不存在）
-    struct stat st = {0};
-    // if (stat(firstLevelFolderPath, &st) == -1) {
-    //     mkdir(firstLevelFolderPath, 0777);
-    // }
-    if (stat(firstLevelFolderPath, &st) == -1)
-    {
-        if (mkdir(firstLevelFolderPath, 0777) == -1)
-        {
-            perror("mkdir failed");
-            return;
-        }
-    }
-
-    // 生成完整文件路径（年月日时分秒）
-    sprintf(filePath, "%s/%04d%02d%02d%02d%02d%02d.asc",
-            firstLevelFolderPath,
-            timeinfo->tm_year + 1900, timeinfo->tm_mon + 1, timeinfo->tm_mday,
-            timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec);
-
-    printf("File path: %s\n", filePath);
-    printf("%04d%02d%02d%02d%02d%02d\n",
-           timeinfo->tm_year + 1900, timeinfo->tm_mon + 1, timeinfo->tm_mday,
-           timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec);
-}
-
-void Drv_WriteFileHeader(FILE *file, struct tm *timeinfo)
-{
-    if (file == NULL)
-    {
-        printf("Error: File pointer is NULL.\n");
-        return;
-    }
-    char header[256];
-    const char *weekDays[] = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
-    const char *months[] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun",
-                            "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
-
-    // 格式化头信息
-    sprintf(header, "date %s %s %02d %02d:%02d:%02d %s %04d\r\n",
-            weekDays[timeinfo->tm_wday], months[timeinfo->tm_mon], timeinfo->tm_mday,
-            (timeinfo->tm_hour > 12) ? (timeinfo->tm_hour - 12) : timeinfo->tm_hour,
-            timeinfo->tm_min, timeinfo->tm_sec,
-            (timeinfo->tm_hour >= 12) ? "PM" : "AM",
-            timeinfo->tm_year + 1900);
-
-    strcat(header, "base hex timestamps absolute\r\n");
-    strcat(header, "// version 7.0.0\r\n");
-
-    size_t written = fwrite(header, sizeof(char), strlen(header), file);
-    if (written < strlen(header))
-    {
-        // printf("Warning: Header not fully written to file.\n");
-    }
-    // printf("Header written to file :%d\n",strlen(header));
-}
-
-int check_usb_removed(void)
-{
-    // 直接打开
-    FILE *fp = fopen("/proc/mounts", "r");
-    if (!fp)
-    {
-        perror("fopen /proc/mounts failed");
-        return 1; // 认为U盘不可用
-    }
-
-    char line[512];
-    int found = 0;
-
-    while (fgets(line, sizeof(line), fp))
-    {
-        if (strstr(line, USB_MOUNT_POINT))
-        {
-            found = 1;
-            // printf("USB device is still mounted.\n");
-            break;
-        }
-    }
-    fclose(fp);
-
-    if (found)
-    {
-        // printf("USB device found: 1, returning 0 (U盘存在)\n");
-        return 0; // U盘还在
-    }
-    else
-    {
-        // printf("USB device found: 0, returning 1 (U盘拔出)\n");
-        return 1; // U盘被拔出
-    }
-}
-
-typedef enum
-{
-    TIME_SOURCE_UNINIT = 0x00,
-    TIME_SOURCE_LOCAL = 0x01,
-    TIME_SOURCE_BCU = 0x02
-} TIME_SOURCE;
 
 // 将缓冲区数据写到sd卡
 void Drv_write_buffer_to_file(DoubleRingBuffer *drb)
 {
-    static uint8_t sdcard_err_flag = 0;             // sd卡错误标志
-    static TIME_SOURCE sdcard_time_source_type = 0; // sd卡时间来源打印（1:local, 2:bcu）
+    static char filePath[256]; // 当前使用的文件路径
 
-    static struct tm startTime;
-    static int SD_FAULT_count = 0;
-    static int new_file_count = 0;
+    int ret = 0;
 
-    FILE *file = NULL;
-    int messagesToWrite = 0;
+    // 交换当前使用的缓冲区
+    pthread_mutex_lock(&drb->switchMutex);
+    drb->activeBuffer = 1 - drb->activeBuffer;
+    pthread_mutex_unlock(&drb->switchMutex);
 
+    // 获取需要写入的缓冲区
     int inactiveBufferIndex = 1 - drb->activeBuffer;
     RingBuffer *inactiveBuffer = &drb->buffers[inactiveBufferIndex];
 
-    if (pthread_mutex_lock(&inactiveBuffer->mutex) == 0)
+    // 获取文件互斥锁
+    ret = pthread_mutex_lock(&inactiveBuffer->mutex);
+    if (ret != 0)
     {
-        // 如果需要新文件 则创建一个新的
-        if (newFileNeeded)
-        {
-            // 检查时间
-            if (BCU_TimeYear != 0) // bcu发来时间了
-            {
-                // 填充外部时间变量到 tm 结构体
-                timeinfo.tm_year = BCU_TimeYear + 100;
-                timeinfo.tm_mon = BCU_TimeMonth - 1;
-                timeinfo.tm_mday = BCU_TimeDay;
-                timeinfo.tm_hour = BCU_TimeHour;
-                timeinfo.tm_min = BCU_TimeMinute;
-                timeinfo.tm_sec = BCU_TimeSencond;
-                timeinfo.tm_isdst = -1;
-
-                if (sdcard_time_source_type != TIME_SOURCE_BCU)
-                {
-                    LOG("sdcard write: BCU_Time:%d-%d-%d %d:%d:%d\r\n", BCU_TimeYear, BCU_TimeMonth, BCU_TimeDay, BCU_TimeHour, BCU_TimeMinute, BCU_TimeSencond);
-                    LOG("sdcard write: Sys Time:%d-%d-%d %d:%d:%d\r\n", timeinfo.tm_year, timeinfo.tm_mon, timeinfo.tm_mday, timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec);
-                    mktime(&timeinfo);
-                    sdcard_time_source_type = TIME_SOURCE_BCU;
-                }
-            }
-            else // bcu没发过来时间 用自己本地的时间
-            {
-                time_t now = time(NULL);
-                struct tm *tm_info = localtime(&now);
-                timeinfo = *tm_info;
-                mktime(&timeinfo);
-
-                if (sdcard_time_source_type != TIME_SOURCE_LOCAL)
-                {
-                    LOG("timeinfo:%d-%d-%d %d:%d:%d\r\n", timeinfo.tm_year, timeinfo.tm_mon, timeinfo.tm_mday, timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec);
-                    sdcard_time_source_type = TIME_SOURCE_LOCAL;
-                }
-            }
-
-            // 检查SD卡错误
-            int ret = check_usb_removed();
-            if (ret != 0)
-            {
-                CP_set_emcu_fault(SD_FAULT, SET_ERROR);
-                if (sdcard_err_flag == 0)
-                {
-                    LOG("check_usb_removed error: %d \n", ret);
-                    sdcard_err_flag = 1;
-                }
-                pthread_mutex_unlock(&inactiveBuffer->mutex);
-                return;
-            }
-            else
-            {
-                if (sdcard_err_flag != 0)
-                {
-                    LOG("check_usb_removed error recover. \n");
-                    sdcard_err_flag = 0;
-                }
-            }
-
-            Drv_CreateFilePath(filePath, &timeinfo);
-            file = fopen(filePath, "a");
-            if (!file)
-            {
-                SD_FAULT_count++;
-                if (SD_FAULT_count > 5)
-                {
-                    // 错误处理
-                    CP_set_emcu_fault(SD_FAULT, SET_ERROR);
-                    // printf("SD_FAULT_SD_FAULT_count \r\n",SD_FAULT_count);
-                    LOG("SD_FAULT_SD_FAULT_count: %d\n", SD_FAULT_count);
-                    SD_FAULT_count = 5;
-                }
-                pthread_mutex_unlock(&inactiveBuffer->mutex);
-                return;
-            }
-            else
-            {
-                CP_set_emcu_fault(SD_FAULT, SET_RECOVER);
-                LOG("创建文件成功\n");
-            }
-            SD_FAULT_count = 0;
-            memcpy(&startTime, &timeinfo, sizeof(struct tm));
-            Drv_WriteFileHeader(file, &startTime);
-            // 缓冲区数据写入
-            Drv_write_canmsg_cache_to_file(file, 0);
-            // printf("写入文件成功\n");
-            size_t res = fclose(file);
-            // printf("文件关闭结果：%d\n", res);
-            newFileNeeded = false;
-        }
-
-        int ret = check_usb_removed();
-        if (ret != 0)
-        {
-            CP_set_emcu_fault(SD_FAULT, SET_ERROR);
-            // printf("SD_FAULT_ret : %d\r\n",ret);
-            LOG("SD_FAULT_ret: %d\n", ret);
-            pthread_mutex_unlock(&inactiveBuffer->mutex);
-            return;
-        }
-
-        file = fopen(filePath, "a"); // 使用 "a" 以追加模式打开文件
-        if (!file)
-        {
-            SD_FAULT_count++;
-            if (SD_FAULT_count > 5)
-            {
-                CP_set_emcu_fault(SD_FAULT, SET_ERROR);
-                // printf("SD_FAULT_SD_FAULT_count \r\n",SD_FAULT_count);
-                LOG("SD_FAULT_SD_FAULT_count: %d\n", SD_FAULT_count);
-                SD_FAULT_count = 5;
-            }
-            // printf("无法打开文件：%s\n", filePath);
-            pthread_mutex_unlock(&inactiveBuffer->mutex);
-            return;
-        }
-        else
-        {
-            CP_set_emcu_fault(SD_FAULT, SET_RECOVER);
-        }
-        // printf("使用以追加模式打开文件:file pointer address: %p\r\n", (void *)file);
-        SD_FAULT_count = 0;
-
-        int messagesToWrite = 0;
-        fseek(file, 0, SEEK_END);
-
-        // 获取文件大小
-        long fileSize = ftell(file);
-
-        // printf("文件大小为: %ld 字节\n", fileSize);
-        // printf("inactiveBuffer->count: %d\n",inactiveBuffer->count);//获取环形缓冲区中消息的个数
-        while (inactiveBuffer->count > 0)
-        {
-            CAN_LOG_MESSAGE *logMsg = &inactiveBuffer->buffer[inactiveBuffer->readIndex];
-
-            char dataStr[3 * 64 + 1] = {0};
-            for (int i = 0; i < logMsg->msg.Length && i < 64; ++i)
-            {
-                snprintf(&dataStr[i * 3], 4, "%02X ", logMsg->msg.Data[i]);
-            }
-            // printf("CAN%d: %08X [%02X] %s %ld\n", logMsg->channel + 1, logMsg->msg.ID, logMsg->msg.Length,
-            //        dataStr, logMsg->relativeTimestamp);
-            char modifiedMessage[BUFFERED_WRITE_SIZE];
-            if (logMsg->channel == 0)
-            {
-                snprintf(modifiedMessage, sizeof(modifiedMessage), "%03lX Rx d %d %s\r\n", logMsg->msg.ID, logMsg->msg.Length, dataStr);
-            }
-            else if (logMsg->channel == 1)
-            {
-                snprintf(modifiedMessage, sizeof(modifiedMessage), "%03lX Tx d %d %s\r\n", logMsg->msg.ID, logMsg->msg.Length, dataStr);
-            }
-
-            memmove(&modifiedMessage[9], &modifiedMessage[8], strlen(&modifiedMessage[8]) + 1);
-            modifiedMessage[8] = 'x';
-            // printf("modifiedMessage: %s\r\n",modifiedMessage);
-            char timeStampedMessage[BUFFERED_WRITE_SIZE];
-            // int dataLen = snprintf(timeStampedMessage, sizeof(timeStampedMessage), "%d.%03d 1 %s", 0, 0, modifiedMessage);
-            int dataLen = snprintf(timeStampedMessage, sizeof(timeStampedMessage), "%d.%03d 1 %s", logMsg->relativeTimestamp / 1000, logMsg->relativeTimestamp % 1000, modifiedMessage);
-
-            // printf("timeStampedMessage: %s\r\n",timeStampedMessage);
-            // printf("dataLen: %d\r\n",dataLen);
-            size_t res = fwrite(timeStampedMessage, sizeof(char), dataLen, file);
-
-            inactiveBuffer->readIndex = (inactiveBuffer->readIndex + 1) % BUFFER_SIZE;
-            inactiveBuffer->count--;
-        }
-
-        // 检查文件大小，如果文件超过10MB，则创建新的文件
-        fseek(file, 0, SEEK_END); // 文件指针移到文件末尾
-        fileSize = ftell(file);
-        Drv_RTCGetTime(&currentTime);
-        // printf("currentTime %d %d %d %d %d %d\r\n",currentTime.year,currentTime.month,currentTime.day,currentTime.hour,currentTime.minutes,currentTime.seconds);
-        if (fileSize > (10 * 1024 * 1024) || Drv_CheckTimeChange(&currentTime))
-        {
-            // if (fileSize > (10 * 1024 * 1024)) {
-
-            // printf("文件大小超过10MB,创建新的文件\r\n");
-            // Drv_write_canmsg_cache_to_file(&file,GetTimeDifference_ms(start_tick));//阻塞线程
-            Drv_RTCGetTime(&initialTime); // 1205
-            clock_gettime(CLOCK_MONOTONIC, &start_tick);
-            newFileNeeded = true;
-            inactiveBuffer->count = 0;
-
-            pthread_mutex_lock(&(drb->buffers[drb->activeBuffer].mutex));
-            drb->buffers[drb->activeBuffer].count = 0;
-            drb->buffers[drb->activeBuffer].writeIndex = 0;
-            drb->buffers[drb->activeBuffer].readIndex = 0;
-            pthread_mutex_unlock(&(drb->buffers[drb->activeBuffer].mutex));
-        }
-        fflush(file);
-        size_t err = fclose(file);
-        pthread_mutex_unlock(&inactiveBuffer->mutex);
-    }
-    else
-    {
-        printf("write_buffer_to_file end return\n");
+        LOG("write_buffer_to_file end return. \n");
         return;
     }
+
+    // 先检查存储器状态 不存在 标记错误 直接退出
+    if (CheckUsbStatus() != 0)
+    {
+        CP_set_emcu_fault(SD_FAULT, SET_ERROR);
+        goto QUIT_FLAG;
+    }
+
+    // 根据当前时间创建一个文件路径
+    struct tm nowTimeInfo;
+    // 判断是否需要重新创建一个文件开始写
+    if (newFileNeeded)
+    {
+        // 获取当前时间
+        GetNowTime(&nowTimeInfo);
+        // 将时间转换为文件路径
+        CreateAscFilePathWithTime(nowTimeInfo, filePath);
+    }
+
+    // 打开目标文件
+    FILE *file = NULL;
+    if (OpenNowWriteAscFile(filePath, &file) != 0)
+    {
+        goto QUIT_FLAG; // 打开失败 直接返回
+    }
+
+    // 如果是新创建的
+    if (newFileNeeded)
+    {
+        // 先写入当前文件头
+        AscFileWriteTimeHeader(file, &nowTimeInfo);
+        // 缓冲区数据写入(也是一个文件头)
+        Drv_write_canmsg_cache_to_file(file, 0);
+        // 标记不需要重新创建了
+        newFileNeeded = false;
+    }
+
+    // 如果不是新创建的文件 从文件的末尾追加写入
+    fseek(file, 0, SEEK_END);
+    while (inactiveBuffer->count > 0)
+    {
+        CAN_LOG_MESSAGE *logMsg = &inactiveBuffer->buffer[inactiveBuffer->readIndex];
+
+        char dataStr[3 * 64 + 1] = {0};
+        for (int i = 0; i < logMsg->msg.Length && i < 64; ++i)
+        {
+            snprintf(&dataStr[i * 3], 4, "%02X ", logMsg->msg.Data[i]);
+        }
+        char modifiedMessage[BUFFERED_WRITE_SIZE];
+        if (logMsg->channel == 0)
+        {
+            snprintf(modifiedMessage, sizeof(modifiedMessage), "%03lX Rx d %d %s\r\n", logMsg->msg.ID, logMsg->msg.Length, dataStr);
+        }
+        else if (logMsg->channel == 1)
+        {
+            snprintf(modifiedMessage, sizeof(modifiedMessage), "%03lX Tx d %d %s\r\n", logMsg->msg.ID, logMsg->msg.Length, dataStr);
+        }
+
+        memmove(&modifiedMessage[9], &modifiedMessage[8], strlen(&modifiedMessage[8]) + 1);
+        modifiedMessage[8] = 'x';
+
+        char timeStampedMessage[BUFFERED_WRITE_SIZE];
+        int dataLen = snprintf(timeStampedMessage, sizeof(timeStampedMessage), "%d.%03d 1 %s", logMsg->relativeTimestamp / 1000, logMsg->relativeTimestamp % 1000, modifiedMessage);
+
+        size_t res = fwrite(timeStampedMessage, sizeof(char), dataLen, file);
+
+        inactiveBuffer->readIndex = (inactiveBuffer->readIndex + 1) % BUFFER_SIZE;
+        inactiveBuffer->count--;
+    }
+    fflush(file);
+
+    // 写完之后 计算文件大小
+    fseek(file, 0, SEEK_END);
+    long fileSize = ftell(file);
+
+    // 创建新文件的两个条件
+    // 1. 当前写的文件大小超过10M
+    // 2. 系统中不存在当前日志命名的文件夹（日期变化了）
+    if (fileSize > (10 * 1024 * 1024)) // 大于10M
+    {
+        newFileNeeded = true; // 下一轮就要创建新文件
+    }
+    // 关闭文件
+    fclose(file);
+
+QUIT_FLAG:
+    pthread_mutex_unlock(&inactiveBuffer->mutex);
+
+    return;
 }
 
 int SD_Initialize(void)

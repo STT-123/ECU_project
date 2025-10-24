@@ -27,7 +27,7 @@ LIBS = -lwebsockets -ljson-c -lsqlite3 -lpthread -lssl -lcrypto -lzstd -lm -lzlo
 
 # 头文件包含路径（自动加源目录 + SYSROOT include）
 INCLUDES = $(shell find $(SRC_DIR) -type d) $(INC_DIR)
-CFLAGS = -Wall -Wextra -O0 -MMD -MP $(addprefix -I, $(INCLUDES))
+CFLAGS = -Wall -O2 -MMD -MP $(addprefix -I, $(INCLUDES))
 LDFLAGS = -L$(LIB_DIR) $(LIBS)
 
 # 源文件与目标文件

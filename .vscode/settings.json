@@ -25,6 +25,7 @@
         "drv_ecuandbcucommunication.h": "c",
         "func_ecuandbmucommunication.h": "c",
         "externalemergencystop_task.h": "c",
-        "string.h": "c"
+        "string.h": "c",
+        "drv_sdcard.h": "c"
     }
 }

@@ -3,7 +3,6 @@
 #include "port/myepoll.h"
 #include "./DRV/Drv_ExternalEmergencyStop.h"
 
-
 my_event_data_t can0evendata;
 static pthread_mutex_t Mutex_Can0Send;
 
