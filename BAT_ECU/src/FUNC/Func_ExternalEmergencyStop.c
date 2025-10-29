@@ -14,8 +14,10 @@ void *GPIODetection(void *arg)
         PHYlinktate();
         ECUfault_process();
         CP_get_BCU_FaultInfoLv3H(BCU_FaultInfoLv3H);
-        // Set_Electric_Meter_Data();
-        usleep(20 * 1000);
+
+        log_eror_csv();
+        //  Set_Electric_Meter_Data();
+        usleep(1000 * 1000);
     }
 }
 

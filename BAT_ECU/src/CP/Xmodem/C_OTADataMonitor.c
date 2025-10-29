@@ -77,7 +77,7 @@ void *lwip_data_TASK(void *param)
 	char otafilenamestr1[130] = {'\0'};
 	// otafilenamestr1[0] = '0';//替换取消
 	// otafilenamestr1[1] = ':';//替换取消
-	unsigned char otadeviceType;
+	unsigned char otadeviceType = 0;
 	static int filenormalflag =0;
 	int errorCount = 0;
 	while (1)

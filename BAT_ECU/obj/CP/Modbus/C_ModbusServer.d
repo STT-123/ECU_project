@@ -1,0 +1,51 @@
+obj/CP/Modbus/C_ModbusServer.o: src/CP/Modbus/C_ModbusServer.c \
+ src/CP/Modbus/C_ModbusServer.h src/lib/./modbuslib/modbus.h \
+ src/lib/./modbuslib/modbus-version.h src/lib/./modbuslib/modbus-tcp.h \
+ src/lib/./modbuslib/modbus.h src/lib/./modbuslib/modbus-rtu.h \
+ src/lib/./modbuslib/modbus-tcp.h src/log/log.h src/log/zlog.h \
+ src/log/../GLB/G_AddressDefinition.h src/log/../GLB/G_GloabalVariable.h \
+ src/./GLB/G_SystemConf.h src/CP/BMS/C_BMSAnalysis.h \
+ src/CP/BMS/bms/rtwtypes.h src/./GLB/G_GloabalVariable.h \
+ src/./CP/BMS/bms/CANRcvFcn_types.h src/./CP/BMS/bms/rtwtypes.h \
+ src/CP/Modbus/C_ModbusServer_Handle.h src/main.h \
+ src/./GLB/G_GloabalVariable.h
+
+src/CP/Modbus/C_ModbusServer.h:
+
+src/lib/./modbuslib/modbus.h:
+
+src/lib/./modbuslib/modbus-version.h:
+
+src/lib/./modbuslib/modbus-tcp.h:
+
+src/lib/./modbuslib/modbus.h:
+
+src/lib/./modbuslib/modbus-rtu.h:
+
+src/lib/./modbuslib/modbus-tcp.h:
+
+src/log/log.h:
+
+src/log/zlog.h:
+
+src/log/../GLB/G_AddressDefinition.h:
+
+src/log/../GLB/G_GloabalVariable.h:
+
+src/./GLB/G_SystemConf.h:
+
+src/CP/BMS/C_BMSAnalysis.h:
+
+src/CP/BMS/bms/rtwtypes.h:
+
+src/./GLB/G_GloabalVariable.h:
+
+src/./CP/BMS/bms/CANRcvFcn_types.h:
+
+src/./CP/BMS/bms/rtwtypes.h:
+
+src/CP/Modbus/C_ModbusServer_Handle.h:
+
+src/main.h:
+
+src/./GLB/G_GloabalVariable.h:

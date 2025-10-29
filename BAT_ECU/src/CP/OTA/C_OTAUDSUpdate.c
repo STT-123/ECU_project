@@ -77,6 +77,7 @@ signed char udsServer10(unsigned int id, uint8_t session)
 	CAN_MESSAGE CanMes;
 	CAN_MESSAGE canmsg;
 	memset(&CanMes, 0 , sizeof(CAN_MESSAGE));
+	memset(&canmsg, 0 , sizeof(CAN_MESSAGE));
 	CanMes.Extended = 1;
 	CanMes.Length = 3;
 	CanMes.ID = id;

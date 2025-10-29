@@ -275,14 +275,16 @@ void ECUfault_process()
 {
 	if ((CP_get_emcu_fault(ALL_FAULT) != 0) && (otactrl.UpDating == 0))
 	{
-		CP_set_TCU_PowerUpCmd(BMS_POWER_OFF);
-		gpio_write(Emergencystop_output, RECOVER_KM_DEFAULT_STATE);
-		// printf("Emergencystop_output:0\r\n");
+		//不能任何故障都关闭BCU 
+		//printf("ECUfault_process\r\n");
+		//CP_set_TCU_PowerUpCmd(BMS_POWER_OFF);//BCU 下电
+		//gpio_write(Emergencystop_output, RECOVER_KM_DEFAULT_STATE);
+		 //printf("Emergencystop_output:0\r\n");
 	}
 	else // 恢复告警
 	{
-		gpio_write(Emergencystop_output, RECOVER_KM_ACTION_STATE);
-		// printf("Emergencystop_output:1\r\n");
+		//gpio_write(Emergencystop_output, RECOVER_KM_ACTION_STATE);
+		 //printf("Emergencystop_output:1\r\n");
 	}
 	CP_update_fault_tomodus();
 }

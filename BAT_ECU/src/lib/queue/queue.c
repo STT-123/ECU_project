@@ -71,6 +71,12 @@ int queue_post(queue_ptr pQueue, uint8_t *pBuffer, int Length)
 {
 	int ret = -1;
 	int IndexAt = 0;
+
+	    // 参数验证
+    if (pQueue == NULL || pBuffer == NULL || Length <= 0) {
+        return -1;
+    }
+
 	pthread_mutex_lock(&pQueue->mutex_lock);
 	if (pQueue->Count >= QUEUE_DEEPTH)
 	{

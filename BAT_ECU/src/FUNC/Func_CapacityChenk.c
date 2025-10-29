@@ -134,15 +134,19 @@ void *Func_CheckSDCardCapacityTask(void *arg)
 
         float usage_percent = ((float)used / (float)total) * 100.0f;
 
-        LOG("SD Card Usage:%.2f%%\n", usage_percent);
+        
+        // LOG("SD Card total:%d\n", total);
+        // LOG("SD Card free_space:%d\n", free_space);
+        // LOG("SD Card used:%d\n", used);
+        // LOG("SD Card usage_percent:%.2f%%\n", usage_percent);
 
         if (usage_percent >= 90)
         {
             Func_DeleteOldestFolder();
         }
-
-        G_set_system_time_from_bcu(); // 时间同步
-        usleep(CHECKSD_TRIGGERING_TIME);
+        //G_set_system_time_from_bcu(); // 时间同步
+        usleep(1000*1000);
+        // usleep(CHECKSD_TRIGGERING_TIME);
     }
     return NULL;
 }

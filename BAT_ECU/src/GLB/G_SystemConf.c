@@ -115,12 +115,12 @@ void G_set_system_time_from_bcu()
     }
     else
     {
-        // printf("System time updated to: %04d-%02d-%02d %02d:%02d:%02d\n",
-        //        2000 + BCU_TimeYear,
-        //        BCU_TimeMonth,
-        //        BCU_TimeDay,
-        //        BCU_TimeHour,
-        //        BCU_TimeMinute,
-        //        BCU_TimeSencond);
+        printf("System time updated to: %04d-%02d-%02d %02d:%02d:%02d\n",
+               2000 + BCU_TimeYear,
+               BCU_TimeMonth,
+               BCU_TimeDay,
+               BCU_TimeHour,
+               BCU_TimeMinute,
+               BCU_TimeSencond);
     }
 }

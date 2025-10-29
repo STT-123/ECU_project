@@ -71,7 +71,7 @@ void handle_pasv_command(FTPState *state)
     // ip[2] = (setting.ip >> 8) & 0xFF;
     // ip[3] = setting.ip & 0xFF;
     int ip[4] = {192, 168, 1, 110};
-    char response[BUFFER_SIZE];
+    char response[BUFFER_SIZE] = {0};
 
     snprintf(response, sizeof(response),
              "227 Entering Passive Mode (%d,%d,%d,%d,%d,%d).\r\n",
@@ -208,8 +208,8 @@ void handle_list_command(FTPState *state, char *args)
 
     DIR *dir;
     struct dirent *entry;
-    char buffer[BUFFER_SIZE];
-    char cwd[BUFFER_SIZE];
+    char buffer[BUFFER_SIZE] = {0};
+    char cwd[BUFFER_SIZE] = {0};
 
     if (getcwd(cwd, sizeof(cwd)) == NULL)
     {

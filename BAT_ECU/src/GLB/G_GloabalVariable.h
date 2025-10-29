@@ -64,17 +64,19 @@ extern Setting_t setting;
 
 // #########################################################################################//
 
-#define OTAIDLE 0x0000
-#define XMODEMISTTRANFERINGFILE 0x0001
-#define XMODEMNORMALTERMINATION 0x0002
-#define XMODEMOUTTIMETERMINATION 0x0004
-#define XMODEMABORTTERMINATION 0x0006
-#define FILEISDECRYPTIIONING 0x0008
-#define FILEDECRYPTIONNORMALTERMINATION 0x0010
-#define OTASTARTRUNNING 0x0080
 
-#define OTASUCCESS 0x0100
-#define OTAFAILED 0x0200
+#define XMODEMISTTRANFERINGFILE 0x0001  // XMODEM正在传输文件
+#define XMODEMNORMALTERMINATION 0x0002  // XMODEM正常终止（传输成功）
+#define XMODEMOUTTIMETERMINATION 0x0004 // XMODEM超时终止
+#define XMODEMABORTTERMINATION 0x0006   // XMODEM异常中止
+//以上4个未使用
+#define FILEISDECRYPTIIONING 0x0008		// 文件正在解密中
+#define FILEDECRYPTIONNORMALTERMINATION 0x0010  // 文件解密正常完成
+
+#define OTASTARTRUNNING 0x0080 		// OTA空闲状态
+#define OTAIDLE 0x0000				// OTA开始运行
+#define OTASUCCESS 0x0100			// OTA升级成功
+#define OTAFAILED 0x0200			// OTA升级失败
 
 // #########################################################################################//
 

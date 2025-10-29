@@ -93,18 +93,19 @@ void CP_set_emcu_fault(unsigned char parameter, unsigned char status)
 #include "log/log.h"
 unsigned short CP_get_emcu_fault(unsigned char parameter)
 {
-	unsigned char byte_num = (parameter & 0xf0) >> 4; // 高4位字节号
-	unsigned short bit_num = (parameter & 0x0F);	  //  低4位bit位
+	unsigned char byte_num = (parameter & 0xf0) >> 4; // 高4位字节号  0
+	unsigned short bit_num = (parameter & 0x0F);	  //  低4位bit位  1
 
 	unsigned char status = 0;
 
 	if (ALL_FAULT == parameter)
 	{
+		//emcu_fault0和emcu_fault1和emcu_fault3人以一个>1,则emcu_fault_state为1
 		// LOG("TTTTTTTTTTTTTTTTTTT now error 0x%x. 0x%x 0x%x 0x%x ",
 		// 	ecu_fault.emcu_fault_state,
 		// 	ecu_fault.emcu_fault0,
 		// 	ecu_fault.emcu_fault1,
-		// 	ecu_fault.emcu_fault2);
+		// ecu_fault.emcu_fault2);
 		return ecu_fault.emcu_fault_state;
 	}
 	switch (byte_num)
@@ -121,7 +122,6 @@ unsigned short CP_get_emcu_fault(unsigned char parameter)
 	default:
 		break;
 	}
-
 	return status;
 }
 
@@ -228,7 +228,7 @@ int CP_RTC_ModBus_Deal(uint16_t address, uint16_t data)
 {
 	//	static uint16_t year=0,month=0,day=0,hour=0,min=0;
 	//	static uint8_t second=0;
-	static Rtc_Ip_TimedateType TmData;
+	static Rtc_Ip_TimedateType TmData = {0};
 	// CANFD_MESSAGE bms_rtc_set;
 
 	// bms_rtc_set.Extended = 1;

@@ -35,7 +35,6 @@ void *Func_thread_can1_dealwith(void *arg)
             if (queue_pend(&Queue_Can1RevData, (unsigned char *)&canrev_frame, &err) == 0)
             {
                 // Func_print_can1fd_frame(&canrev_frame);
-                // printf("queue_post can1 data success\r\n");
                 // canrev_frame.can_id &= CAN_EFF_MASK;
                 // printf("queue_post can1 data success\r\n");
                 if ((ota_flag == OTAIDLE || ota_flag == OTAFAILED))

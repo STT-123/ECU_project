@@ -9,7 +9,7 @@
 #include "Func_SDCard.h"
 #include "main.h"
 #include "./CP/BMS/bms/CANRcvFcn.h"
-
+#include "./GLB/G_AddressDefinition.h"
 void Func_print_canfd_frame(const struct canfd_frame *frame)
 {
     printf("CAN FD Frame:\n");
@@ -25,29 +25,28 @@ void Func_print_canfd_frame(const struct canfd_frame *frame)
 
 void *Func_thread_can0_dealwith(void *arg)
 {
-    struct canfd_frame canrev_frame;
-    CANFD_MESSAGE can_msg_buf;
-
+    struct canfd_frame canrev_frame = {0};
+    CANFD_MESSAGE can_msg_buf ={0};
     LOG("Func_thread_can0_dealwith is running\n");
-
     int len = 0;
-
     int bms_analysis_done = 0;
     struct timespec start_time;
     clock_gettime(CLOCK_MONOTONIC, &start_time); // 记录线程开始时间
     while (1)
     {
+
+
         if ((ota_flag == OTAIDLE || ota_flag == OTAFAILED || otactrl.deviceType == AC))
         {
             if (queue_pend(&Queue_Can0RevData_FD, (unsigned char *)&canrev_frame, &len) == 0)
             {
-                // printf("canrev_frame->data[0] :%02X \r\n", canrev_frame.data[0]);
+                 //printf("canrev_frame->data[0] :%02X \r\n", canrev_frame.data[0]);
                 // printf("canrev_frame->data[1] :%02X\r\n ", canrev_frame.data[1]);
                 // printf("canrev_frame.data[2] :%02X\r\n ", canrev_frame.data[2]);
 
                 if ((canrev_frame.len > 8))
                 {
-                    // Func_print_canfd_frame(&canrev_frame);
+                    //Func_print_canfd_frame(&canrev_frame);
                     // printf("queue_post can1 data success\r\n");
                     canrev_frame.can_id &= CAN_EFF_MASK;
                     // printf("queue_post can1 data success\r\n");

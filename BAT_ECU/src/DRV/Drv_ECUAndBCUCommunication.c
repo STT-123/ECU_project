@@ -17,8 +17,8 @@ queue_t Queue_Can0RevData_FD;
 
 static void Drv_can0_epoll_msg_transmit(void *arg)
 {
-    struct canfd_frame can_rev;
-    CAN_MESSAGE can_send;
+    struct canfd_frame can_rev ;
+    CAN_MESSAGE can_send ;
 
     // printf("[Drv_can0_epoll_msg_transmit] epoll_wait\n");
     memset(&can_rev, 0, sizeof(struct canfd_frame));
@@ -26,6 +26,7 @@ static void Drv_can0_epoll_msg_transmit(void *arg)
     int frame_type = HAL_can_read(CAN0_FD, &can_rev, 1);
     // printf("frame_type = %d\n",frame_type);
     time(&last_can0_rx_time);
+    //1表示CAN 数据
     if (frame_type == 1)
     {
         Convert_canfd_frame_to_CAN_MESSAGE(&can_rev, &can_send);
@@ -48,11 +49,18 @@ static void Drv_can0_epoll_msg_transmit(void *arg)
         // printf("can_send->data[1] :%02X\r\n ", can_send.Data[5]);
         // }
 
-        if (((CP_get_TCU_PowerUpCmd()) == 5) && (can_send.ID == 0x30C1600 || can_send.ID == 0x61B || can_send.ID == 0x1CB010E4))
+        if (((CP_get_TCU_PowerUpCmd()) == BMS_POWER_UPDATING) && (can_send.ID == 0x30C1600 || can_send.ID == 0x61B || can_send.ID == 0x1CB010E4))
         {
             if (queue_post(&Queue_Can0RevData, &can_send, sizeof(CAN_MESSAGE)) != 0)
             {
-                printf("Queue_Can0RevData send err\r\n");
+                
+                printf("(CP_get_TCU_PowerUpCmd()) == 5 err\r\n");
+                printf("(CP_get_TCU_PowerUpCmd()) == 5 err\r\n");
+                printf("(CP_get_TCU_PowerUpCmd()) == 5 err\r\n");
+                printf("(CP_get_TCU_PowerUpCmd()) == 5 err\r\n");
+                printf("(CP_get_TCU_PowerUpCmd()) == 5 err\r\n");
+                printf("(CP_get_TCU_PowerUpCmd()) == 5 err\r\n"); 
+
                 queue_destroy(&Queue_Can0RevData);
                 queue_init(&Queue_Can0RevData);
             }
@@ -71,7 +79,15 @@ static void Drv_can0_epoll_msg_transmit(void *arg)
         {
             if (queue_post(&Queue_Can0RevData, &can_send, sizeof(CAN_MESSAGE)) != 0)
             {
-                printf("Queue_Can0RevData send err\r\n");
+                
+                printf("(CP_get_TCU_PowerUpCmd()) !=  5 err\r\n");
+                printf("(CP_get_TCU_PowerUpCmd()) !=  5 err\r\n");
+                printf("(CP_get_TCU_PowerUpCmd()) !=  5 err\r\n");
+                printf("(CP_get_TCU_PowerUpCmd()) !=  5 err\r\n");
+                printf("(CP_get_TCU_PowerUpCmd()) !=  5 err\r\n");
+                printf("(CP_get_TCU_PowerUpCmd()) !=  5 err\r\n");
+                 
+
                 queue_destroy(&Queue_Can0RevData);
                 queue_init(&Queue_Can0RevData);
             }
@@ -86,13 +102,18 @@ static void Drv_can0_epoll_msg_transmit(void *arg)
                 // printf("can_send.data[2] :%02X\r\n ", can_send.Data[2]);
             }
         }
-    }
+    }//2表示CAN FD数据
     else if (frame_type == 2)
     {
-
+        //往can fd队列方数据，但是数据满了,在升级过程在，不再从canfd队列取数据了，此时fd满了
         if (queue_post(&Queue_Can0RevData_FD, (unsigned char *)&can_rev, sizeof(can_rev)) != 0)
         {
-            // printf("Queue_Can0RevData_FD send err\r\n");
+            printf("frame_type == 2 err\r\n");
+            printf("frame_type == 2 err\r\n");
+            printf("frame_type == 2 err\r\n");
+            printf("frame_type == 2 err\r\n");
+            printf("frame_type == 2 err\r\n");
+            printf("frame_type == 2 err\r\n");
             queue_destroy(&Queue_Can0RevData_FD);
             queue_init(&Queue_Can0RevData_FD);
         }

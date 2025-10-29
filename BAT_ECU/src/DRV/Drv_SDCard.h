@@ -18,7 +18,7 @@
 
 #define MAX_FILES_IN_FOLDER 80
 #define BUFFER_SIZE 100 // 每个环形缓冲区的容量
-#define BUFFERED_WRITE_SIZE 300
+#define BUFFERED_WRITE_SIZE 1024
 
 typedef struct
 {
@@ -51,5 +51,5 @@ void Drv_write_buffer_to_file(DoubleRingBuffer *drb);
 void Drv_RTCGetTime(Rtc_Ip_TimedateType *rtcTime);
 void Drv_init_double_ring_buffer(DoubleRingBuffer *drb);
 int SD_Initialize(void);
-
+int judeTimetoUpdate(void);
 #endif

@@ -16,7 +16,7 @@ modbus_t *ctx = NULL;
 modbus_mapping_t *mb_mapping;
 unsigned char modbus_ip[16] = "192.168.1.110";
 const uint16_t REGISTERS_START_ADDRESS = 0x3000; // 寄存器起始地址
-
+extern unsigned short ota_flag;
 uint16_t *modbusBuff = NULL;
 
 // modbus连接超时标志
@@ -55,14 +55,20 @@ static void CP_modbus_write_reg_deal(modbus_t *ctx, const uint8_t *query, int re
             {
                 if (data == 0)
                 {
-                    if ((CP_get_emcu_fault(ALL_FAULT) == 0)) // 1130(增加升级不能开机命令)
+                    if(ota_flag != OTASTARTRUNNING)
                     {
                         CP_set_TCU_PowerUpCmd(BMS_POWER_ON);
+                        printf("1CP_get_TCU_PowerUpCmd(BMS_POWER_ON) = %d\r\n",(int)CP_get_TCU_PowerUpCmd());
                     }
+                    // if ((CP_get_emcu_fault(ALL_FAULT) == 0)) // 1130(增加升级不能开机命令)
+                    // {
+                    //     CP_set_TCU_PowerUpCmd(BMS_POWER_ON);
+                    // }
                 }
                 else if (data == 1)
                 {
                     CP_set_TCU_PowerUpCmd(BMS_POWER_OFF);
+                    printf("2CP_get_TCU_PowerUpCmd(BMS_POWER_ON) = %d\r\n",(int)CP_get_TCU_PowerUpCmd());
                 }
             }
             // RTC时间设置

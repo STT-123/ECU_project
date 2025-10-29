@@ -10,12 +10,12 @@
             "request": "launch",
             "program": "${workspaceFolder}/bin/bat_ecu",
             "args": [],
-            "stopAtEntry": false,
+            "stopAtEntry": true,
             "cwd": "${fileDirname}",
             "environment": [],
             "externalConsole": false,
             "MIMode": "gdb",
-            "miDebuggerPath":"gdb-multiarch",
+            "miDebuggerPath":"/usr/bin/gdb-multiarch",//"miDebuggerPath":"gdb-multiarch",
             "miDebuggerServerAddress":"192.168.1.110:2001",
             "setupCommands": [
                 {

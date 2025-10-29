@@ -3,7 +3,7 @@
 #include "ocpp_messages.h"
 #include "batdata.h"
 #include "project.h"
-
+#include <time.h>
 #include "log/log.h"
 
 #include "./CP/Modbus/C_ModbusServer_Handle.h"
@@ -41,9 +41,19 @@ int main(int argc, char **argv)
 
     while (1)
     {
+
+        // printf("3CP_get_TCU_PowerUpCmd(BMS_POWER_ON) = %d\r\n",(int)CP_get_TCU_PowerUpCmd());
+        //         sleep(1);
+        // time_t mainnow = time(NULL);
+        // struct tm maintimeinfo;
+        // struct tm *maintm_info = localtime(&mainnow);
+        // maintimeinfo = *maintm_info;
+        // mktime(&maintimeinfo);
+         //printf("BCU_TimeYear = %d\n",BCU_TimeYear);
+        // printf("Main timeinfo:%d-%d-%d %d:%d:%d\r\n", maintimeinfo.tm_year + 1900, maintimeinfo.tm_mon +1, maintimeinfo.tm_mday, maintimeinfo.tm_hour, maintimeinfo.tm_min, maintimeinfo.tm_sec);
+        
         enqueue_message(build_heartbeat());
 
-        sleep(1);
         update_bat_data(db); // 更新电池数据
 
         if (++counter >= 60)
@@ -105,15 +115,15 @@ void all_init(void)
 
 void all_thread_init(void)
 {
-    CAN0RecvDelTaskCreate();
+   CAN0RecvDelTaskCreate();
 
-    CAN1RecvDelTaskCreate();
+     CAN1RecvDelTaskCreate();
 
     FtpServiceThreadCreate();
 
     OTAUpgradTaskCreate();
 
-    NETConfigTaskCreate();
+    NETConfigTaskCreate();//moduTCP服务
 
     TcpServerExampleTaskCreate();
 

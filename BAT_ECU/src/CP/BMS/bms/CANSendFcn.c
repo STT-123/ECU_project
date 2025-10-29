@@ -505,7 +505,6 @@ void bms_CANSendFcn(void)
       {
         uint8_T packedValue;
         packedValue = (uint8_T) (packingValue);
-
         {
           {
             CANSendMsg.Data[1] = CANSendMsg.Data[1] | (uint8_T)(packedValue);

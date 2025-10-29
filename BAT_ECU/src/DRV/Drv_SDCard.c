@@ -4,7 +4,7 @@
 #include "./CP/Modbus/C_ModbusServer_Handle.h"
 #include "log/log.h"
 #include "./CP/BMS/bms/CANRcvFcn.h"
-
+#include <time.h>
 // 检查U盘是否可用
 // 0正常 1不正常
 static int CheckUsbStatus(void)
@@ -44,10 +44,11 @@ static int CheckUsbStatus(void)
 }
 
 // 获取当前时间
-static int GetNowTime(struct tm *nowTime)
+static int      GetNowTime(struct tm *nowTime)
 {
-    struct tm timeinfo;
-
+    struct tm timeinfo = {0};
+    static time_t last_update_time = 0;
+    time_t current_time = time(NULL);
     // 检查时间
     if (BCU_TimeYear != 0) // bcu发来时间了
     {
@@ -59,6 +60,21 @@ static int GetNowTime(struct tm *nowTime)
         timeinfo.tm_min = BCU_TimeMinute;
         timeinfo.tm_sec = BCU_TimeSencond;
         timeinfo.tm_isdst = -1;
+        if (mktime(&timeinfo) == (time_t)-1) {
+            printf("WARNING: mktime failed for BCU time\n");
+            // 设置一个默认的星期几
+            timeinfo.tm_wday = 0; // 星期日
+        }
+        //如果是第一次更新或者距离上次更新超过1分钟
+        if (last_update_time == 0 || (current_time - last_update_time) >= 60) // 60秒 = 1分钟
+        {
+            // 执行实际的时间更新操作
+            G_set_system_time_from_bcu();
+            printf("update time\r\n");
+            // 更新最后更新时间
+            last_update_time = current_time;
+        }
+
         LOG("[SD Card] Time Source From Bcu. ");
     }
     else // bcu没发过来时间 用自己本地的时间
@@ -81,7 +97,7 @@ static int GetNowTime(struct tm *nowTime)
 static int CreateAscFilePathWithTime(struct tm timeInfo, char *filePath)
 {
     // 创建文件夹路径
-    char folderPath[100];
+    char folderPath[256];
     snprintf(folderPath, sizeof(folderPath), "%s/%04d%02d%02d",
              USB_MOUNT_POINT,         // 挂载点
              timeInfo.tm_year + 1900, // 年
@@ -121,75 +137,188 @@ static int CreateAscFilePathWithTime(struct tm timeInfo, char *filePath)
     return 0;
 }
 
-// 打开当前需要写的Asc文件
-static int OpenNowWriteAscFile(char *filePath, FILE **file)
-{
+static int OpenNowWriteAscFile(const char *filePath, FILE **file) {
     static int failed_count = 0;
-
-    *file = fopen(filePath, "a");
-    if (!*file)
-    {
-        // 打开失败
-        failed_count++;
-        if (failed_count >= 5)
-        {
-            if (failed_count <= 5)
-            {
-                LOG("[SD Card] OpenNowWriteAscFile  %s failed, count: %d\n", filePath, failed_count);
-            }
-            failed_count = 10;
-            CP_set_emcu_fault(SD_FAULT, SET_ERROR); // 标记modbus寄存器错误
-        }
-
+    
+    if (!filePath || !file) {
+        printf("ERROR: Invalid parameters to OpenNowWriteAscFile\n");
         return 1;
     }
-    else
-    {
-        if (failed_count >= 5)
-        {
-            LOG("[SD Card] OpenNowWriteAscFile %s ok, count: %d\n", filePath, failed_count);
+    
+    printf(">>> Attempting to open file: %s\n", filePath);
+    
+    *file = fopen(filePath, "ab");
+    
+    if (!*file) {
+        int err = errno;
+        printf("ERROR: fopen failed for %s, errno=%d (%s)\n", filePath, err, strerror(err));
+        failed_count++;
+        
+        if (failed_count >= 5) {
+            LOG("[SD Card] OpenNowWriteAscFile %s failed %d times, errno=%d\n", filePath, failed_count, err);
+            CP_set_emcu_fault(SD_FAULT, SET_ERROR);
         }
-        failed_count = 0;
-        CP_set_emcu_fault(SD_FAULT, SET_RECOVER);
-
-        return 0;
+        return 1;
     }
 
-    return 1;
+    if (failed_count >= 5) {
+        LOG("[SD Card] OpenNowWriteAscFile %s recovered after %d failures\n", filePath, failed_count);
+        CP_set_emcu_fault(SD_FAULT, SET_RECOVER);
+    }
+    failed_count = 0;
+    
+    printf("SUCCESS: File opened successfully: %p\n", (void*)*file);
+    return 0;
 }
+// 打开当前需要写的Asc文件
+// static int OpenNowWriteAscFile(char *filePath, FILE **file)
+// {
+//     static int failed_count = 0;
 
+//     *file = fopen(filePath, "a");
+//     if (!*file)
+//     {
+//         // 打开失败
+//         failed_count++;
+//         if (failed_count >= 5)
+//         {
+//             if (failed_count <= 5)
+//             {
+//                 LOG("[SD Card] OpenNowWriteAscFile  %s failed, count: %d\n", filePath, failed_count);
+//             }
+//             failed_count = 10;
+//             CP_set_emcu_fault(SD_FAULT, SET_ERROR); // 标记modbus寄存器错误
+//         }
+
+//         return 1;
+//     }
+//     else
+//     {
+//         if (failed_count >= 5)
+//         {
+//             LOG("[SD Card] OpenNowWriteAscFile %s ok, count: %d\n", filePath, failed_count);
+//         }
+//         failed_count = 0;
+//         CP_set_emcu_fault(SD_FAULT, SET_RECOVER);
+
+//         return 0;
+//     }
+
+//     return 0;
+// }
 // ASC文件写一个时间头
 static int AscFileWriteTimeHeader(FILE *file, struct tm *timeinfo)
 {
+    printf("=== AscFileWriteTimeHeader START ===\n");
+    
     if (file == NULL)
     {
-        printf("Error: File pointer is NULL.\n");
-        return;
+        printf("CRITICAL ERROR: File pointer is NULL in AscFileWriteTimeHeader\n");
+        return -1;
     }
-    char header[256];
+    
+    if (timeinfo == NULL)
+    {
+        printf("CRITICAL ERROR: timeinfo is NULL in AscFileWriteTimeHeader\n");
+        return -1;
+    }
+    
+    // 验证时间字段的合理性
+    printf("Time info: wday=%d, mon=%d, mday=%d, hour=%d, min=%d, sec=%d, year=%d\n",
+           timeinfo->tm_wday, timeinfo->tm_mon, timeinfo->tm_mday,
+           timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec,
+           timeinfo->tm_year);
+    
+    char header[512] = {0}; // 增大缓冲区确保安全
     const char *weekDays[] = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
     const char *months[] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun",
                             "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
 
-    // 格式化头信息
-    sprintf(header, "date %s %s %02d %02d:%02d:%02d %s %04d\r\n",
-            weekDays[timeinfo->tm_wday],
-            months[timeinfo->tm_mon],
-            timeinfo->tm_mday,
-            (timeinfo->tm_hour > 12) ? (timeinfo->tm_hour - 12) : timeinfo->tm_hour,
-            timeinfo->tm_min, timeinfo->tm_sec,
-            (timeinfo->tm_hour >= 12) ? "PM" : "AM",
-            timeinfo->tm_year + 1900);
-    strcat(header, "base hex timestamps absolute\r\n");
-    strcat(header, "// version 7.0.0\r\n");
-
-    size_t written = fwrite(header, sizeof(char), strlen(header), file);
-    if (written < strlen(header))
-    {
-        // printf("Warning: Header not fully written to file.\n");
+    // 检查数组索引边界
+    if (timeinfo->tm_wday < 0 || timeinfo->tm_wday > 6) {
+        printf("ERROR: Invalid tm_wday: %d\n", timeinfo->tm_wday);
+        return -1;
     }
-    // printf("Header written to file :%d\n",strlen(header));
+    if (timeinfo->tm_mon < 0 || timeinfo->tm_mon > 11) {
+        printf("ERROR: Invalid tm_mon: %d\n", timeinfo->tm_mon);
+        return -1;
+    }
+
+    // 使用安全的 snprintf 一次性构建整个头部
+    int total_len = snprintf(header, sizeof(header),
+                            "date %s %s %02d %02d:%02d:%02d %s %04d\r\n"
+                            "base hex timestamps absolute\r\n"
+                            "// version 7.0.0\r\n",
+                            weekDays[timeinfo->tm_wday],
+                            months[timeinfo->tm_mon],
+                            timeinfo->tm_mday,
+                            (timeinfo->tm_hour > 12) ? (timeinfo->tm_hour - 12) : 
+                             (timeinfo->tm_hour == 0) ? 12 : timeinfo->tm_hour, // 处理 0 点的情况
+                            timeinfo->tm_min, 
+                            timeinfo->tm_sec,
+                            (timeinfo->tm_hour >= 12) ? "PM" : "AM",
+                            timeinfo->tm_year + 1900);
+    
+    printf("Header length: %d, buffer size: %zu\n", total_len, sizeof(header));
+    
+    if (total_len < 0) {
+        printf("ERROR: snprintf failed\n");
+        return -1;
+    }
+    
+    if ((size_t)total_len >= sizeof(header)) {
+        printf("ERROR: Header too long: %d >= %zu\n", total_len, sizeof(header));
+        return -1;
+    }
+    
+    printf("Header content:\n%s", header);
+    
+    // 写入文件
+    size_t written = fwrite(header, 1, total_len, file);
+    printf("Bytes written: %zu, expected: %d\n", written, total_len);
+    
+    if (written != (size_t)total_len)
+    {
+        printf("WARNING: Header not fully written to file: %zu != %d\n", written, total_len);
+        return -1;
+    }
+    
+    fflush(file); // 确保数据写入磁盘
+    printf("=== AscFileWriteTimeHeader COMPLETED SUCCESSFULLY ===\n");
+    return 0;
 }
+// // ASC文件写一个时间头
+// static int AscFileWriteTimeHeader(FILE *file, struct tm *timeinfo)
+// {
+//     if (file == NULL)
+//     {
+//         printf("Error: File pointer is NULL.\n");
+//         return;
+//     }
+//     char header[256];
+//     const char *weekDays[] = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
+//     const char *months[] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun",
+//                             "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+
+//     // 格式化头信息
+//     sprintf(header, "date %s %s %02d %02d:%02d:%02d %s %04d\r\n",
+//             weekDays[timeinfo->tm_wday],
+//             months[timeinfo->tm_mon],
+//             timeinfo->tm_mday,
+//             (timeinfo->tm_hour > 12) ? (timeinfo->tm_hour - 12) : timeinfo->tm_hour,
+//             timeinfo->tm_min, timeinfo->tm_sec,
+//             (timeinfo->tm_hour >= 12) ? "PM" : "AM",
+//             timeinfo->tm_year + 1900);
+//     strcat(header, "base hex timestamps absolute\r\n");
+//     strcat(header, "// version 7.0.0\r\n");
+
+//     size_t written = fwrite(header, sizeof(char), strlen(header), file);
+//     if (written < strlen(header))
+//     {
+//         // printf("Warning: Header not fully written to file.\n");
+//     }
+//     // printf("Header written to file :%d\n",strlen(header));
+// }
 
 DoubleRingBuffer canDoubleRingBuffer;
 
@@ -514,7 +643,7 @@ void Drv_write_canmsg_cache_to_file(FILE *file, uint32_t timestamp_ms)
             }
         }
         // 构造带时间戳的字符串
-        char timeStampedMessage[BUFFERED_WRITE_SIZE];
+        char timeStampedMessage[BUFFERED_WRITE_SIZE] = {0};
         unsigned char offset = 0;
 
         // 时间戳
@@ -553,9 +682,14 @@ void Drv_write_canmsg_cache_to_file(FILE *file, uint32_t timestamp_ms)
 // 将缓冲区数据写到sd卡
 void Drv_write_buffer_to_file(DoubleRingBuffer *drb)
 {
-    static char filePath[256]; // 当前使用的文件路径
+    static char filePath[512] = {0}; // 当前使用的文件路径
 
     int ret = 0;
+
+    // 根据当前时间创建一个文件路径
+    struct tm nowTimeInfo = {0};
+    // 获取当前时间
+    GetNowTime(&nowTimeInfo);
 
     // 交换当前使用的缓冲区
     pthread_mutex_lock(&drb->switchMutex);
@@ -580,43 +714,94 @@ void Drv_write_buffer_to_file(DoubleRingBuffer *drb)
         CP_set_emcu_fault(SD_FAULT, SET_ERROR);
         goto QUIT_FLAG;
     }
-
-    // 根据当前时间创建一个文件路径
-    struct tm nowTimeInfo;
+    //printf("5. USB status OK\n");
     // 判断是否需要重新创建一个文件开始写
     if (newFileNeeded)
     {
-        // 获取当前时间
-        GetNowTime(&nowTimeInfo);
         // 将时间转换为文件路径
         CreateAscFilePathWithTime(nowTimeInfo, filePath);
+        filePath[sizeof(filePath) - 1] = '\0';
+        //printf("6. New file path created: %s\n", filePath);
     }
-
+    //printf("7. Before OpenNowWriteAscFile\n");
     // 打开目标文件
     FILE *file = NULL;
-    if (OpenNowWriteAscFile(filePath, &file) != 0)
+    
+    if (OpenNowWriteAscFile(filePath, &file) != 0  || file == NULL)
     {
+        printf("ERROR: OpenNowWriteAscFile failed for: %s\n", filePath);
         goto QUIT_FLAG; // 打开失败 直接返回
     }
 
+    //printf("8. File opened successfully: %p\n", (void*)file);
     // 如果是新创建的
+    // 如果是新创建的文件
     if (newFileNeeded)
     {
+        printf("9. Writing headers for new file\n");
         // 先写入当前文件头
-        AscFileWriteTimeHeader(file, &nowTimeInfo);
-        // 缓冲区数据写入(也是一个文件头)
-        Drv_write_canmsg_cache_to_file(file, 0);
+        if (AscFileWriteTimeHeader(file, &nowTimeInfo) != 0) {
+            printf("ERROR: Failed to write time header\n");
+        } else {
+            //printf("9.1 Time header written\n");
+        }
+        // 缓冲区数据写入
+        Drv_write_canmsg_cache_to_file(file, 0) ;
+       
         // 标记不需要重新创建了
         newFileNeeded = false;
+        //printf("9.3 New file setup completed\n");
     }
 
     // 如果不是新创建的文件 从文件的末尾追加写入
     fseek(file, 0, SEEK_END);
     while (inactiveBuffer->count > 0)
     {
+        //printf("write_buffer_to_file: %d\n", inactiveBuffer->count);
         CAN_LOG_MESSAGE *logMsg = &inactiveBuffer->buffer[inactiveBuffer->readIndex];
 
         char dataStr[3 * 64 + 1] = {0};
+        int bytes = logMsg->msg.Length;
+        if (bytes > 64) bytes = 64; // 双保险
+        #if 1
+        for (int i = 0; i < bytes; ++i) {
+            // 每次写 3 个字符："%02X "，最多写入 3*64=192 字符，留了 +1 结尾
+            // 这里用 sizeof(dataStr) - i*3 做保护，避免意外越界
+            snprintf(&dataStr[i * 3], (size_t)(sizeof(dataStr) - i * 3), "%02X ", logMsg->msg.Data[i]);
+        }
+        // 2) 方向标记
+        const char *dir = (logMsg->channel == 0) ? "Rx" : "Tx";
+        // 3) 直接一次性写入最终字符串（避免中间缓冲 + memmove）
+        char line[BUFFERED_WRITE_SIZE]; // 请把 BUFFERED_WRITE_SIZE 设为 >= 512
+        int lineLen = snprintf(
+            line, sizeof(line),
+            "%d.%03d 1 %08lX %s d %d %s\r\n",
+            logMsg->relativeTimestamp / 1000,
+            logMsg->relativeTimestamp % 1000,
+            (unsigned long)logMsg->msg.ID,
+            dir,
+            logMsg->msg.Length,
+            dataStr
+        );
+        if (lineLen < 0 || (size_t)lineLen >= sizeof(line)) 
+        {
+            // 被截断或出错：可以选择丢弃，或写一条告警，再继续下一条
+            // fprintf(stderr, "line truncated or error, drop this frame\n");
+            // 安全起见我们直接丢弃这一帧，避免潜在越界
+            inactiveBuffer->readIndex = (inactiveBuffer->readIndex + 1) % BUFFER_SIZE;
+            inactiveBuffer->count--;
+            continue;
+        }
+
+        size_t written = fwrite(line, 1, (size_t)lineLen, file);
+        (void)written; // 如需可检查 written == (size_t)lineLen
+
+        inactiveBuffer->readIndex = (inactiveBuffer->readIndex + 1) % BUFFER_SIZE;
+        inactiveBuffer->count--;
+        #endif
+
+#if 0
+
         for (int i = 0; i < logMsg->msg.Length && i < 64; ++i)
         {
             snprintf(&dataStr[i * 3], 4, "%02X ", logMsg->msg.Data[i]);
@@ -641,6 +826,7 @@ void Drv_write_buffer_to_file(DoubleRingBuffer *drb)
 
         inactiveBuffer->readIndex = (inactiveBuffer->readIndex + 1) % BUFFER_SIZE;
         inactiveBuffer->count--;
+#endif
     }
     fflush(file);
 
@@ -651,8 +837,13 @@ void Drv_write_buffer_to_file(DoubleRingBuffer *drb)
     // 创建新文件的两个条件
     // 1. 当前写的文件大小超过10M
     // 2. 系统中不存在当前日志命名的文件夹（日期变化了）
-    if (fileSize > (10 * 1024 * 1024)) // 大于10M
+    if ((fileSize > (10*1024*1024) )|| (judeTimetoUpdate())) // 大于10M或者年月日发生变化
     {
+        printf("fileSize = %d\r\n",fileSize);
+
+        printf("judeTimetoUpdate = %d\r\n",judeTimetoUpdate());
+        printf("xxxx\r\n");
+
         newFileNeeded = true; // 下一轮就要创建新文件
     }
     // 关闭文件
@@ -719,4 +910,33 @@ int SD_Initialize(void)
     newFileNeeded = true;
 
     return 0;
+}
+int judeTimetoUpdate(void)
+{
+    int ret = 0;
+	static int last_year = 0;
+	static int last_month = 0;
+	static int last_day = 0;
+
+	if(last_year == 0 && last_month == 0 && last_day == 0)
+	{
+		last_year = BCU_TimeYear;
+		last_month = BCU_TimeMonth;
+		last_day = BCU_TimeDay;
+	}
+	// 检查日期是否变化
+    if ((BCU_TimeYear != last_year ) || 
+        (BCU_TimeMonth != last_month) || 
+        (BCU_TimeDay != last_day) ) 
+       {
+
+        last_year = BCU_TimeYear;
+        last_month = BCU_TimeMonth;
+        last_day = BCU_TimeDay;
+
+        ret = 1;
+    }else{
+        ret = 0;
+    }
+    return ret;
 }

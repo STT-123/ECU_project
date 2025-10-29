@@ -7,6 +7,10 @@ else ifeq ($(USERNAME), haozi)
     CC :=    /home/haozi/work/xcharge/toolchain/AM35D1/aarch64-nuvoton-linux-gnu_sdk-buildroot/bin/aarch64-nuvoton-linux-gnu-gcc
 	CXX :=   /home/haozi/work/xcharge/toolchain/AM35D1/aarch64-nuvoton-linux-gnu_sdk-buildroot/bin/aarch64-nuvoton-linux-gnu-g++
 	STRIP := /home/haozi/work/xcharge/toolchain/AM35D1/aarch64-nuvoton-linux-gnu_sdk-buildroot/bin/aarch64-nuvoton-linux-gnu-strip
+else ifeq ($(USERNAME), stt)
+    CC :=    /home/stt/arm/aarch64-nuvoton-linux-gnu_sdk-buildroot/bin/aarch64-nuvoton-linux-gnu-gcc
+	CXX :=   /home/stt/arm/aarch64-nuvoton-linux-gnu_sdk-buildroot/bin/aarch64-nuvoton-linux-gnu-g++
+	STRIP := /home/stt/arm/aarch64-nuvoton-linux-gnu_sdk-buildroot/bin/aarch64-nuvoton-linux-gnu-strip
 else
     CC :=    /home/tian/tools/toolchainAM35/aarch64-nuvoton-linux-gnu_sdk-buildroot/bin/aarch64-nuvoton-linux-gnu-gcc
 	CXX :=   /home/tian/tools/toolchainAM35/aarch64-nuvoton-linux-gnu_sdk-buildroot/bin/aarch64-nuvoton-linux-gnu-g++
@@ -18,7 +22,7 @@ OBJ_DIR = obj
 BIN_DIR = bin
 
 # 指定交叉编译 sysroot 路径
-SYSROOT := /home/len/aarch64-nuvoton-linux-gnu_sdk-buildroot/aarch64-buildroot-linux-gnu/sysroot
+SYSROOT := /home/stt/arm/aarch64-nuvoton-linux-gnu_sdk-buildroot/aarch64-buildroot-linux-gnu/sysroot
 LIB_DIR := $(SYSROOT)/usr/lib
 INC_DIR := $(SYSROOT)/usr/include
 

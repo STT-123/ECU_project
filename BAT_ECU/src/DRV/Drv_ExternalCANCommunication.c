@@ -11,7 +11,7 @@ queue_t Queue_Can2RevData;
 
 static void Drv_can2_epoll_msg_transmit(void *arg)
 {
-    struct canfd_frame can_rev;
+    struct canfd_frame can_rev ={0};
 
     // printf("[Drv_can2_epoll_msg_transmit] epoll_wait\n");
     if (HAL_can_read(CAN2_FD, &can_rev, 1) != 0) //   后期改小这个参数

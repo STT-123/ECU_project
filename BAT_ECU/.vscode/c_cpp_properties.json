@@ -1,24 +1,19 @@
 {
-    "configurations": [
-        {
-            "name": "Linux",
-            "includePath": [
-                "${workspaceFolder}/**",
-                "/home/len/Project/BAT_ECU/src",
-                "/home/len/Project/BAT_ECU/src/GLB",
-                "/home/len/Project/BAT_ECU/src/DRV",
-                 "/home/len/Project/BAT_ECU/src/DRV/LOG",
-                "/home/len/Project/BAT_ECU/src/DRV/Epoll"
-            ],
-            "defines": [
-                "LINUX", 
-                "DEBUG" 
-            ],
-            "compilerPath": "/usr/bin/gcc",
-            "cStandard": "c17",
-            "cppStandard": "gnu++14",
-            "intelliSenseMode": "linux-gcc-x64"
-        }
-    ],
-    "version": 4
+  "configurations": [
+    {
+      "name": "linux-gcc-x64",
+      "includePath": [
+        "${workspaceFolder}/**"
+      ],
+      "defines": [
+        "LINUX",
+        "DEBUG"
+      ],
+      "compilerPath": "/usr/bin/gcc",
+      "cStandard": "${default}",
+      "cppStandard": "${default}",
+      "intelliSenseMode": "linux-gcc-x64"
+    }
+  ],
+  "version": 4
 }
