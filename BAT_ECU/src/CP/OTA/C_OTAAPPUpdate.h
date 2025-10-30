@@ -38,4 +38,5 @@
 extern ECUStatus ecustatus;
 void CP_ECU_OTA(OTAObject *pOTA);
 void FinshhECUOtaAndCleanup(OTAObject* pOTA);
+int verify_bin_file(const char *filepath);
 #endif

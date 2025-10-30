@@ -41,9 +41,15 @@ int main(int argc, char **argv)
 
     while (1)
     {
-
-        // printf("3CP_get_TCU_PowerUpCmd(BMS_POWER_ON) = %d\r\n",(int)CP_get_TCU_PowerUpCmd());
-        //         sleep(1);
+        sleep(1);
+        printf("old file\r\n");
+        printf("old file\r\n");
+        printf("old file\r\n");
+        printf("old file\r\n");
+        // printf("new file\r\n");
+        // printf("new file\r\n");
+        // printf("new file\r\n");
+        // printf("new file\r\n");
         // time_t mainnow = time(NULL);
         // struct tm maintimeinfo;
         // struct tm *maintm_info = localtime(&mainnow);

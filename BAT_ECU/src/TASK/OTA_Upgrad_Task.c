@@ -47,9 +47,10 @@ void *OTA_Upgrad_Task(void *arg)
     static CAN_MESSAGE canmsg;
     int err;
     int xstatis = 0;
-    strcpy(pOTA->OTAFilename, "XC_BCU_V525.bin");
-    pOTA->deviceType = BCU;
-    pOTA->deviceID = BCUOTACANID;
+    strcpy(pOTA->OTAFilename, "XC_ECU_V200.bin");
+    pOTA->deviceType = ECU;
+    // pOTA->deviceID = BCUOTACANID;
+    pOTA->deviceID = 0;
     pOTA->OTAStart = 1;
     printf("pOTA->OTAFilename : %s\r\n",pOTA->OTAFilename);
     printf("pOTA->deviceID: %u\r\n",pOTA->deviceID);
@@ -80,19 +81,19 @@ void *OTA_Upgrad_Task(void *arg)
                     }
                     else
                     {
-                        FinshhECUOtaAndCleanup(pOTA);
-                        continue;
+                        printf("errot\r\n");
                     }
                 }
                 else if (ecustatus.DeviceProgramOkFlag)
                 {
-                    udsstatus.DeviceProgramOkFlag = 0; // 需要添加
-                    printf("CAN ID 0x%x ECU OTA success!\r\n", pOTA->deviceID);
-                    LOG("CAN ID 0x%x ACP OTA success!\r\n", pOTA->deviceID);
-                    if (pOTA->deviceType == ECU)
-                    {
-                        FinshhECUOtaAndCleanup(pOTA);
-                    }
+                    printf("errot\r\n");
+                    // udsstatus.DeviceProgramOkFlag = 0; // 需要添加
+                    // printf("CAN ID 0x%x ECU OTA success!\r\n", pOTA->deviceID);
+                    // LOG("CAN ID 0x%x ACP OTA success!\r\n", pOTA->deviceID);
+                    // if (pOTA->deviceType == ECU)
+                    // {
+                    //     FinshhECUOtaAndCleanup(pOTA);
+                    // }
                 }
             }
             else if (pOTA->deviceType == ACP || pOTA->deviceType == DCDC)
@@ -208,14 +209,7 @@ void *OTA_Upgrad_Task(void *arg)
                         CP_set_OTA_XCPConnect(255);//设置跳转到BOOT的条件,OTA_XCPConnect为0xFF才会跳转到BOOT
                         CP_BMSAnalysis();
                         usleep(2000);
-                    }
-
-                    // for (int i = 0; i < 100; i++){
-                    //     xstatis = queue_pend(&Queue_Can0RevData, &canmsg,&err);
-                    //     printf("xstatis = %d\r\n",xstatis);
-                    // }
-                    // sleep(3);
-                    
+                    }                 
                     usleep(1000 * 1000);
                     CP_XCP_OTA(pOTA);
                 }
@@ -257,9 +251,9 @@ void *OTA_Upgrad_Task(void *arg)
                         }
                     }
 
-                }
-                FinshhBCUBMUOtaAndCleanup(pOTA);
+                }         
             }
+            FinshhBCUBMUOtaAndCleanup(pOTA);
         }
         usleep(10 * 1000);
     }
