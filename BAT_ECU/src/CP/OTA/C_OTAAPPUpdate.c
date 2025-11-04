@@ -9,24 +9,23 @@
 ECUStatus ecustatus;
 void CP_ECU_OTA(OTAObject *pOTA)
 {
-	 printf("CP_ECU_OTA start!, pOTA->OTAStart:%d\r\n", pOTA->OTAStart);
+	LOG("CP_ECU_OTA start!, pOTA->OTAStart:%d\r\n", pOTA->OTAStart);
     if (!pOTA->OTAStart) return;
     
     memset(&ecustatus, 0, sizeof(ECUStatus));
-    printf("pOTA->deviceType : %d \r\n", pOTA->deviceType);
-    printf("can id 0x%x device ota start!\r\n", pOTA->deviceID);
+    LOG("pOTA->deviceType : %d \r\n", pOTA->deviceType);
+    LOG("can id 0x%x device ota start!\r\n", pOTA->deviceID);
     CP_set_modbus_reg_val(OTASTATUSREGADDR, OTASTARTRUNNING);
     
     if(pOTA->deviceID == 0 && pOTA->deviceType == ECU)
     {
         char cmd[512];
-        
+        CP_set_modbus_reg_val(OTAPPROGRESSREGADDR, 10); // 0124
 		// 步骤1: 检查OTA文件是否存在
 		if(ecustatus.ErrorReg == 0)
 		{
 			char otafilenamestr1[OTAFILENAMEMAXLENGTH + 64] = {'\0'};
 			snprintf(otafilenamestr1, sizeof(otafilenamestr1), "%s/%s", USB_MOUNT_POINT, pOTA->OTAFilename);
-			printf("OTA file path: %s\r\n", otafilenamestr1);
 			LOG("OTA file path: %s\r\n", otafilenamestr1);
 
 			// 检查文件是否存在
@@ -43,9 +42,10 @@ void CP_ECU_OTA(OTAObject *pOTA)
 				return;
 			}
 			
-			printf("ECU bin file verified: %s\n", pOTA->OTAFilename);
+			LOG("ECU bin file verified: %s\n", pOTA->OTAFilename);
 		}
 
+		CP_set_modbus_reg_val(OTAPPROGRESSREGADDR, 40); // 0124
 		// 步骤2: 备份原有程序（可选但推荐）
 		// 更安全的更新方式
 		if(ecustatus.ErrorReg == 0)
@@ -55,47 +55,48 @@ void CP_ECU_OTA(OTAObject *pOTA)
 			// 方法1: 原子替换
 			snprintf(cmd, sizeof(cmd), "cp \"%s/%s\" \"%s/.bat_ecu.tmp\" && mv \"%s/.bat_ecu.tmp\" \"%s/bat_ecu\"", 
 					USB_MOUNT_POINT, pOTA->OTAFilename, APP_PATH, APP_PATH, APP_PATH);	
-			printf("Copy command: %s\n", cmd);
+			LOG("Copy command: %s\n", cmd);
 			
 			int ret = system(cmd);
 			if (ret == 0) {
-				printf("Program update successful.\n");
+				LOG("Program update successful.\n");
 			} else {
-				printf("Program update failed.\n");
+				LOG("Program update failed.\n");
 				ecustatus.ErrorReg |= 1 << 2;
 			}
 		}
         // 步骤3: 复制新的可执行文件
+
+		CP_set_modbus_reg_val(OTAPPROGRESSREGADDR, 60); // 0124
         if(ecustatus.ErrorReg == 0)
         {
             memset(cmd, 0, sizeof(cmd));
             // 将.bin文件复制为目标可执行文件（去掉.bin后缀）
             snprintf(cmd, sizeof(cmd), "cp \"%s/%s\" \"%s/bat_ecu\"", 
                      USB_MOUNT_POINT, pOTA->OTAFilename, APP_PATH);
-            printf("Copy command: %s\n", cmd);
+            LOG("Copy command: %s\n", cmd);
             
             int ret = system(cmd);
             if (ret == 0) {
-                printf("Program copy successful.\n");
                 LOG("Program copy successful.\n");
             } 
             else 
             {
-                printf("Program copy failed.\n");
                 LOG("Program copy failed.\n");
                 ecustatus.ErrorReg |= 1 << 2;
             }
         }
 
 		// 步骤4: 验证复制后的文件 - 移除file命令依赖
+		CP_set_modbus_reg_val(OTAPPROGRESSREGADDR, 80); // 0124
 		if(ecustatus.ErrorReg == 0)
 		{
 			// 使用C语言方式验证，而不是system("file ...")
 			if (!verify_bin_file("/usr/xcharge/bat_ecu")) {
-				printf("Copied file verification failed\n");
+				LOG("Copied file verification failed\n");
 				ecustatus.ErrorReg |= 1 << 4;
 			} else {
-				printf("Copied file verification successful\n");
+				LOG("Copied file verification successful\n");
 			}
 		}
 
@@ -106,21 +107,20 @@ void CP_ECU_OTA(OTAObject *pOTA)
             snprintf(cmd, sizeof(cmd), "chmod 755 \"%s/bat_ecu\"", APP_PATH);
             int ret = system(cmd);
             if (ret == 0) {
-                printf("Permission settings successful.\n");
                 LOG("Permission settings successful.\n");
-
+				CP_set_modbus_reg_val(OTAPPROGRESSREGADDR, 0); // 0124
                 // 完成OTA清理工作
                 FinshhECUOtaAndCleanup(pOTA);
                 
                 // 确保数据写入磁盘并重启
-                printf("Syncing filesystem and rebooting...\n");
+                LOG("Syncing filesystem and rebooting...\n");
                 system("sync");
-                sleep(1);
+
+                sleep(5);//5s后重启
                 system("reboot");
             } 
             else 
             {
-                printf("Permission setting failed.\n");
                 LOG("Permission setting failed.\n");
                 ecustatus.ErrorReg |= 1 << 3;
             }
@@ -145,109 +145,11 @@ void CP_ECU_OTA(OTAObject *pOTA)
         
         pOTA->OTAStart = 0;
     }
-
-
-	#if 0
-	printf("CP_ECU_OTA start!,pOTA->OTAStart:%d\r\n",pOTA->OTAStart);
-	if (!pOTA->OTAStart) return;
-	memset(&ecustatus, 0, sizeof(ECUStatus));
-	printf("pOTA->deviceType : %d \r\n", pOTA->deviceType);
-	printf("can id 0x%d device ota start!\r\n", pOTA->deviceID);
-	CP_set_modbus_reg_val(OTASTATUSREGADDR, OTASTARTRUNNING);//0124.升级状态
-	if(pOTA->deviceID == 0 && pOTA->deviceType == ECU )
-	{
-		char cmd[512];
-		if(ecustatus.ErrorReg == 0)
-		{
-			memset(cmd, 0, sizeof(cmd));
-			char otafilenamestr1[OTAFILENAMEMAXLENGTH + 64] = {'\0'};
-			snprintf(otafilenamestr1, sizeof(otafilenamestr1), "%s/%s", USB_MOUNT_POINT, pOTA->OTAFilename);
-            printf("otafilenamestr1 %s\r\n", otafilenamestr1);
-			LOG("otafilenamestr1 %s\r\n", otafilenamestr1);
-
-
-			if (access(otafilenamestr1, F_OK) != 0) {
-			printf("OTA file does not exist: %s\n", otafilenamestr1);
-			ecustatus.ErrorReg |= 1 << 2;
-			return;
-			}
-
-
-			//解压
-
-			// snprintf(cmd, sizeof(cmd), "cd %s && tar xvjf %s", USB_MOUNT_POINT, pOTA->OTAFilename);
-			snprintf(cmd, sizeof(cmd), "cd %s && tar --no-same-owner --touch -xvjf %s", USB_MOUNT_POINT, pOTA->OTAFilename);
-			// snprintf(cmd, sizeof(cmd), "cd %s && bunzip2 %s && tar xvf %s.tar", USB_MOUNT_POINT, pOTA->OTAFilename, basename(pOTA->OTAFilename));
-			// snprintf(cmd, sizeof(cmd), "cd %s && unzip -o %s", USB_MOUNT_POINT, pOTA->OTAFilename);
-			printf("cmd: %s\n", cmd);
-			// snprintf(cmd, sizeof(cmd), "cd %s && bunzip2 %s", USB_MOUNT_POINT, pOTA->OTAFilename);
-			int ret = system(cmd);
-			if (ret == 0) {
-				printf("Decompression successful.\n");
-				LOG("Decompression successful.\n");
-			}
-			else 
-			{
-			printf("Decompression failed.\n");
-			LOG("Decompression failed.\n");
-			ecustatus.ErrorReg  |= 1<<1;			
-			}
-
-
-		}
-
-		if(ecustatus.ErrorReg == 0)
-		{
-			memset(cmd, 0, sizeof(cmd));
-			snprintf(cmd, sizeof(cmd), "cp \"%s/bat_ecu\" \"%s\"", USB_MOUNT_POINT, APP_PATH);
-			int ret = system(cmd);
-			if (ret == 0) {
-				printf("Copy successful.\n");
-				LOG("Copy successful.\n");
-			} 
-			else 
-			{
-				printf("Copy failed.\n");
-				LOG("Copy failed.\n");
-				ecustatus.ErrorReg  |= 1<<2;			
-			}
-
-
-		}
-
-		if(ecustatus.ErrorReg == 0)
-		{
-			memset(cmd, 0, sizeof(cmd));
-			snprintf(cmd, sizeof(cmd), "chmod 777 \"%s/bat_ecu\"", APP_PATH);
-			int ret = system(cmd);
-			if (ret == 0) {
-				FinshhECUOtaAndCleanup(pOTA);
-				printf("Permission settings have been successfully configured.\n");
-				LOG("Permission settings have been successfully configured.\n");
-
-				system("sync");
-				system("reboot");
-			} 
-			else 
-			{
-				printf("Permission setting failed.\n");
-				LOG("Permission setting failed.\n");
-				ecustatus.ErrorReg  |= 1<<3;			
-			}
-
-		}
-
-
-
-		if(ecustatus.ErrorReg != 0)
-		{
-			printf("can id 0x%x device ota failed, error register val 0x%x!\r\n", pOTA->deviceID, ecustatus.ErrorReg);
-			LOG("can id 0x%x device ota failed, error register val 0x%x!\r\n", pOTA->deviceID, ecustatus.ErrorReg);
-			CP_set_modbus_reg_val(OTASTATUSREGADDR, OTAFAILED);
-		}
-		pOTA->OTAStart =0;
+	else{
+		LOG("pOTA->deviceID = 0x%x, pOTA->deviceType = %d\r\n",pOTA->deviceID, pOTA->deviceType);
+		ecustatus.ErrorReg = 1;
+		ecustatus.ErrorDeviceID = pOTA->deviceID;
 	}
-	#endif
 }
 
 

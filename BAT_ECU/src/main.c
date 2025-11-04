@@ -27,6 +27,7 @@ void update_bat_data(sqlite3 *db);
 
 struct tm utc_timeinfo;
 
+
 int main(int argc, char **argv)
 {
     int counter = 60;
@@ -41,11 +42,12 @@ int main(int argc, char **argv)
 
     while (1)
     {
-        sleep(1);
-        printf("old file\r\n");
-        printf("old file\r\n");
-        printf("old file\r\n");
-        printf("old file\r\n");
+
+        // sleep(1);
+        // LOG("old file\r\n");
+        // LOG("old file\r\n");
+        // LOG("old file\r\n");
+        // LOG("old file\r\n");
         // printf("new file\r\n");
         // printf("new file\r\n");
         // printf("new file\r\n");
@@ -55,7 +57,11 @@ int main(int argc, char **argv)
         // struct tm *maintm_info = localtime(&mainnow);
         // maintimeinfo = *maintm_info;
         // mktime(&maintimeinfo);
-         //printf("BCU_TimeYear = %d\n",BCU_TimeYear);
+
+
+        //  LOG("BCU_TimeYear = %d\n",BCU_TimeYear);
+        //  LOG("BCU_TimeMonth = %d\n",BCU_TimeMonth);
+        //  LOG("BCU_TimeDay = %d\n",BCU_TimeDay);
         // printf("Main timeinfo:%d-%d-%d %d:%d:%d\r\n", maintimeinfo.tm_year + 1900, maintimeinfo.tm_mon +1, maintimeinfo.tm_mday, maintimeinfo.tm_hour, maintimeinfo.tm_min, maintimeinfo.tm_sec);
         
         enqueue_message(build_heartbeat());
@@ -113,7 +119,7 @@ void all_init(void)
     G_settings_init();
 
     // 初始化急停IO
-    gpio_all_init();
+    //gpio_all_init();,ECU不控制任何GPIO
 
     // OCPP初始化
     enqueue_message(build_boot_notification());
@@ -121,9 +127,9 @@ void all_init(void)
 
 void all_thread_init(void)
 {
-   CAN0RecvDelTaskCreate();
+    CAN0RecvDelTaskCreate();
 
-     CAN1RecvDelTaskCreate();
+    CAN1RecvDelTaskCreate();
 
     FtpServiceThreadCreate();
 

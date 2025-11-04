@@ -5,6 +5,7 @@
 #include "log/log.h"
 #include "./CP/BMS/bms/CANRcvFcn.h"
 #include <time.h>
+
 // 检查U盘是否可用
 // 0正常 1不正常
 static int CheckUsbStatus(void)
@@ -61,7 +62,7 @@ static int      GetNowTime(struct tm *nowTime)
         timeinfo.tm_sec = BCU_TimeSencond;
         timeinfo.tm_isdst = -1;
         if (mktime(&timeinfo) == (time_t)-1) {
-            printf("WARNING: mktime failed for BCU time\n");
+            LOG("WARNING: mktime failed for BCU time\n");
             // 设置一个默认的星期几
             timeinfo.tm_wday = 0; // 星期日
         }
@@ -70,12 +71,11 @@ static int      GetNowTime(struct tm *nowTime)
         {
             // 执行实际的时间更新操作
             G_set_system_time_from_bcu();
-            printf("update time\r\n");
+            LOG("update time\r\n");
             // 更新最后更新时间
             last_update_time = current_time;
         }
-
-        LOG("[SD Card] Time Source From Bcu. ");
+        LOG("[SD Card] Time Source From Bcu");
     }
     else // bcu没发过来时间 用自己本地的时间
     {
@@ -83,7 +83,7 @@ static int      GetNowTime(struct tm *nowTime)
         struct tm *tm_info = localtime(&now);
         timeinfo = *tm_info;
         mktime(&timeinfo);
-        LOG("[SD Card] Time Source From Local. ");
+        LOG("[SD Card] Time Source From Local");
     }
 
     // 得到当前时间
@@ -141,17 +141,17 @@ static int OpenNowWriteAscFile(const char *filePath, FILE **file) {
     static int failed_count = 0;
     
     if (!filePath || !file) {
-        printf("ERROR: Invalid parameters to OpenNowWriteAscFile\n");
+        LOG("ERROR: Invalid parameters to OpenNowWriteAscFile\n");
         return 1;
     }
     
-    printf(">>> Attempting to open file: %s\n", filePath);
+    //printf(">>> Attempting to open file: %s\n", filePath);
     
     *file = fopen(filePath, "ab");
     
     if (!*file) {
         int err = errno;
-        printf("ERROR: fopen failed for %s, errno=%d (%s)\n", filePath, err, strerror(err));
+        LOG("ERROR: fopen failed for %s, errno=%d (%s)\n", filePath, err, strerror(err));
         failed_count++;
         
         if (failed_count >= 5) {
@@ -167,7 +167,7 @@ static int OpenNowWriteAscFile(const char *filePath, FILE **file) {
     }
     failed_count = 0;
     
-    printf("SUCCESS: File opened successfully: %p\n", (void*)*file);
+    LOG("SUCCESS: File opened successfully: %p\n", (void*)*file);
     return 0;
 }
 // 打开当前需要写的Asc文件
@@ -209,22 +209,22 @@ static int OpenNowWriteAscFile(const char *filePath, FILE **file) {
 // ASC文件写一个时间头
 static int AscFileWriteTimeHeader(FILE *file, struct tm *timeinfo)
 {
-    printf("=== AscFileWriteTimeHeader START ===\n");
+    LOG("=== AscFileWriteTimeHeader START ===\n");
     
     if (file == NULL)
     {
-        printf("CRITICAL ERROR: File pointer is NULL in AscFileWriteTimeHeader\n");
+        LOG("CRITICAL ERROR: File pointer is NULL in AscFileWriteTimeHeader\n");
         return -1;
     }
     
     if (timeinfo == NULL)
     {
-        printf("CRITICAL ERROR: timeinfo is NULL in AscFileWriteTimeHeader\n");
+        LOG("CRITICAL ERROR: timeinfo is NULL in AscFileWriteTimeHeader\n");
         return -1;
     }
     
     // 验证时间字段的合理性
-    printf("Time info: wday=%d, mon=%d, mday=%d, hour=%d, min=%d, sec=%d, year=%d\n",
+    LOG("Time info: wday=%d, mon=%d, mday=%d, hour=%d, min=%d, sec=%d, year=%d\n",
            timeinfo->tm_wday, timeinfo->tm_mon, timeinfo->tm_mday,
            timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec,
            timeinfo->tm_year);
@@ -236,11 +236,11 @@ static int AscFileWriteTimeHeader(FILE *file, struct tm *timeinfo)
 
     // 检查数组索引边界
     if (timeinfo->tm_wday < 0 || timeinfo->tm_wday > 6) {
-        printf("ERROR: Invalid tm_wday: %d\n", timeinfo->tm_wday);
+        LOG("ERROR: Invalid tm_wday: %d\n", timeinfo->tm_wday);
         return -1;
     }
     if (timeinfo->tm_mon < 0 || timeinfo->tm_mon > 11) {
-        printf("ERROR: Invalid tm_mon: %d\n", timeinfo->tm_mon);
+        LOG("ERROR: Invalid tm_mon: %d\n", timeinfo->tm_mon);
         return -1;
     }
 
@@ -259,32 +259,32 @@ static int AscFileWriteTimeHeader(FILE *file, struct tm *timeinfo)
                             (timeinfo->tm_hour >= 12) ? "PM" : "AM",
                             timeinfo->tm_year + 1900);
     
-    printf("Header length: %d, buffer size: %zu\n", total_len, sizeof(header));
+    LOG("Header length: %d, buffer size: %zu\n", total_len, sizeof(header));
     
     if (total_len < 0) {
-        printf("ERROR: snprintf failed\n");
+        LOG("ERROR: snprintf failed\n");
         return -1;
     }
     
     if ((size_t)total_len >= sizeof(header)) {
-        printf("ERROR: Header too long: %d >= %zu\n", total_len, sizeof(header));
+        LOG("ERROR: Header too long: %d >= %zu\n", total_len, sizeof(header));
         return -1;
     }
     
-    printf("Header content:\n%s", header);
+    LOG("Header content:\n%s", header);
     
     // 写入文件
     size_t written = fwrite(header, 1, total_len, file);
-    printf("Bytes written: %zu, expected: %d\n", written, total_len);
+    LOG("Bytes written: %zu, expected: %d\n", written, total_len);
     
     if (written != (size_t)total_len)
     {
-        printf("WARNING: Header not fully written to file: %zu != %d\n", written, total_len);
+        LOG("WARNING: Header not fully written to file: %zu != %d\n", written, total_len);
         return -1;
     }
     
     fflush(file); // 确保数据写入磁盘
-    printf("=== AscFileWriteTimeHeader COMPLETED SUCCESSFULLY ===\n");
+    LOG("=== AscFileWriteTimeHeader COMPLETED SUCCESSFULLY ===\n");
     return 0;
 }
 // // ASC文件写一个时间头
@@ -328,7 +328,6 @@ Rtc_Ip_TimedateType initialTime;
 Rtc_Ip_TimedateType currentTime;
 struct timespec start_tick;
 #define CAN_ID_HISTORY_SIZE 6
-static char filePath[256];
 uint32_t CAN_IDs[] = {
     0x180110E4,
     0x180210E4,
@@ -345,7 +344,7 @@ CAN_MESSAGE can_msg_cache[CAN_ID_HISTORY_SIZE] = {0};
 DoubleRingBuffer canDoubleRingBuffer;
 
 // 初始化缓存
-void Drv_init_can_id_history()
+void Drv_init_can_id_history(void)
 {
     int i = 0;
     for (i = 0; i < CAN_ID_HISTORY_SIZE; i++)
@@ -598,7 +597,7 @@ void Drv_write_canmsg_cache_to_file(FILE *file, uint32_t timestamp_ms)
 {
     if (file == NULL)
     {
-        printf("Error: File pointer is NULL.\n");
+        LOG("Error: File pointer is NULL.\n");
         return;
     }
 
@@ -651,7 +650,7 @@ void Drv_write_canmsg_cache_to_file(FILE *file, uint32_t timestamp_ms)
                            "%d.%03d 1 ", timestamp_ms / 1000, timestamp_ms % 1000);
         // ID + 长度
         offset += snprintf(timeStampedMessage + offset, sizeof(timeStampedMessage),
-                           "%03lXx Rx d %d ", logMsg->ID, logMsg->Length);
+                           "%03Xx Rx d %d ", logMsg->ID, logMsg->Length);
         // 数据
         for (int j = 0; j < logMsg->Length; ++j)
         {
@@ -665,14 +664,14 @@ void Drv_write_canmsg_cache_to_file(FILE *file, uint32_t timestamp_ms)
         if (err != 0)
         {
             perror("fseek");
-            printf("Failed to seek to end of file\n");
+            LOG("Failed to seek to end of file\n");
             return;
         }
 
         err = fwrite(timeStampedMessage, 1, offset, file);
         if (err != offset)
         {
-            printf("Failed to write to file\n");
+            LOG("Failed to write to file\n");
             return;
         }
     }
@@ -729,7 +728,7 @@ void Drv_write_buffer_to_file(DoubleRingBuffer *drb)
     
     if (OpenNowWriteAscFile(filePath, &file) != 0  || file == NULL)
     {
-        printf("ERROR: OpenNowWriteAscFile failed for: %s\n", filePath);
+        LOG("ERROR: OpenNowWriteAscFile failed for: %s\n", filePath);
         goto QUIT_FLAG; // 打开失败 直接返回
     }
 
@@ -738,10 +737,10 @@ void Drv_write_buffer_to_file(DoubleRingBuffer *drb)
     // 如果是新创建的文件
     if (newFileNeeded)
     {
-        printf("9. Writing headers for new file\n");
+        LOG("9. Writing headers for new file\n");
         // 先写入当前文件头
         if (AscFileWriteTimeHeader(file, &nowTimeInfo) != 0) {
-            printf("ERROR: Failed to write time header\n");
+            LOG("ERROR: Failed to write time header\n");
         } else {
             //printf("9.1 Time header written\n");
         }
@@ -837,13 +836,11 @@ void Drv_write_buffer_to_file(DoubleRingBuffer *drb)
     // 创建新文件的两个条件
     // 1. 当前写的文件大小超过10M
     // 2. 系统中不存在当前日志命名的文件夹（日期变化了）
-    if ((fileSize > (10*1024*1024) )|| (judeTimetoUpdate())) // 大于10M或者年月日发生变化
+    if ((fileSize > (10*1024*1024) )|| (judgeTimetoUpdate())) // 大于10M或者年月日发生变化
     {
-        printf("fileSize = %d\r\n",fileSize);
+        LOG("fileSize = %ld\r\n",fileSize);
 
-        printf("judeTimetoUpdate = %d\r\n",judeTimetoUpdate());
-        printf("xxxx\r\n");
-
+        LOG("judgeTimetoUpdate = %d\r\n",judgeTimetoUpdate());
         newFileNeeded = true; // 下一轮就要创建新文件
     }
     // 关闭文件
@@ -906,37 +903,43 @@ int SD_Initialize(void)
         LOG("Mount success\n");
     }
 
-    usleep(10 * 1000); // 替代 g_Delay_Ms(10)
+    usleep(100 * 1000); // 替代 g_Delay_Ms(10)
     newFileNeeded = true;
 
     return 0;
 }
-int judeTimetoUpdate(void)
+int judgeTimetoUpdate(void)
 {
     int ret = 0;
-	static int last_year = 0;
-	static int last_month = 0;
-	static int last_day = 0;
+    static int last_year = 0;
+    static int last_month = 0;
+    static int last_day = 0;
+    
+    LOG("Current time: %d-%d-%d, Last time: %d-%d-%d\n", 
+        BCU_TimeYear, BCU_TimeMonth, BCU_TimeDay,
+        last_year, last_month, last_day);
 
-	if(last_year == 0 && last_month == 0 && last_day == 0)
-	{
-		last_year = BCU_TimeYear;
-		last_month = BCU_TimeMonth;
-		last_day = BCU_TimeDay;
-	}
-	// 检查日期是否变化
-    if ((BCU_TimeYear != last_year ) || 
+    // 检查时间数据是否有效
+    if (BCU_TimeYear == 0 || BCU_TimeMonth == 0 || BCU_TimeDay == 0) {
+        LOG("Time invalid, skip check\n");
+        return 0;
+    }
+
+    // 变化检查
+    if ((BCU_TimeYear != last_year) || 
         (BCU_TimeMonth != last_month) || 
-        (BCU_TimeDay != last_day) ) 
-       {
+        (BCU_TimeDay != last_day)) 
+    {
+        
+        LOG("TIME CHANGE DETECTED: %d-%d-%d -> %d-%d-%d\n", 
+            last_year, last_month, last_day,
+            BCU_TimeYear, BCU_TimeMonth, BCU_TimeDay);
 
         last_year = BCU_TimeYear;
         last_month = BCU_TimeMonth;
         last_day = BCU_TimeDay;
-
         ret = 1;
-    }else{
-        ret = 0;
     }
+    
     return ret;
 }

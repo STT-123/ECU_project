@@ -51,5 +51,7 @@ void Drv_write_buffer_to_file(DoubleRingBuffer *drb);
 void Drv_RTCGetTime(Rtc_Ip_TimedateType *rtcTime);
 void Drv_init_double_ring_buffer(DoubleRingBuffer *drb);
 int SD_Initialize(void);
-int judeTimetoUpdate(void);
+
+void Drv_init_can_id_history(void);
+int judgeTimetoUpdate(void);
 #endif

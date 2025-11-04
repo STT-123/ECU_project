@@ -312,7 +312,7 @@ int HAL_can_read(int fd, struct canfd_frame *pFrame, unsigned int msTimeout)
 		{
 			// 非阻塞下没有数据，epoll误触发或数据已读完
 			printf("HAL_can_read timeout\n");
-			// return 0;  // 你可以换成 return true; 但说明没数据
+			return 0;  // 你可以换成 return true; 但说明没数据
 		}
 		else
 		{
@@ -320,6 +320,7 @@ int HAL_can_read(int fd, struct canfd_frame *pFrame, unsigned int msTimeout)
 			return 0;
 		}
 	}
+	return 0;
 }
 
 int HAL_can1_read(int fd, struct can_frame *pFrame, unsigned int msTimeout)

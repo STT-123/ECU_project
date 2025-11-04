@@ -85,7 +85,7 @@ void G_ip_set_deal(uint16_t address, uint16_t data)
     }
 }
 
-void G_set_system_time_from_bcu()
+void G_set_system_time_from_bcu(void)
 {
     struct tm tm;
     struct timeval tv;

@@ -11,7 +11,11 @@
     "drv_ecuandbcucommunication.h": "c",
     "time.h": "c",
     "math.h": "c",
-    "c_otastatemonitor.h": "c"
+    "c_otastatemonitor.h": "c",
+    "net_config_task.h": "c",
+    "c_otaotherupdate.h": "c",
+    "c_otaxcpupdate.h": "c",
+    "drv_ecuandbmucommunication.h": "c"
   },
   "C_Cpp_Runner.msvcBatchPath": "",
   "C_Cpp_Runner.cCompilerPath": "gcc",

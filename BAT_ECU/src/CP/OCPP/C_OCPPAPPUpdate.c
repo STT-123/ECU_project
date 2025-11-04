@@ -8,6 +8,7 @@
 #include "./CP/Xmodem/C_OTAStateMonitor.h"
 #include "./DRV/Drv_SDCard.h"
 #include "main.h"
+#include "log/log.h"
 #define __DEBUG__SYSTEM
 
 
@@ -93,18 +94,19 @@ int upgarde_file_type(const char *filename,const char *filetype)
 		sleep(1);
 		CP_set_modbus_reg_val(OTASTATUSREGADDR, FILEDECRYPTIONNORMALTERMINATION);
         int ret =get_check_upgarde_file_type(filename, APP_ECU_UPGRADE_FILE,matched_filename,sizeof(matched_filename));
-        printf("ret:%d \r\n",ret);
+        LOG("ret:%d \r\n",ret);
         if(ret == 0)
         {
             //标志位
 			sleep(1);
             // otactrl.UpDating = 1;
             otactrl.deviceType =ECU;
-            printf("ECU_OTA_otadeviceType: %u\r\n",otactrl.deviceType);
-            printf("otafilenamestr: %s\r\n",filetype);
+			otactrl.deviceID = 0;
+            LOG("ECU_OTA_otadeviceType: %u\r\n",otactrl.deviceType);
+            LOG("otafilenamestr: %s\r\n",filetype);
             memset(otactrl.OTAFilename ,0 ,sizeof(otactrl.OTAFilename));
             memcpy(otactrl.OTAFilename, filetype, strlen(filetype));
-            printf("otactrl.OTAFilename : %s\r\n",otactrl.OTAFilename);
+            LOG("otactrl.OTAFilename : %s\r\n",otactrl.OTAFilename);
             otactrl.OTAStart = 1;
         }
         return ret;

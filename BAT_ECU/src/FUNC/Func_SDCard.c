@@ -82,7 +82,7 @@ void *Func_file_write_task(void *arg)
         }
         else
         {
-            LOG("[SD Card] ----------------OTAing---------%X-----\r\n", ota_flag);
+            LOG("[SD Card] ----------------OTAing---------flag = 0x%X-----\r\n", ota_flag);
         }
     }
 }

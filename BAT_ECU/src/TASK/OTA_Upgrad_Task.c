@@ -6,7 +6,6 @@
 #include <pthread.h>
 #include "C_OTAOtherUpdate.h"
 #include "log/log.h"
-#include "log/log.h"
 #include "./CP/OTA/C_OTAAPPUpdate.h"
 #include "./CP/BMS/C_BMSAnalysis.h"
 #include "./CP/Xmodem/C_OTAStateMonitor.h"
@@ -17,6 +16,8 @@
 
 pthread_t OTAUpgrad_TASKHandle;
 volatile unsigned int CurrentOTADeviceCanID = 0x1821FF10;
+
+
 
 void *OTA_Upgrad_Task(void *arg)
 {
@@ -47,10 +48,11 @@ void *OTA_Upgrad_Task(void *arg)
     static CAN_MESSAGE canmsg;
     int err;
     int xstatis = 0;
-    strcpy(pOTA->OTAFilename, "XC_ECU_V200.bin");
-    pOTA->deviceType = ECU;
+    strcpy(pOTA->OTAFilename, "XC_BMU_V302.bin");
+    pOTA->deviceType = BMU;
     // pOTA->deviceID = BCUOTACANID;
-    pOTA->deviceID = 0;
+    pOTA->deviceID = 0x1821FF10;//BMU
+    // pOTA->deviceID = 0;//ECU
     pOTA->OTAStart = 1;
     printf("pOTA->OTAFilename : %s\r\n",pOTA->OTAFilename);
     printf("pOTA->deviceID: %u\r\n",pOTA->deviceID);
@@ -62,8 +64,12 @@ void *OTA_Upgrad_Task(void *arg)
             CP_set_modbus_reg_val(OTASTATUSREGADDR, OTASTARTRUNNING);//0124.升级状态
             if (pOTA->deviceType == ECU)
             {
-                printf("pOTA->deviceType == ECU : %u\r\n", pOTA->deviceType);
+                LOG("pOTA->deviceType == ECU : %u\r\n", pOTA->deviceType);
+                CP_set_modbus_reg_val(OTAPPROGRESSREGADDR, 0); // 0124
+
+
                 CP_ECU_OTA(pOTA);
+
                 if (ecustatus.ErrorReg != 0 && pOTA->OTAStart == 0)
                 {
 
@@ -75,26 +81,20 @@ void *OTA_Upgrad_Task(void *arg)
                         pOTA->deviceID = 0;
                         pOTA->OTAStart = 1;
                         ecustatus.ErrorReg = 0;
-                        printf("ecu OTA failed, error ACPOtaFlag count:  %d\r\n", ECUOtaFlag);
                         LOG("ECU OTA failed, error ECUOtaFlag count:  %d\r\n", ECUOtaFlag);
                         continue;
                     }
                     else
                     {
-                        printf("errot\r\n");
+                        LOG(" ECUOtaFlag > 3 \r\n");
                     }
                 }
                 else if (ecustatus.DeviceProgramOkFlag)
                 {
-                    printf("errot\r\n");
-                    // udsstatus.DeviceProgramOkFlag = 0; // 需要添加
-                    // printf("CAN ID 0x%x ECU OTA success!\r\n", pOTA->deviceID);
-                    // LOG("CAN ID 0x%x ACP OTA success!\r\n", pOTA->deviceID);
-                    // if (pOTA->deviceType == ECU)
-                    // {
-                    //     FinshhECUOtaAndCleanup(pOTA);
-                    // }
+                    LOG("errot\r\n");
                 }
+
+                CP_set_modbus_reg_val(OTASTATUSREGADDR, OTASUCCESS);
             }
             else if (pOTA->deviceType == ACP || pOTA->deviceType == DCDC)
             {
@@ -215,21 +215,23 @@ void *OTA_Upgrad_Task(void *arg)
                 }
                 else if (pOTA->deviceType == BMU)
                 {
+                    unsigned int total_steps = BMUMAXNUM;  // 0到14共15次
+                    unsigned int start_percent = 7;
+                    unsigned int end_percent = 100;
+                    //
                     for (int i = 0; i < BMUMAXNUM; i++)
                     {
-                        printf("BMU OTA start! i : %d\r\n", i);
-                        printf("ReOtaFlag :%d\r\n", ReOtaFlag);
+                        LOG("BMU OTA start! i : ,ReOtaFlag = %d %d\r\n", i,ReOtaFlag);
                         ReOtaFlag = 0;
                         while (ReOtaFlag < 3)
                         {
                             CurrentOTADeviceCanID = (0x1821D << 12) | ((i + 1) << 8) | 0x10;
                             pOTA->deviceID = CurrentOTADeviceCanID;
-                            printf("Start OTA try %d, CAN ID 0x%x BMU %d\r\n", ReOtaFlag + 1, CurrentOTADeviceCanID, i);
-                            printf("pOTA->deviceID == BMU : %x\r\n", pOTA->deviceID);
+                            LOG("Start OTA try %d, CAN ID 0x%x BMU %d\r\n", ReOtaFlag + 1, CurrentOTADeviceCanID, i);
+                            LOG("pOTA->deviceID == BMU : %x\r\n", pOTA->deviceID);
                             pOTA->OTAStart = 1;
-                            xcpstatus.ErrorReg = 0;
-
-                            // printf("Start OTA try %d, CAN ID 0x%x BMU %d\r\n", ReOtaFlag + 1, CurrentOTADeviceCanID, i);
+                            xcpstatus.ErrorReg = 0;                           
+                            LOG("Start OTA try %d, CAN ID 0x%x BMU %d\r\n", ReOtaFlag + 1, CurrentOTADeviceCanID, i);
 
                             CP_XCP_OTA(pOTA);
 
@@ -237,18 +239,23 @@ void *OTA_Upgrad_Task(void *arg)
                             if (xcpstatus.ErrorReg == 0 && pOTA->OTAStart == 0 && xcpstatus.DeviceProgramOkFlag)
                             {
                                 xcpstatus.DeviceProgramOkFlag = 0;
-                                printf("CAN ID 0x%x BMU OTA success!\r\n", pOTA->deviceID);
                                 LOG("CAN ID 0x%x BMU OTA success!\r\n", pOTA->deviceID);
                                 break;
                             }
                             else
                             {
-                                // break;
                                 ReOtaFlag++;
-                                printf("CAN ID 0x%x BMU OTA failed, retry count: %d\r\n", pOTA->deviceID, ReOtaFlag);
                                 LOG("CAN ID 0x%x BMU OTA failed, retry count: %d\r\n", pOTA->deviceID, ReOtaFlag);
                             }
                         }
+                        sleep(2);
+                        //这段代码是，一共15个BMU，每ota完一个增加7%的进度
+                        unsigned int percentage = start_percent + (end_percent - start_percent) * i / (total_steps - 1);
+                        CP_set_modbus_reg_val(OTAPPROGRESSREGADDR, percentage); // 0124, upgrade progress,BCU直接写升级进度，BMU 由于有15个，不在这里写进度
+                        if(percentage == 100){
+                            CP_set_modbus_reg_val(OTASTATUSREGADDR, OTASUCCESS);
+                        }
+                        LOG("STEP %2d: %3d%%\n", i, percentage);
                     }
 
                 }         

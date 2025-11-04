@@ -30,76 +30,33 @@ static void Drv_can0_epoll_msg_transmit(void *arg)
     if (frame_type == 1)
     {
         Convert_canfd_frame_to_CAN_MESSAGE(&can_rev, &can_send);
-        // if(can_send.ID == 0x30C1600)
-        // {
-        // printf("can_send->data[0] :%02X \r\n", can_send.Data[0]);
-        // printf("can_send->data[1] :%02X\r\n ", can_send.Data[1]);
-        // printf("can_send->data[1] :%02X\r\n ", can_send.Data[2]);
-        // printf("can_send->data[1] :%02X\r\n ", can_send.Data[3]);
-        // printf("can_send->data[1] :%02X\r\n ", can_send.Data[4]);
-        // printf("can_send->data[1] :%02X\r\n ", can_send.Data[5]);
-        // }
-        // if(can_send.ID == 0x61B)
-        // {
-        // printf("can_send->data[0] :%02X \r\n", can_send.Data[0]);
-        // printf("can_send->data[1] :%02X\r\n ", can_send.Data[1]);
-        // printf("can_send->data[1] :%02X\r\n ", can_send.Data[2]);
-        // printf("can_send->data[1] :%02X\r\n ", can_send.Data[3]);
-        // printf("can_send->data[1] :%02X\r\n ", can_send.Data[4]);
-        // printf("can_send->data[1] :%02X\r\n ", can_send.Data[5]);
-        // }
 
         if (((CP_get_TCU_PowerUpCmd()) == BMS_POWER_UPDATING) && (can_send.ID == 0x30C1600 || can_send.ID == 0x61B || can_send.ID == 0x1CB010E4))
         {
             if (queue_post(&Queue_Can0RevData, &can_send, sizeof(CAN_MESSAGE)) != 0)
-            {
-                
-                printf("(CP_get_TCU_PowerUpCmd()) == 5 err\r\n");
-                printf("(CP_get_TCU_PowerUpCmd()) == 5 err\r\n");
-                printf("(CP_get_TCU_PowerUpCmd()) == 5 err\r\n");
-                printf("(CP_get_TCU_PowerUpCmd()) == 5 err\r\n");
-                printf("(CP_get_TCU_PowerUpCmd()) == 5 err\r\n");
-                printf("(CP_get_TCU_PowerUpCmd()) == 5 err\r\n"); 
-
+            {   
+                // printf("(CP_get_TCU_PowerUpCmd()) == 5 full\r\n");
+                // printf("(CP_get_TCU_PowerUpCmd()) == 5 full\r\n");
+                // printf("(CP_get_TCU_PowerUpCmd()) == 5 full\r\n");
                 queue_destroy(&Queue_Can0RevData);
                 queue_init(&Queue_Can0RevData);
             }
-            else
-            {
-
-                // printf("Queue_Can0RevData send\r\n");
-                // printtf("can_send->ID :%08X \r\n",can_send.ID);
-                // printf("can_send->data[0] :%02X \r\n", can_send.Data[0]);
-                // printf("can_send->data[1] :%02X\r\n ", can_send.Data[1]);
-                // printf("can_send.data[2] :%02X\r\n ", can_send.Data[2]);
-                // printf("can_send.data[2] :%02X\r\n ", can_send.Data[2]);
+            else{
             }
         }
-        else if ((CP_get_TCU_PowerUpCmd()) != 5 && can_send.ID != 0x18FFC13A && can_send.ID != 0x18FFC13B && can_send.ID != 0x18FFC13C && can_send.ID != 0x18FAE6E1 && can_send.ID != 0x18FD7BE1 && can_send.ID != 0X18FA78F1 && can_send.ID != 0x18FFC13D && can_send.ID != 0x18FA78F5 && can_send.ID != 0x18FAE6E2)
+        else if ((CP_get_TCU_PowerUpCmd()) != BMS_POWER_UPDATING && can_send.ID != 0x18FFC13A && can_send.ID != 0x18FFC13B && can_send.ID != 0x18FFC13C && can_send.ID != 0x18FAE6E1 && can_send.ID != 0x18FD7BE1 && can_send.ID != 0X18FA78F1 && can_send.ID != 0x18FFC13D && can_send.ID != 0x18FA78F5 && can_send.ID != 0x18FAE6E2)
         {
             if (queue_post(&Queue_Can0RevData, &can_send, sizeof(CAN_MESSAGE)) != 0)
             {
                 
-                printf("(CP_get_TCU_PowerUpCmd()) !=  5 err\r\n");
-                printf("(CP_get_TCU_PowerUpCmd()) !=  5 err\r\n");
-                printf("(CP_get_TCU_PowerUpCmd()) !=  5 err\r\n");
-                printf("(CP_get_TCU_PowerUpCmd()) !=  5 err\r\n");
-                printf("(CP_get_TCU_PowerUpCmd()) !=  5 err\r\n");
-                printf("(CP_get_TCU_PowerUpCmd()) !=  5 err\r\n");
-                 
-
+                // printf("(CP_get_TCU_PowerUpCmd()) !=  5 full\r\n");
+                // printf("(CP_get_TCU_PowerUpCmd()) !=  5 full\r\n");
+                // printf("(CP_get_TCU_PowerUpCmd()) !=  5 full\r\n");
+                
                 queue_destroy(&Queue_Can0RevData);
                 queue_init(&Queue_Can0RevData);
             }
-            else
-            {
-
-                // printf("Queue_Can0RevData send\r\n");
-                // printtf("can_send->ID :%08X \r\n",can_send.ID);
-                // printf("can_send->data[0] :%02X \r\n", can_send.Data[0]);
-                // printf("can_send->data[1] :%02X\r\n ", can_send.Data[1]);
-                // printf("can_send.data[2] :%02X\r\n ", can_send.Data[2]);
-                // printf("can_send.data[2] :%02X\r\n ", can_send.Data[2]);
+            else{
             }
         }
     }//2表示CAN FD数据
@@ -108,21 +65,13 @@ static void Drv_can0_epoll_msg_transmit(void *arg)
         //往can fd队列方数据，但是数据满了,在升级过程在，不再从canfd队列取数据了，此时fd满了
         if (queue_post(&Queue_Can0RevData_FD, (unsigned char *)&can_rev, sizeof(can_rev)) != 0)
         {
-            printf("frame_type == 2 err\r\n");
-            printf("frame_type == 2 err\r\n");
-            printf("frame_type == 2 err\r\n");
-            printf("frame_type == 2 err\r\n");
-            printf("frame_type == 2 err\r\n");
-            printf("frame_type == 2 err\r\n");
+            // printf("frame_type == 2 Queue_Can0RevData_FD full\r\n");
+            // printf("frame_type == 2 Queue_Can0RevData_FD full\r\n");
+            // printf("frame_type == 2 Queue_Can0RevData_FD full\r\n");
             queue_destroy(&Queue_Can0RevData_FD);
             queue_init(&Queue_Can0RevData_FD);
         }
-        else
-        {
-            // printf("Queue_Can0RevData_FD send\r\n");
-            // printf("can_rev->data[0] :%02X \r\n", can_rev.data[0]);
-            // printf("can_rev->data[1] :%02X\r\n ", can_rev.data[1]);
-            // printf("can_rev.data[2] :%02X\r\n ", can_rev.data[2]);
+        else{
         }
     }
 
